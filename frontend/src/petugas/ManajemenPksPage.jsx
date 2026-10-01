@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { pksService } from '../services/pksService';
 import { mitraService } from '../services/mitraService';
 import { StatusBadge } from '../components/StatusBadge';
@@ -64,6 +65,9 @@ const SAMPLE_PKS_DATA = [
 ];
 
 export const ManajemenPksPage = () => {
+  const { user } = useAuth();
+  const isPetugas = user?.role === 'petugas_jr';
+
   const [pksList, setPksList] = useState([]);
   const [mitraList, setMitraList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -144,6 +148,18 @@ export const ManajemenPksPage = () => {
           <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Manajemen PKS</h1>
           <p className="text-xs text-slate-500 mt-0.5">Kelola seluruh data Perjanjian Kerja Sama (PKS) Bidang Operasional</p>
         </div>
+
+        {/* Tombol Buat Draf PKS Baru Khusus Petugas JR */}
+        {isPetugas && (
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="px-5 py-2.5 bg-[#00529C] hover:bg-[#003E75] text-white text-xs font-bold rounded-xl shadow-xs flex items-center transition-all cursor-pointer shrink-0"
+          >
+            <Plus className="w-4 h-4 mr-1.5 stroke-[2.5]" />
+            Buat Draf PKS Baru
+          </button>
+        )}
       </div>
 
       {/* 2. Top 4 Stat Cards (Image 2 Mockup) */}
@@ -477,11 +493,43 @@ export const ManajemenPksPage = () => {
       </div>
 
       {/* Modals */}
+      {isModalOpen && (
+        <ModalTambahPks
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={() => {
+            fetchData();
+          }}
+        />
+      )}
+
+      {editingPksId && (
+        <ModalUbahPks
+          isOpen={!!editingPksId}
+          pksId={editingPksId}
+          onClose={() => setEditingPksId(null)}
+          onSuccess={() => {
+            fetchData();
+          }}
+        />
+      )}
+
       {viewingPksId && (
         <ModalDetailPks
           isOpen={!!viewingPksId}
           pksId={viewingPksId}
           onClose={() => setViewingPksId(null)}
+        />
+      )}
+
+      {deletingPksData && (
+        <ModalHapusPks
+          isOpen={!!deletingPksData}
+          pksData={deletingPksData}
+          onClose={() => setDeletingPksData(null)}
+          onSuccess={() => {
+            fetchData();
+          }}
         />
       )}
     </div>
