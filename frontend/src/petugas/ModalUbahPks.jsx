@@ -1,0 +1,677 @@
+import React, { useState, useEffect } from 'react';
+import { pksService } from '../services/pksService';
+import { adendumService } from '../services/adendumService';
+import { useAuth } from '../context/AuthContext';
+import { StatusBadge } from '../components/StatusBadge';
+import {
+  X, Info, FileText, Check, AlertCircle, Plus, MoreVertical,
+  Eye, Edit3, Trash2, Download, Upload, Shield
+} from 'lucide-react';
+
+export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
+  const { user } = useAuth();
+
+  // Data Loading States
+  const [loading, setLoading] = useState(true);
+  const [pksData, setPksData] = useState(null);
+  const [adendumList, setAdendumList] = useState([]);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Form Fields State - Section 1: Informasi PKS
+  const [nomorPKS, setNomorPKS] = useState('');
+  const [bidang, setBidang] = useState('');
+  const [jenisPKS, setJenisPKS] = useState('');
+  const [tanggalMulai, setTanggalMulai] = useState('');
+  const [tanggalBerakhir, setTanggalBerakhir] = useState('');
+  const [judulPKS, setJudulPKS] = useState('');
+
+  // Form Fields State - Section 2: Data Untuk Dokumen PKS (Mitra)
+  const [namaPerusahaan, setNamaPerusahaan] = useState('');
+  const [alamat, setAlamat] = useState('');
+  const [penanggungJawab, setPenanggungJawab] = useState('');
+  const [jabatan, setJabatan] = useState('');
+  const [telepon, setTelepon] = useState('');
+  const [email, setEmail] = useState('');
+
+  // Addendum Filter & Popover State
+  const [filterAdendumStatus, setFilterAdendumStatus] = useState('Semua');
+  const [activeAdendumActionId, setActiveAdendumActionId] = useState(null);
+
+  // Modal Tambah Adendum Interaktif
+  const [isAddendumModalOpen, setIsAddendumModalOpen] = useState(false);
+  const [addendumRuangLingkup, setAddendumRuangLingkup] = useState('');
+  const [addendumTglMulai, setAddendumTglMulai] = useState('');
+  const [addendumTglBerakhir, setAddendumTglBerakhir] = useState('');
+  const [submittingAddendum, setSubmittingAddendum] = useState(false);
+
+  // Load Data PKS & Adendum saat modal dibuka / pksId berubah
+  useEffect(() => {
+    if (isOpen && pksId) {
+      const loadDetailData = async () => {
+        setLoading(true);
+        setErrorMsg('');
+        try {
+          const [pksRes, adendumRes] = await Promise.all([
+            pksService.getPksById(pksId),
+            adendumService.getAdendumListByPks(pksId).catch(() => ({ success: false, data: [] })),
+          ]);
+
+          if (pksRes.success) {
+            const p = pksRes.data;
+            setPksData(p);
+            setNomorPKS(p.nomorPKS || '-');
+            setBidang(p.bidang || '');
+            setJenisPKS(p.jenisPKS || 'Kerja Sama Operasional');
+            setTanggalMulai(p.tanggalMulai ? p.tanggalMulai.split('T')[0] : '');
+            setTanggalBerakhir(p.tanggalBerakhir ? p.tanggalBerakhir.split('T')[0] : '');
+            setJudulPKS(p.judulPKS || p.ruangLingkup || '');
+
+            // Data Mitra
+            setNamaPerusahaan(p.mitra?.namaPerusahaan || p.namaMitra || '');
+            setAlamat(p.mitra?.alamat || p.alamatMitra || '');
+            setPenanggungJawab(p.mitra?.penanggungJawab || p.penanggungJawabMitra || '');
+            setJabatan(p.mitra?.jabatan || p.jabatanMitra || 'Direktur Utama');
+            setTelepon(p.mitra?.kontak || p.teleponMitra || '');
+            setEmail(p.mitra?.email || p.emailMitra || '');
+          }
+
+          if (adendumRes.success) {
+            const rawAd = adendumRes.data;
+            const adArray = Array.isArray(rawAd)
+              ? rawAd
+              : (Array.isArray(rawAd?.data) ? rawAd.data : []);
+            setAdendumList(adArray);
+          }
+        } catch (err) {
+          setErrorMsg('Gagal memuat detail PKS.');
+        } finally {
+          setLoading(false);
+        }
+      };
+      loadDetailData();
+    }
+  }, [isOpen, pksId]);
+
+  if (!isOpen) return null;
+
+  // Penentuan Status: Apakah PKS Sudah Disetujui (Final) atau Masih Draft/Revisi
+  const isDisetujui =
+    pksData?.statusPersetujuan === 'Disetujui' ||
+    pksData?.statusPks === 'Aktif' ||
+    pksData?.statusPks === 'Segera Berakhir' ||
+    pksData?.statusPks === 'Berakhir';
+
+  const isDraftOrRevisi = !isDisetujui;
+
+  // User Roles
+  const isPengelolaOrAdmin = user?.role === 'pengelola_pks' || user?.role === 'admin_utama';
+
+  // Handler Perubahan Bidang
+  const handleBidangChange = (newBidang) => {
+    setBidang(newBidang);
+    if (newBidang === 'IW') {
+      setJenisPKS('IWKL Borongan');
+    } else {
+      setJenisPKS('Kerja Sama Operasional');
+    }
+  };
+
+  // Submit Update PKS
+  const handleSavePks = async (e) => {
+    e.preventDefault();
+    setErrorMsg('');
+
+    if (tanggalMulai && tanggalBerakhir && new Date(tanggalBerakhir) <= new Date(tanggalMulai)) {
+      setErrorMsg('Tanggal Berakhir harus lebih besar dari Tanggal Mulai.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const payload = {
+        mitraId: pksData?.mitraId || (selectedMitraId ? parseInt(selectedMitraId) : undefined),
+        ruangLingkup: judulPKS || pksData?.ruangLingkup || `PKS ${bidang} - ${namaPerusahaan}`,
+        judulPKS: judulPKS || `PKS ${bidang} - ${namaPerusahaan}`,
+        bidang,
+        jenisPKS,
+        namaMitra: namaPerusahaan,
+        alamatMitra: alamat,
+        penanggungJawabMitra: penanggungJawab,
+        jabatanMitra: jabatan,
+        teleponMitra: telepon,
+        emailMitra: email,
+        tanggalMulai,
+        tanggalBerakhir,
+      };
+
+      const res = await pksService.updatePks(pksId, payload);
+      if (res.success) {
+        if (onSuccess) onSuccess(res.data);
+        onClose();
+      } else {
+        setErrorMsg(res.message || 'Gagal menyimpan perubahan PKS.');
+      }
+    } catch (err) {
+      setErrorMsg(err.response?.data?.message || 'Terjadi kesalahan sistem.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Submit Adendum Baru
+  const handleCreateAddendumSubmit = async (e) => {
+    e.preventDefault();
+    if (!addendumRuangLingkup || !addendumTglMulai || !addendumTglBerakhir) return;
+
+    setSubmittingAddendum(true);
+    try {
+      const res = await adendumService.createAdendum(pksId, {
+        ruangLingkupPerubahan: addendumRuangLingkup,
+        tanggalMulai: addendumTglMulai,
+        tanggalBerakhir: addendumTglBerakhir,
+      });
+
+      if (res.success) {
+        const newAd = res.data;
+        setAdendumList((prev) => [newAd, ...prev]);
+        setIsAddendumModalOpen(false);
+        setAddendumRuangLingkup('');
+        setAddendumTglMulai('');
+        setAddendumTglBerakhir('');
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Gagal membuat Adendum baru.');
+    } finally {
+      setSubmittingAddendum(false);
+    }
+  };
+
+  // Filter Adendum Data
+  const filteredAdendumList = adendumList.filter((item) => {
+    if (filterAdendumStatus === 'Semua') return true;
+    return (item.statusPersetujuan || item.status) === filterAdendumStatus;
+  });
+
+  return (
+    <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 font-sans">
+      <div className="bg-white rounded-2xl border border-slate-200 max-w-3xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        
+        {/* ================= STICKY HEADER MODAL ================= */}
+        <div className="px-6 py-4 border-b border-slate-100 flex items-start justify-between shrink-0 bg-white z-10">
+          <div>
+            <div className="flex items-center space-x-2">
+              <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">Ubah PKS</h2>
+              <StatusBadge status={pksData?.statusPks || 'Draft'} />
+              <StatusBadge status={pksData?.statusPersetujuan || 'Draft'} />
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">Perbarui Informasi PKS.</p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* ================= SCROLLABLE FORM BODY ================= */}
+        {loading ? (
+          <div className="p-12 text-center text-xs text-slate-500 flex-1">Memuat data PKS...</div>
+        ) : (
+          <form onSubmit={handleSavePks} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div className="p-6 overflow-y-auto flex-1 space-y-6">
+              
+              {errorMsg && (
+                <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center">
+                  <AlertCircle className="w-4 h-4 mr-2 shrink-0" />
+                  <span>{errorMsg}</span>
+                </div>
+              )}
+
+              {/* Notice Keterangan Editability */}
+              {isDisetujui ? (
+                <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start space-x-2">
+                  <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <span>
+                    <strong>PKS Telah Disetujui:</strong> Data inti template PKS (Nomor, Bidang, Tanggal, Mitra) dikunci agar sesuai dengan dokumen tercetak. Anda hanya dapat memperbarui informasi kontak/telepon atau menambahkan Adendum.
+                  </span>
+                </div>
+              ) : (
+                <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs flex items-start space-x-2">
+                  <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Status Draft / Revisi:</strong> Seluruh form data PKS dapat diubah secara bebas oleh Petugas sebelum diajukan ke tahap persetujuan final.
+                  </span>
+                </div>
+              )}
+
+              {/* ================= SECTION 1: INFORMASI PKS (MATCHING IMAGE 5) ================= */}
+              <div className="bg-slate-50/80 rounded-2xl border border-slate-200 p-5 space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Info className="w-4 h-4 text-[#00529C]" />
+                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-800">
+                    Informasi PKS
+                  </h3>
+                </div>
+
+                {/* Grid Input Nomor PKS & Tanggal Mulai */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Nomor PKS</label>
+                    <input
+                      type="text"
+                      disabled
+                      value={nomorPKS || 'PKS/2024/JR/MEDIKA/001'}
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-[#EEF4FF] text-slate-700 font-bold outline-none cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Tanggal Mulai</label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="10/12/2024"
+                        value={tanggalMulai || '10/12/2024'}
+                        onChange={(e) => setTanggalMulai(e.target.value)}
+                        className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
+                      />
+                      <Calendar className="w-4 h-4 text-slate-400 absolute right-3.5 top-3" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Grid Bidang & Tanggal Berakhir */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Bidang</label>
+                    <input
+                      type="text"
+                      disabled
+                      value={bidang || 'Pelayanan'}
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-[#EEF4FF] text-slate-700 font-medium outline-none cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Tanggal Berakhir</label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="10/12/2025"
+                        value={tanggalBerakhir || '10/12/2025'}
+                        onChange={(e) => setTanggalBerakhir(e.target.value)}
+                        className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
+                      />
+                      <Calendar className="w-4 h-4 text-slate-400 absolute right-3.5 top-3" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Jenis PKS */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Jenis PKS</label>
+                  <select
+                    value={jenisPKS || 'PKS Rumah Sakit'}
+                    onChange={(e) => setJenisPKS(e.target.value)}
+                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
+                  >
+                    <option value="PKS Rumah Sakit">PKS Rumah Sakit</option>
+                    <option value="Kerja Sama Operasional">Kerja Sama Operasional</option>
+                    <option value="IWKL Borongan">IWKL Borongan</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* ================= SECTION 2: DATA UNTUK DOKUMEN PKS (MATCHING IMAGE 5) ================= */}
+              <div className="space-y-4 pt-2">
+                <div className="flex items-center space-x-2">
+                  <FileText className="w-4 h-4 text-[#00529C]" />
+                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-800">
+                    Data Untuk Dokumen PKS
+                  </h3>
+                </div>
+
+                {/* Info Alert Callout */}
+                <div className="p-3.5 rounded-xl bg-[#EEF4FF] border border-blue-200 text-blue-900 text-xs flex items-start space-x-2 leading-relaxed">
+                  <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                  <span>
+                    Perubahan pada bagian ini akan mempengaruhi isi draft dokumen PKS yang dihasilkan oleh sistem. Harap pastikan data yang dimasukkan sudah valid.
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Nama Perusahaan</label>
+                    <input
+                      type="text"
+                      value={namaPerusahaan || 'PT Medika Sejahtera'}
+                      onChange={(e) => setNamaPerusahaan(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Jabatan</label>
+                    <input
+                      type="text"
+                      value={jabatan || 'Direktur Utama'}
+                      onChange={(e) => setJabatan(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Alamat</label>
+                    <textarea
+                      rows="3"
+                      value={alamat || 'Jl. Rasuna Said Kav. 10-11, Kuningan, Jakarta Selatan'}
+                      onChange={(e) => setAlamat(e.target.value)}
+                      className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
+                    />
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">Nomor Telepon</label>
+                      <input
+                        type="text"
+                        value={telepon || '0811-987-654'}
+                        onChange={(e) => setTelepon(e.target.value)}
+                        className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">Email</label>
+                      <input
+                        type="email"
+                        value={email || 'contact@medikasejahtera.co.id'}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Nama Penanggung Jawab</label>
+                    <input
+                      type="text"
+                      value={penanggungJawab || 'Dr. Andi Budiman'}
+                      onChange={(e) => setPenanggungJawab(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* ================= SECTION 3: INFORMASI SISTEM (MATCHING IMAGE 5) ================= */}
+              <div className="bg-slate-50/80 rounded-2xl border border-slate-200 p-5 space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Shield className="w-4 h-4 text-[#00529C]" />
+                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-800">
+                    Informasi Sistem
+                  </h3>
+                </div>
+
+                {/* Callout Notice */}
+                <div className="p-3 rounded-xl bg-[#EEF4FF] border border-blue-200 text-blue-900 text-xs flex items-start space-x-2 leading-relaxed">
+                  <span className="w-4 h-4 rounded-full bg-blue-200 text-blue-800 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">?</span>
+                  <span>
+                    Informasi berikut hanya digunakan untuk keperluan administrasi sistem dan tidak dimasukkan ke dalam dokumen PKS.
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Pengelola PKS (Read Only)</label>
+                  <input
+                    type="text"
+                    disabled
+                    value="Administrator Pusat"
+                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-[#EEF4FF] text-slate-700 font-medium outline-none cursor-not-allowed"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Catatan Internal</label>
+                  <textarea
+                    rows="2"
+                    placeholder="Masukkan catatan internal khusus administrasi..."
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
+                  />
+                </div>
+              </div>
+
+              {/* ================= SECTION 4: DRAFT DOKUMEN PKS (MATCHING IMAGE 5) ================= */}
+              <div className="space-y-4 pt-2 border-t border-slate-100">
+                <div className="flex items-center space-x-2">
+                  <FileText className="w-4 h-4 text-[#00529C]" />
+                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-800">
+                    Draft Dokumen PKS
+                  </h3>
+                </div>
+
+                <div className="bg-white rounded-2xl border border-slate-200 p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xs">
+                  <div className="flex items-center space-x-3.5">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center font-bold">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div className="flex items-center space-x-6 text-xs">
+                      <div>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase">NAMA FILE</p>
+                        <p className="font-extrabold text-slate-900">Draft_PKS_Medika...</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase">TANGGAL GENERATE</p>
+                        <p className="font-bold text-slate-800">12 Okt 2024</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase">VERSI DRAFT</p>
+                        <p className="font-bold text-slate-800">Versi 1</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase">STATUS DRAFT</p>
+                        <p className="font-extrabold text-blue-600">Final</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => alert('Pratinjau Draft Dokumen')}
+                      className="px-4 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center"
+                    >
+                      <Eye className="w-3.5 h-3.5 mr-1.5 text-blue-600" /> Lihat Draft
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => alert('Unduh Draft Dokumen')}
+                      className="px-4 py-2 bg-[#00529C] hover:bg-[#003E75] text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer flex items-center"
+                    >
+                      <Download className="w-3.5 h-3.5 mr-1.5" /> Unduh Draft
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* ================= SECTION 5: INFORMASI ADENDUM (MATCHING IMAGE 5) ================= */}
+              <div className="space-y-4 pt-2 border-t border-slate-100">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Plus className="w-4 h-4 text-[#00529C]" />
+                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-800">
+                      Informasi Adendum
+                    </h3>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsAddendumModalOpen(true)}
+                    className="inline-flex items-center px-4 py-2 bg-[#00529C] hover:bg-[#003E75] text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer shrink-0"
+                  >
+                    <Plus className="w-3.5 h-3.5 mr-1.5" />
+                    Tambah Adendum
+                  </button>
+                </div>
+
+                {/* 3 Ringkasan Card Adendum */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="bg-[#EEF4FF] p-3.5 rounded-2xl border border-blue-100">
+                    <p className="text-[11px] font-semibold text-slate-500">Jumlah Adendum</p>
+                    <p className="text-xl font-extrabold text-slate-900 mt-0.5">1</p>
+                  </div>
+
+                  <div className="bg-[#EEF4FF] p-3.5 rounded-2xl border border-blue-100">
+                    <p className="text-[11px] font-semibold text-slate-500">Tanggal Adendum Terakhir</p>
+                    <p className="text-xs font-bold text-slate-900 mt-1">15 Nov 2024</p>
+                  </div>
+
+                  <div className="bg-[#EEF4FF] p-3.5 rounded-2xl border border-blue-100">
+                    <p className="text-[11px] font-semibold text-slate-500">Status PKS Induk</p>
+                    <p className="text-xs font-bold text-emerald-600 mt-1">Aktif</p>
+                  </div>
+                </div>
+
+                {/* Tabel Adendum */}
+                <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs text-slate-700">
+                      <thead className="bg-slate-50 border-b border-slate-100 text-slate-600 uppercase font-extrabold text-[10px]">
+                        <tr>
+                          <th className="px-4 py-3">Nomor Adendum</th>
+                          <th className="px-4 py-3">Tanggal Dibuat</th>
+                          <th className="px-4 py-3">Jenis Perubahan</th>
+                          <th className="px-4 py-3">Status</th>
+                          <th className="px-4 py-3 text-center">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        <tr className="hover:bg-slate-50/70 transition-colors font-medium">
+                          <td className="px-4 py-3.5 font-bold text-slate-900">
+                            AD-001/PKS/JR/2024
+                          </td>
+                          <td className="px-4 py-3.5 text-slate-600 whitespace-nowrap">
+                            15 Nov 2024
+                          </td>
+                          <td className="px-4 py-3.5 text-slate-800">
+                            Penyesuaian Tarif
+                          </td>
+                          <td className="px-4 py-3.5 whitespace-nowrap">
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              Disetujui
+                            </span>
+                          </td>
+                          <td className="px-4 py-3.5 text-center whitespace-nowrap">
+                            <button
+                              type="button"
+                              onClick={() => alert('Detail Adendum')}
+                              className="text-xs font-bold text-blue-600 hover:underline inline-flex items-center cursor-pointer"
+                            >
+                              Lihat Detail <span className="ml-1">→</span>
+                            </button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ================= STICKY FOOTER ACTIONS ================= */}
+            <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-end space-x-3 shrink-0 bg-white z-10">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-5 py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-xl transition-all cursor-pointer shadow-2xs"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="px-5 py-2.5 bg-[#00529C] hover:bg-[#003E75] text-white text-xs font-bold rounded-xl shadow-md flex items-center transition-all cursor-pointer disabled:opacity-50"
+              >
+                {isSubmitting ? 'Memproses...' : 'Simpan Perubahan'}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* ================= MODAL TAMBAH ADENDUM INTERAKTIF ================= */}
+        {isAddendumModalOpen && (
+          <div className="fixed inset-0 z-60 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 className="text-sm font-bold text-slate-900">Tambah Adendum PKS</h3>
+                <button type="button" onClick={() => setIsAddendumModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateAddendumSubmit} className="space-y-3 text-xs">
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1">Ruang Lingkup Perubahan Adendum *</label>
+                  <textarea
+                    rows="3"
+                    required
+                    placeholder="Jelaskan perubahan klausul dalam adendum ini..."
+                    value={addendumRuangLingkup}
+                    onChange={(e) => setAddendumRuangLingkup(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">Tanggal Mulai *</label>
+                    <input
+                      type="date"
+                      required
+                      value={addendumTglMulai}
+                      onChange={(e) => setAddendumTglMulai(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">Tanggal Berakhir *</label>
+                    <input
+                      type="date"
+                      required
+                      value={addendumTglBerakhir}
+                      onChange={(e) => setAddendumTglBerakhir(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-2 pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddendumModalOpen(false)}
+                    className="px-3.5 py-2 font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submittingAddendum}
+                    className="px-4 py-2 font-semibold bg-[#00529C] text-white rounded-xl hover:bg-[#003E75]"
+                  >
+                    {submittingAddendum ? 'Memproses...' : 'Simpan Adendum'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
