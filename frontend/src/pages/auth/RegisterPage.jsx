@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { ShieldCheck, Eye, EyeOff, UserCheck, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { authService } from '../../services/authService';
+import { ShieldCheck, Eye, EyeOff, UserCheck, ArrowLeft, CheckCircle2, AlertCircle, X } from 'lucide-react';
 
 export const RegisterPage = () => {
   const navigate = useNavigate();
@@ -12,8 +13,9 @@ export const RegisterPage = () => {
     email: '',
     nomorHp: '',
     jabatan: '',
-    unitKerja: '',
-    role: '',
+    wilayah: '',
+    samsat: '',
+    bidang: '',
     password: '',
     confirmPassword: '',
     agreed: false,
@@ -22,24 +24,77 @@ export const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
   const [error, setError] = useState('');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // Cascading Samsat Options Data Dictionary
+  const SAMSAT_OPTIONS = {
+    'Wilayah Riau': [
+      'Samsat Pekanbaru Kota',
+      'Samsat Pekanbaru Selatan',
+      'Samsat Dumai',
+      'Samsat Duri',
+      'Samsat Bangkinang',
+      'Samsat Rengat',
+    ],
+    'Wilayah Kepulauan Riau': [
+      'Samsat Batam Kota',
+      'Samsat Tanjungpinang',
+      'Samsat Bintan',
+      'Samsat Karimun',
+    ],
+    'Wilayah Sumatera Barat': [
+      'Samsat Padang',
+      'Samsat Bukittinggi',
+      'Samsat Payakumbuh',
+      'Samsat Solok',
+    ],
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
+    
+    setFormData((prev) => {
+      const updated = {
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value,
+      };
+
+      // Reset Samsat if Wilayah changes
+      if (name === 'wilayah') {
+        updated.samsat = '';
+      }
+
+      // Reset Wilayah/Samsat/Bidang if Jabatan changes
+      if (name === 'jabatan') {
+        if (value === 'Petugas JR') {
+          updated.bidang = '';
+        } else if (value === 'Pengelola PKS') {
+          updated.wilayah = '';
+          updated.samsat = '';
+        }
+      }
+
+      return updated;
+    });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setSuccessMessage('');
 
-    if (!formData.namaLengkap || !formData.email || !formData.password) {
+    if (!formData.namaLengkap || !formData.email || !formData.password || !formData.jabatan) {
       setError('Harap lengkapi seluruh kolom wajib.');
+      return;
+    }
+
+    if (formData.jabatan === 'Petugas JR' && (!formData.wilayah || !formData.samsat)) {
+      setError('Petugas JR wajib memilih Wilayah dan Samsat.');
+      return;
+    }
+
+    if (formData.jabatan === 'Pengelola PKS' && !formData.bidang) {
+      setError('Pengelola PKS wajib memilih Bidang.');
       return;
     }
 
@@ -59,22 +114,25 @@ export const RegisterPage = () => {
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
+    try {
+      await authService.registerSelf(formData);
+      setShowSuccessModal(true);
+    } catch (err) {
+      setError(err.message || 'Gagal mengirim pendaftaran.');
+    } finally {
       setIsSubmitting(false);
-      setSuccessMessage('Pengajuan registrasi akun berhasil dikirim! Silakan tunggu konfirmasi Administrator Utama.');
-      setTimeout(() => {
-        navigate('/login');
-      }, 2500);
-    }, 1000);
+    }
   };
+
+  const availableSamsatList = formData.wilayah ? SAMSAT_OPTIONS[formData.wilayah] || [] : [];
 
   return (
     <div className="min-h-screen bg-white flex flex-col lg:flex-row font-sans text-slate-800">
       
-      {/* ================= LEFT HERO SECTION (MATCHING SCREENSHOT) ================= */}
+      {/* ================= LEFT HERO SECTION ================= */}
       <div className="lg:w-5/12 bg-[#E9F0F8] p-8 lg:p-12 flex flex-col justify-between relative overflow-hidden min-h-[450px] lg:min-h-screen shrink-0">
         
-        {/* Background Decorative Geometric Overlay */}
+        {/* Decorative Graphic Overlay */}
         <div className="absolute inset-0 opacity-40 pointer-events-none">
           <svg className="w-full h-full" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0 0L800 400V800H0V0Z" fill="url(#grad1_reg)" fillOpacity="0.15" />
@@ -114,7 +172,7 @@ export const RegisterPage = () => {
           </p>
         </div>
 
-        {/* Bottom Security Card Info Box (Matching Screenshot) */}
+        {/* Bottom Security Card Info Box */}
         <div className="z-10">
           <div className="bg-white/60 backdrop-blur-md border border-slate-200/80 rounded-2xl p-4 max-w-md shadow-2xs space-y-1.5">
             <div className="flex items-center space-x-2 text-xs font-bold text-slate-800">
@@ -131,10 +189,9 @@ export const RegisterPage = () => {
 
       </div>
 
-      {/* ================= RIGHT FORM SECTION (MATCHING SCREENSHOT) ================= */}
+      {/* ================= RIGHT FORM SECTION ================= */}
       <div className="lg:w-7/12 bg-white p-6 sm:p-10 lg:p-12 flex flex-col justify-between items-center overflow-y-auto min-h-screen">
         
-        {/* Top Spacer */}
         <div className="w-full" />
 
         {/* Center Main Registration Form Content */}
@@ -150,7 +207,7 @@ export const RegisterPage = () => {
             </p>
           </div>
 
-          {/* Top Blue Alert Banner (Matching Screenshot) */}
+          {/* Top Blue Alert Banner */}
           <div className="p-4 rounded-2xl bg-[#EEF4FF] border border-blue-200 border-l-4 border-l-[#00529C] text-xs text-blue-900 flex items-start space-x-3 shadow-2xs">
             <ShieldCheck className="w-5 h-5 text-[#00529C] shrink-0 mt-0.5" />
             <div className="space-y-0.5 flex-1">
@@ -160,14 +217,6 @@ export const RegisterPage = () => {
               </p>
             </div>
           </div>
-
-          {/* Success Message Banner */}
-          {successMessage && (
-            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center space-x-2.5 animate-in fade-in">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-              <span className="font-bold">{successMessage}</span>
-            </div>
-          )}
 
           {/* Failure Error Alert Banner */}
           {error && (
@@ -181,39 +230,24 @@ export const RegisterPage = () => {
           <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xl">
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
               
-              {/* Row 1: Nama Lengkap & NIP / NIK */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="block font-bold text-slate-800">Nama Lengkap</label>
-                  <input
-                    type="text"
-                    name="namaLengkap"
-                    required
-                    value={formData.namaLengkap}
-                    onChange={handleChange}
-                    placeholder="Masukkan nama lengkap"
-                    className="w-full bg-[#F8FAFC] border border-slate-200 rounded-xl px-3.5 py-2.5 font-medium text-slate-800 outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-400"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="block font-bold text-slate-800">NIP / NIK</label>
-                  <input
-                    type="text"
-                    name="nipNik"
-                    required
-                    value={formData.nipNik}
-                    onChange={handleChange}
-                    placeholder="Masukkan NIP atau NIK"
-                    className="w-full bg-[#F8FAFC] border border-slate-200 rounded-xl px-3.5 py-2.5 font-medium text-slate-800 outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-400"
-                  />
-                </div>
+              {/* Row 1: Nama Lengkap */}
+              <div className="space-y-1">
+                <label className="block font-bold text-slate-800">Nama Lengkap *</label>
+                <input
+                  type="text"
+                  name="namaLengkap"
+                  required
+                  value={formData.namaLengkap}
+                  onChange={handleChange}
+                  placeholder="Masukkan nama lengkap"
+                  className="w-full bg-[#F8FAFC] border border-slate-200 rounded-xl px-3.5 py-2.5 font-medium text-slate-800 outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-400"
+                />
               </div>
 
               {/* Row 2: Email & Nomor HP */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="block font-bold text-slate-800">Email</label>
+                  <label className="block font-bold text-slate-800">Email *</label>
                   <input
                     type="email"
                     name="email"
@@ -226,11 +260,10 @@ export const RegisterPage = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block font-bold text-slate-800">Nomor HP</label>
+                  <label className="block font-bold text-slate-800">Nomor HP / WhatsApp</label>
                   <input
                     type="text"
                     name="nomorHp"
-                    required
                     value={formData.nomorHp}
                     onChange={handleChange}
                     placeholder="08xx xxxx xxxx"
@@ -239,58 +272,103 @@ export const RegisterPage = () => {
                 </div>
               </div>
 
-              {/* Row 3: Jabatan & Unit Kerja */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="block font-bold text-slate-800">Jabatan</label>
-                  <input
-                    type="text"
-                    name="jabatan"
-                    required
-                    value={formData.jabatan}
-                    onChange={handleChange}
-                    placeholder="Contoh: Staff IT"
-                    className="w-full bg-[#F8FAFC] border border-slate-200 rounded-xl px-3.5 py-2.5 font-medium text-slate-800 outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-400"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="block font-bold text-slate-800">Unit Kerja</label>
-                  <input
-                    type="text"
-                    name="unitKerja"
-                    required
-                    value={formData.unitKerja}
-                    onChange={handleChange}
-                    placeholder="Masukkan unit kerja"
-                    className="w-full bg-[#F8FAFC] border border-slate-200 rounded-xl px-3.5 py-2.5 font-medium text-slate-800 outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-400"
-                  />
-                </div>
-              </div>
-
-              {/* Row 4: Peran (Role) Select Dropdown */}
-              <div className="space-y-1">
-                <label className="block font-bold text-slate-800">Peran (Role)</label>
+              {/* Row 3: Jabatan */}
+              <div>
+                <label className="block font-bold text-slate-800">Jabatan (Role) *</label>
                 <select
-                  name="role"
+                  name="jabatan"
                   required
-                  value={formData.role}
+                  value={formData.jabatan}
                   onChange={handleChange}
                   className="w-full bg-[#F8FAFC] border border-slate-200 rounded-xl px-3.5 py-2.5 font-medium text-slate-800 outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 >
-                  <option value="">Pilih Peran Anda</option>
-                  <option value="petugas_jr">Petugas JR</option>
-                  <option value="pengelola_pks">Pengelola PKS</option>
-                  <option value="kabag">Kepala Bagian (Kabag)</option>
-                  <option value="pimpinan">Pimpinan Kanwil</option>
-                  <option value="admin_utama">Administrator Utama</option>
+                  <option value="">Pilih Jabatan Anda</option>
+                  <option value="Petugas JR">Petugas JR</option>
+                  <option value="Pengelola PKS">Pengelola PKS</option>
                 </select>
               </div>
 
+              {/* DYNAMIC FIELDS CONDITIONAL ON JABATAN */}
+              
+              {/* IF PETUGAS JR: Show Wilayah & Samsat (Cascading Dropdowns) */}
+              {formData.jabatan === 'Petugas JR' && (
+                <div className="p-4 rounded-2xl bg-[#EEF4FF] border border-blue-100 space-y-3 animate-in fade-in">
+                  <p className="text-[11px] font-extrabold text-[#00529C] uppercase tracking-wider">
+                    Lokasi Penugasan (Khusus Petugas JR) *
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    
+                    {/* Wilayah Dropdown */}
+                    <div className="space-y-1">
+                      <label className="block font-bold text-slate-800">Wilayah *</label>
+                      <select
+                        name="wilayah"
+                        required
+                        value={formData.wilayah}
+                        onChange={handleChange}
+                        className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-blue-500/20"
+                      >
+                        <option value="">Pilih Wilayah</option>
+                        <option value="Wilayah Riau">Wilayah Riau</option>
+                        <option value="Wilayah Kepulauan Riau">Wilayah Kepulauan Riau</option>
+                        <option value="Wilayah Sumatera Barat">Wilayah Sumatera Barat</option>
+                      </select>
+                    </div>
+
+                    {/* Samsat Dropdown (Cascading) */}
+                    <div className="space-y-1">
+                      <label className="block font-bold text-slate-800">Samsat *</label>
+                      <select
+                        name="samsat"
+                        required
+                        disabled={!formData.wilayah}
+                        value={formData.samsat}
+                        onChange={handleChange}
+                        className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-100 disabled:text-slate-400"
+                      >
+                        <option value="">
+                          {formData.wilayah ? 'Pilih Samsat' : 'Pilih Wilayah Terlebih Dahulu'}
+                        </option>
+                        {availableSamsatList.map((samsatItem) => (
+                          <option key={samsatItem} value={samsatItem}>
+                            {samsatItem}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                  </div>
+                </div>
+              )}
+
+              {/* IF PENGELOLA PKS: Show Bidang Selection */}
+              {formData.jabatan === 'Pengelola PKS' && (
+                <div className="p-4 rounded-2xl bg-[#EEF4FF] border border-blue-100 space-y-3 animate-in fade-in">
+                  <p className="text-[11px] font-extrabold text-[#00529C] uppercase tracking-wider">
+                    Spesialisasi Bidang (Khusus Pengelola PKS) *
+                  </p>
+                  <div className="space-y-1">
+                    <label className="block font-bold text-slate-800">Bidang PKS *</label>
+                    <select
+                      name="bidang"
+                      required
+                      value={formData.bidang}
+                      onChange={handleChange}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-blue-500/20"
+                    >
+                      <option value="">Pilih Bidang PKS</option>
+                      <option value="Sumbangan Wajib (SW)">Sumbangan Wajib (SW)</option>
+                      <option value="Iuran Wajib (IW)">Iuran Wajib (IW)</option>
+                      <option value="Pelayanan">Pelayanan</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
               {/* Row 5: Password & Konfirmasi Password */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                 <div className="space-y-1">
-                  <label className="block font-bold text-slate-800">Password</label>
+                  <label className="block font-bold text-slate-800">Password *</label>
                   <div className="relative">
                     <input
                       type={showPassword ? 'text' : 'password'}
@@ -312,7 +390,7 @@ export const RegisterPage = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block font-bold text-slate-800">Konfirmasi Password</label>
+                  <label className="block font-bold text-slate-800">Konfirmasi Password *</label>
                   <div className="relative">
                     <input
                       type={showConfirmPassword ? 'text' : 'password'}
@@ -349,7 +427,7 @@ export const RegisterPage = () => {
                 </label>
               </div>
 
-              {/* Submit Buttons Stack (Matching Screenshot) */}
+              {/* Submit Buttons Stack */}
               <div className="space-y-3 pt-3">
                 <button
                   type="submit"
@@ -375,12 +453,48 @@ export const RegisterPage = () => {
 
         </div>
 
-        {/* Footer Copyright at Bottom Right */}
+        {/* Footer Copyright */}
         <div className="w-full text-center text-[11px] text-slate-400 font-medium py-3">
           © 2026 PT Jasa Raharja. Seluruh Hak Cipta Dilindungi.
         </div>
 
       </div>
+
+      {/* POPUP MODAL SUKSES REGISTRASI (MATCHING USER WORKFLOW REQUIREMENT) */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 font-sans animate-in fade-in">
+          <div className="bg-white rounded-3xl border border-slate-200 max-w-md w-full p-6 shadow-2xl space-y-5 text-center">
+            
+            <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-sm">
+              <CheckCircle2 className="w-9 h-9 stroke-[2.5]" />
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-lg font-extrabold text-[#001D38] tracking-tight">
+                Registrasi Berhasil!
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed max-w-xs mx-auto">
+                Pengajuan akun Anda telah diterima. Akun Anda sedang <span className="font-extrabold text-amber-600">Menunggu Persetujuan</span> dari Administrator Utama Jasa Raharja.
+              </p>
+              <div className="p-3 bg-[#EEF4FF] rounded-xl text-[11px] text-slate-700 font-medium border border-blue-100 mt-2">
+                Harap hubungi Administrator Utama penanggung jawab jika Anda membutuhkan aktivasi cepat.
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setShowSuccessModal(false);
+                navigate('/login');
+              }}
+              className="w-full py-3 bg-[#001D38] hover:bg-[#0A1828] text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer"
+            >
+              Mengerti & Kembali ke Login
+            </button>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );

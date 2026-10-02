@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Mail, Lock, Eye, EyeOff, ShieldCheck, Info, ArrowRight, AlertCircle } from 'lucide-react';
 
 export const LoginPage = () => {
-  const [email, setEmail] = useState('petugas.a@jasaraharja.test');
+  const [email, setEmail] = useState('petugas.a@jasaraharja.co.id');
   const [password, setPassword] = useState('password123');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -38,20 +38,20 @@ export const LoginPage = () => {
   return (
     <div className="min-h-screen bg-white flex flex-col lg:flex-row font-sans text-slate-800">
       
-      {/* ================= LEFT HERO SECTION (MATCHING SCREENSHOT) ================= */}
+      {/* ================= LEFT HERO SECTION ================= */}
       <div className="lg:w-1/2 bg-[#E9F0F8] p-8 lg:p-16 flex flex-col justify-between relative overflow-hidden min-h-[500px] lg:min-h-screen">
         
         {/* Background Decorative Geometric Overlay */}
         <div className="absolute inset-0 opacity-40 pointer-events-none">
           <svg className="w-full h-full" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 0L800 400V800H0V0Z" fill="url(#grad1)" fillOpacity="0.15" />
-            <path d="M400 0L800 200V600L400 400V0Z" fill="url(#grad2)" fillOpacity="0.2" />
+            <path d="M0 0L800 400V800H0V0Z" fill="url(#grad1_log)" fillOpacity="0.15" />
+            <path d="M400 0L800 200V600L400 400V0Z" fill="url(#grad2_log)" fillOpacity="0.2" />
             <defs>
-              <linearGradient id="grad1" x1="0" y1="0" x2="800" y2="800" gradientUnits="userSpaceOnUse">
+              <linearGradient id="grad1_log" x1="0" y1="0" x2="800" y2="800" gradientUnits="userSpaceOnUse">
                 <stop stopColor="#00529C" />
                 <stop offset="1" stopColor="#001D38" />
               </linearGradient>
-              <linearGradient id="grad2" x1="400" y1="0" x2="800" y2="600" gradientUnits="userSpaceOnUse">
+              <linearGradient id="grad2_log" x1="400" y1="0" x2="800" y2="600" gradientUnits="userSpaceOnUse">
                 <stop stopColor="#00A3E0" />
                 <stop offset="1" stopColor="#00529C" />
               </linearGradient>
@@ -59,7 +59,7 @@ export const LoginPage = () => {
           </svg>
         </div>
 
-        {/* Top Spacer or Small Brand Badge */}
+        {/* Top Brand Badge */}
         <div className="z-10">
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/70 backdrop-blur-md border border-slate-200/60 shadow-2xs text-xs font-extrabold text-[#00529C]">
             <span className="w-2 h-2 rounded-full bg-[#00529C] animate-pulse" />
@@ -81,7 +81,7 @@ export const LoginPage = () => {
           </p>
         </div>
 
-        {/* Bottom Security Card Info Box (Matching Screenshot) */}
+        {/* Bottom Security Card Info Box */}
         <div className="z-10">
           <div className="bg-white/60 backdrop-blur-md border border-slate-200/80 rounded-2xl p-4.5 max-w-md shadow-2xs space-y-1.5">
             <div className="flex items-center space-x-2 text-xs font-bold text-slate-800">
@@ -98,10 +98,9 @@ export const LoginPage = () => {
 
       </div>
 
-      {/* ================= RIGHT LOGIN FORM SECTION (MATCHING SCREENSHOT) ================= */}
+      {/* ================= RIGHT LOGIN FORM SECTION ================= */}
       <div className="lg:w-1/2 bg-white p-6 sm:p-12 lg:p-16 flex flex-col justify-between items-center min-h-screen">
         
-        {/* Top Spacer */}
         <div className="w-full" />
 
         {/* Center Main Login Card Box */}
@@ -121,9 +120,9 @@ export const LoginPage = () => {
 
             {/* Failure Error Alert */}
             {error && (
-              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start space-x-2 animate-in fade-in">
+              <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start space-x-2.5 animate-in fade-in">
                 <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-                <span className="font-semibold">{error}</span>
+                <span className="font-semibold leading-relaxed">{error}</span>
               </div>
             )}
 
@@ -219,43 +218,58 @@ export const LoginPage = () => {
             <div className="pt-4 border-t border-slate-100 space-y-2">
               <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider flex items-center">
                 <ShieldCheck className="w-3.5 h-3.5 mr-1 text-[#00529C]" />
-                Pilih Akun Demo (Preset):
+                Pilih Akun Uji Coba (Demo):
               </p>
               <div className="flex flex-wrap gap-1.5">
                 <button
                   type="button"
-                  onClick={() => setTestAccount('petugas.a@jasaraharja.test')}
+                  onClick={() => setTestAccount('petugas.a@jasaraharja.co.id')}
                   className="text-[10px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-bold cursor-pointer transition-colors"
                 >
                   Petugas JR
                 </button>
                 <button
                   type="button"
-                  onClick={() => setTestAccount('pengelola.a@jasaraharja.test')}
+                  onClick={() => setTestAccount('pengelola.sw@jasaraharja.co.id')}
                   className="text-[10px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-bold cursor-pointer transition-colors"
                 >
-                  Pengelola PKS
+                  Pengelola SW
                 </button>
                 <button
                   type="button"
-                  onClick={() => setTestAccount('kabag@jasaraharja.test')}
+                  onClick={() => setTestAccount('pengelola.iw@jasaraharja.co.id')}
+                  className="text-[10px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-bold cursor-pointer transition-colors"
+                >
+                  Pengelola IW
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTestAccount('kabag@jasaraharja.co.id')}
                   className="text-[10px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-bold cursor-pointer transition-colors"
                 >
                   Kabag
                 </button>
                 <button
                   type="button"
-                  onClick={() => setTestAccount('pimpinan@jasaraharja.test')}
+                  onClick={() => setTestAccount('pimpinan@jasaraharja.co.id')}
                   className="text-[10px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-bold cursor-pointer transition-colors"
                 >
                   Pimpinan
                 </button>
                 <button
                   type="button"
-                  onClick={() => setTestAccount('admin@jasaraharja.test')}
+                  onClick={() => setTestAccount('admin.sw@jasaraharja.co.id')}
                   className="text-[10px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-bold cursor-pointer transition-colors"
                 >
-                  Admin Utama
+                  Admin SW
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTestAccount('rahmat.baru@jasaraharja.co.id')}
+                  className="text-[10px] px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 font-extrabold cursor-pointer transition-colors"
+                  title="Uji coba akun belum disetujui"
+                >
+                  Tes Pending User
                 </button>
               </div>
             </div>
@@ -264,7 +278,7 @@ export const LoginPage = () => {
 
         </div>
 
-        {/* Footer Copyright at Bottom Right */}
+        {/* Footer Copyright */}
         <div className="w-full text-center text-[11px] text-slate-400 font-medium py-2">
           © 2026 PT Jasa Raharja. Seluruh Hak Cipta Dilindungi.
         </div>
