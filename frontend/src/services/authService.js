@@ -1,377 +1,304 @@
-// Standalone Mock Auth & User Management Service (Pure Frontend Focus)
+// Standalone Auth & User Management Service (Connected directly to Laravel Backend Database 'sim_pks')
 
-export const INITIAL_SEED_USERS = [
-  {
-    penggunaId: 1,
-    nama: 'Budi Santoso',
-    email: 'petugas.a@jasaraharja.co.id',
-    nipNik: '198504122010121001',
-    nomorHp: '081234567890',
-    jabatan: 'Petugas JR',
-    role: 'petugas_jr',
-    wilayah: 'Wilayah Riau',
-    samsat: 'Samsat Pekanbaru Kota',
-    unitKerja: 'Kantor Cabang Riau',
-    status: 'Aktif',
-    password: 'password123',
-    createdAt: '2026-01-10T09:00:00Z',
-  },
-  {
-    penggunaId: 2,
-    nama: 'Andi Wijaya (Pengelola SW)',
-    email: 'pengelola.sw@jasaraharja.co.id',
-    nipNik: '198809152012011002',
-    nomorHp: '081298765432',
-    jabatan: 'Pengelola PKS',
-    role: 'pengelola_pks',
-    bidang: 'Sumbangan Wajib (SW)',
-    unitKerja: 'Divisi Operasional',
-    status: 'Aktif',
-    password: 'password123',
-    createdAt: '2026-01-11T10:00:00Z',
-  },
-  {
-    penggunaId: 3,
-    nama: 'Rina Sugiarto (Pengelola IW)',
-    email: 'pengelola.iw@jasaraharja.co.id',
-    nipNik: '199003222014022003',
-    nomorHp: '081311223344',
-    jabatan: 'Pengelola PKS',
-    role: 'pengelola_pks',
-    bidang: 'Iuran Wajib (IW)',
-    unitKerja: 'Divisi Operasional',
-    status: 'Aktif',
-    password: 'password123',
-    createdAt: '2026-01-12T11:00:00Z',
-  },
-  {
-    penggunaId: 4,
-    nama: 'Hendra Pratama (Pengelola Pelayanan)',
-    email: 'pengelola.pelayanan@jasaraharja.co.id',
-    nipNik: '199105102015031004',
-    nomorHp: '081355667788',
-    jabatan: 'Pengelola PKS',
-    role: 'pengelola_pks',
-    bidang: 'Pelayanan',
-    unitKerja: 'Divisi Pelayanan',
-    status: 'Aktif',
-    password: 'password123',
-    createdAt: '2026-01-13T14:00:00Z',
-  },
-  {
-    penggunaId: 5,
-    nama: 'Siska Wijaya, S.E., M.M.',
-    email: 'kabag@jasaraharja.co.id',
-    nipNik: '198011252005012001',
-    nomorHp: '081122334455',
-    jabatan: 'Kepala Bagian Operasional',
-    role: 'kabag',
-    bidang: 'Lintas Bidang',
-    unitKerja: 'Bagian Operasional Kanwil',
-    status: 'Aktif',
-    password: 'password123',
-    createdAt: '2026-01-05T08:00:00Z',
-  },
-  {
-    penggunaId: 6,
-    nama: 'Drs. H. M. Yusuf, M.Si.',
-    email: 'pimpinan@jasaraharja.co.id',
-    nipNik: '197508181998031001',
-    nomorHp: '081199887766',
-    jabatan: 'Pimpinan Kanwil',
-    role: 'pimpinan',
-    bidang: 'Lintas Bidang',
-    unitKerja: 'Kantor Wilayah',
-    status: 'Aktif',
-    password: 'password123',
-    createdAt: '2026-01-01T08:00:00Z',
-  },
-  {
-    penggunaId: 7,
-    nama: 'Administrator SW',
-    email: 'admin.sw@jasaraharja.co.id',
-    nipNik: '198701012009011005',
-    nomorHp: '081200112233',
-    jabatan: 'Administrator Utama',
-    role: 'admin_utama',
-    bidang: 'Sumbangan Wajib (SW)',
-    unitKerja: 'Subbag TI & Admin',
-    status: 'Aktif',
-    password: 'password123',
-    createdAt: '2026-01-01T08:00:00Z',
-  },
-  {
-    penggunaId: 8,
-    nama: 'Administrator IW',
-    email: 'admin.iw@jasaraharja.co.id',
-    nipNik: '198701012009011006',
-    nomorHp: '081200112244',
-    jabatan: 'Administrator Utama',
-    role: 'admin_utama',
-    bidang: 'Iuran Wajib (IW)',
-    unitKerja: 'Subbag TI & Admin',
-    status: 'Aktif',
-    password: 'password123',
-    createdAt: '2026-01-01T08:00:00Z',
-  },
-  {
-    penggunaId: 9,
-    nama: 'Administrator Pelayanan',
-    email: 'admin.pelayanan@jasaraharja.co.id',
-    nipNik: '198701012009011007',
-    nomorHp: '081200112255',
-    jabatan: 'Administrator Utama',
-    role: 'admin_utama',
-    bidang: 'Pelayanan',
-    unitKerja: 'Subbag TI & Admin',
-    status: 'Aktif',
-    password: 'password123',
-    createdAt: '2026-01-01T08:00:00Z',
-  },
-  {
-    penggunaId: 10,
-    nama: 'Rahmat Hidayat (Pendaftar Baru)',
-    email: 'rahmat.baru@jasaraharja.co.id',
-    nipNik: '199506152020011008',
-    nomorHp: '081399881122',
-    jabatan: 'Petugas JR',
-    role: 'petugas_jr',
-    wilayah: 'Wilayah Riau',
-    samsat: 'Samsat Pekanbaru Selatan',
-    unitKerja: 'Samsat Pekanbaru',
-    status: 'Menunggu Persetujuan',
-    password: 'password123',
-    createdAt: '2026-09-30T10:15:00Z',
-  }
-];
+// Automatically purge legacy frontend mock users from localStorage to prevent cached data conflicts
+if (typeof window !== 'undefined') {
+  localStorage.removeItem('pks_app_users');
+}
 
-const getStoredUsers = () => {
-  const saved = localStorage.getItem('pks_app_users');
-  if (!saved) {
-    localStorage.setItem('pks_app_users', JSON.stringify(INITIAL_SEED_USERS));
-    return INITIAL_SEED_USERS;
-  }
-  try {
-    return JSON.parse(saved);
-  } catch (e) {
-    return INITIAL_SEED_USERS;
-  }
-};
-
-const setStoredUsers = (users) => {
-  localStorage.setItem('pks_app_users', JSON.stringify(users));
-};
+export const API_BASE_URL = 'http://localhost:8000/api';
 
 export const authService = {
-  // Login Verification
-  login: async (email, password) => {
-    const users = getStoredUsers();
-    const cleanEmail = (email || '').trim().toLowerCase();
-    
-    // Find matching user
-    const foundUser = users.find(
-      (u) => u.email.toLowerCase() === cleanEmail || u.email.split('@')[0].toLowerCase() === cleanEmail
-    );
+  // 1. Login Verification (Connected to Laravel Backend API)
+  login: async (email, password, rememberMe = false) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/autentikasi/masuk`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, ingat_saya: rememberMe }),
+      });
 
-    if (!foundUser) {
-      return {
-        success: false,
-        message: 'Email atau password yang Anda masukkan tidak terdaftar.',
-      };
+      const resData = await response.json();
+
+      if (response.ok && resData.status === 'sukses') {
+        const { token_akses, token_ingat_saya, pengguna } = resData.data;
+
+        // Save active session in localStorage
+        localStorage.setItem('pks_user', JSON.stringify(pengguna));
+        localStorage.setItem('pks_auth_token', token_akses);
+
+        // If Remember Me is checked, save remember token & email
+        if (rememberMe && token_ingat_saya) {
+          localStorage.setItem('pks_remember_token', token_ingat_saya);
+          localStorage.setItem('pks_remembered_email', email);
+        } else {
+          localStorage.removeItem('pks_remember_token');
+          localStorage.removeItem('pks_remembered_email');
+        }
+
+        return {
+          success: true,
+          data: {
+            token: token_akses,
+            pengguna: pengguna,
+          },
+        };
+      } else {
+        throw new Error(resData.pesan || 'Email atau password salah.');
+      }
+    } catch (err) {
+      if (err.message) throw err;
+      throw new Error('Gagal terhubung ke server backend API Laravel.');
     }
-
-    // Check status approval
-    if (foundUser.status === 'Menunggu Persetujuan') {
-      return {
-        success: false,
-        message: 'Akun Anda masih menunggu persetujuan Administrator Utama. Silakan hubungi Administrator Utama Jasa Raharja.',
-      };
-    }
-
-    if (foundUser.status === 'Ditolak') {
-      return {
-        success: false,
-        message: 'Pengajuan akun Anda telah ditolak oleh Administrator Utama. Silakan hubungi Admin Jasa Raharja.',
-      };
-    }
-
-    if (foundUser.status === 'Nonaktif') {
-      return {
-        success: false,
-        message: 'Akun Anda saat ini dinonaktifkan. Silakan hubungi Administrator Utama.',
-      };
-    }
-
-    // Check password
-    if (password !== foundUser.password && password !== 'password123') {
-      return {
-        success: false,
-        message: 'Email atau password yang Anda masukkan salah.',
-      };
-    }
-
-    return {
-      success: true,
-      data: {
-        token: `mock-jwt-token-${foundUser.penggunaId}-${Date.now()}`,
-        pengguna: foundUser,
-      },
-    };
   },
 
+  // 2. Fetch Current Active User Profile
   me: async () => {
     const savedUser = localStorage.getItem('pks_user');
     if (savedUser) {
-      const parsed = JSON.parse(savedUser);
-      // Fresh lookup from stored users list
-      const users = getStoredUsers();
-      const current = users.find((u) => u.penggunaId === parsed.penggunaId) || parsed;
-      return { success: true, data: current };
+      try {
+        return { success: true, data: JSON.parse(savedUser) };
+      } catch (e) {
+        // Fallthrough
+      }
     }
-    return { success: true, data: INITIAL_SEED_USERS[0] };
+    return { success: false, message: 'Tidak ada sesi pengguna aktif.' };
   },
 
+  // 3. Logout
   logout: async () => {
+    try {
+      const token = localStorage.getItem('pks_auth_token');
+      if (token) {
+        await fetch(`${API_BASE_URL}/autentikasi/keluar`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
+    } catch (err) {
+      console.warn('Backend logout warning:', err);
+    } finally {
+      localStorage.removeItem('pks_user');
+      localStorage.removeItem('pks_auth_token');
+      localStorage.removeItem('pks_remember_token');
+    }
     return { success: true };
   },
 
-  // CRUD Operations for Administrator Utama & Registrasi
+  // 4. Get All Users (Administrator Utama View)
   getAllUsers: async () => {
-    return {
-      success: true,
-      data: getStoredUsers(),
-    };
+    try {
+      const response = await fetch(`${API_BASE_URL}/pengguna`);
+      const resData = await response.json();
+
+      if (response.ok && resData.status === 'sukses') {
+        return {
+          success: true,
+          data: resData.data,
+        };
+      } else {
+        throw new Error(resData.pesan || 'Gagal mengambil daftar pengguna.');
+      }
+    } catch (err) {
+      console.error('Error in getAllUsers:', err);
+      return { success: false, data: [], message: err.message };
+    }
   },
 
+  // 5. Registrasi Mandiri Pengguna Baru
   registerSelf: async (formData) => {
-    const users = getStoredUsers();
-    
-    // Check duplicate email
-    const exists = users.some((u) => u.email.toLowerCase() === formData.email.trim().toLowerCase());
-    if (exists) {
-      throw new Error('Email tersebut sudah terdaftar di sistem. Gunakan email lain.');
+    try {
+      const response = await fetch(`${API_BASE_URL}/pengguna/daftar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          namaLengkap: formData.namaLengkap,
+          email: formData.email,
+          password: formData.password,
+          nomorHp: formData.nomorHp || '-',
+          jabatan: formData.jabatan,
+          role: formData.role,
+          wilayah: formData.wilayah || null,
+          samsat: formData.samsat || null,
+          bidang: formData.bidang || null,
+        }),
+      });
+
+      const resData = await response.json();
+
+      if (response.ok && resData.status === 'sukses') {
+        return {
+          success: true,
+          data: resData.data,
+          pesan: resData.pesan,
+        };
+      } else {
+        throw new Error(resData.pesan || 'Registrasi gagal.');
+      }
+    } catch (err) {
+      throw new Error(err.message || 'Gagal mengirim pendaftaran ke server.');
     }
-
-    let role = 'petugas_jr';
-    let jabatanLabel = 'Petugas JR';
-
-    if (formData.role === 'pengelola_pks' || formData.jabatan === 'Pengelola PKS') {
-      role = 'pengelola_pks';
-      jabatanLabel = 'Pengelola PKS';
-    } else if (formData.role === 'petugas_jr' || formData.jabatan === 'Petugas JR') {
-      role = 'petugas_jr';
-      jabatanLabel = 'Petugas JR';
-    }
-
-    const newUser = {
-      penggunaId: Date.now(),
-      nama: formData.namaLengkap,
-      email: formData.email.trim(),
-      nipNik: formData.nipNik || '-',
-      nomorHp: formData.nomorHp || '-',
-      jabatan: jabatanLabel,
-      role: role,
-      wilayah: formData.wilayah || null,
-      samsat: formData.samsat || null,
-      bidang: formData.bidang || null,
-      unitKerja: formData.unitKerja || 'Kantor Wilayah',
-      status: 'Menunggu Persetujuan',
-      password: formData.password || 'password123',
-      createdAt: new Date().toISOString(),
-    };
-
-    const updatedList = [newUser, ...users];
-    setStoredUsers(updatedList);
-
-    return {
-      success: true,
-      data: newUser,
-    };
   },
 
+  // 6. Tambah Pengguna Langsung oleh Admin Utama
   addUserByAdmin: async (formData) => {
-    const users = getStoredUsers();
+    try {
+      const response = await fetch(`${API_BASE_URL}/pengguna/tambah`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nama: formData.nama || formData.namaLengkap,
+          email: formData.email,
+          password: formData.password,
+          nomorHp: formData.nomorHp || '-',
+          role: formData.role,
+          wilayah: formData.wilayah || null,
+          samsat: formData.samsat || null,
+          bidang: formData.bidang || null,
+          status: formData.status || 'Aktif',
+        }),
+      });
 
-    // Check duplicate email
-    const exists = users.some((u) => u.email.toLowerCase() === formData.email.trim().toLowerCase());
-    if (exists) {
-      throw new Error('Email tersebut sudah terdaftar di sistem.');
+      const resData = await response.json();
+
+      if (response.ok && resData.status === 'sukses') {
+        return {
+          success: true,
+          data: resData.data,
+          pesan: resData.pesan,
+        };
+      } else {
+        throw new Error(resData.pesan || 'Gagal menambah pengguna.');
+      }
+    } catch (err) {
+      throw new Error(err.message || 'Gagal menambah pengguna ke server.');
     }
-
-    let role = formData.role || 'petugas_jr';
-    let jabatanLabel = formData.jabatan || 'Petugas JR';
-
-    const newUser = {
-      penggunaId: Date.now(),
-      nama: formData.nama || formData.namaLengkap,
-      email: formData.email.trim(),
-      nipNik: formData.nipNik || '-',
-      nomorHp: formData.nomorHp || '-',
-      jabatan: jabatanLabel,
-      role: role,
-      wilayah: formData.wilayah || null,
-      samsat: formData.samsat || null,
-      bidang: formData.bidang || null,
-      unitKerja: formData.unitKerja || 'Kantor Wilayah',
-      status: 'Aktif', // Directly active when added by Admin!
-      password: formData.password || 'password123',
-      createdAt: new Date().toISOString(),
-    };
-
-    const updatedList = [newUser, ...users];
-    setStoredUsers(updatedList);
-
-    return {
-      success: true,
-      data: newUser,
-    };
   },
 
+  // 7. Persetujuan Akun: Setujui
   approveUser: async (penggunaId) => {
-    const users = getStoredUsers();
-    const updated = users.map((u) => (u.penggunaId === penggunaId ? { ...u, status: 'Aktif' } : u));
-    setStoredUsers(updated);
-    return { success: true };
+    try {
+      const response = await fetch(`${API_BASE_URL}/pengguna/${penggunaId}/setujui`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const resData = await response.json();
+
+      if (response.ok && resData.status === 'sukses') {
+        return { success: true, pesan: resData.pesan };
+      } else {
+        throw new Error(resData.pesan || 'Gagal menyetujui pengguna.');
+      }
+    } catch (err) {
+      throw new Error(err.message || 'Gagal menyetujui pengguna.');
+    }
   },
 
+  // 8. Persetujuan Akun: Tolak
   rejectUser: async (penggunaId) => {
-    const users = getStoredUsers();
-    const updated = users.map((u) => (u.penggunaId === penggunaId ? { ...u, status: 'Ditolak' } : u));
-    setStoredUsers(updated);
-    return { success: true };
+    try {
+      const response = await fetch(`${API_BASE_URL}/pengguna/${penggunaId}/tolak`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const resData = await response.json();
+
+      if (response.ok && resData.status === 'sukses') {
+        return { success: true, pesan: resData.pesan };
+      } else {
+        throw new Error(resData.pesan || 'Gagal menolak pengguna.');
+      }
+    } catch (err) {
+      throw new Error(err.message || 'Gagal menolak pengguna.');
+    }
   },
 
+  // 9. Ubah Status Pengguna (Aktif / Nonaktif)
   toggleUserStatus: async (penggunaId) => {
-    const users = getStoredUsers();
-    const updated = users.map((u) =>
-      u.penggunaId === penggunaId ? { ...u, status: u.status === 'Aktif' ? 'Nonaktif' : 'Aktif' } : u
-    );
-    setStoredUsers(updated);
-    return { success: true };
+    try {
+      const response = await fetch(`${API_BASE_URL}/pengguna/${penggunaId}/ubah-status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const resData = await response.json();
+
+      if (response.ok && resData.status === 'sukses') {
+        return { success: true, pesan: resData.pesan };
+      } else {
+        throw new Error(resData.pesan || 'Gagal mengubah status pengguna.');
+      }
+    } catch (err) {
+      throw new Error(err.message || 'Gagal mengubah status pengguna.');
+    }
   },
 
+  // 10. Edit / Perbarui Data Pengguna
   updateUser: async (penggunaId, updatedFields) => {
-    const users = getStoredUsers();
-    const updated = users.map((u) => (u.penggunaId === penggunaId ? { ...u, ...updatedFields } : u));
-    setStoredUsers(updated);
-    return { success: true };
+    try {
+      const response = await fetch(`${API_BASE_URL}/pengguna/${penggunaId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedFields),
+      });
+
+      const resData = await response.json();
+
+      if (response.ok && resData.status === 'sukses') {
+        return { success: true, pesan: resData.pesan };
+      } else {
+        throw new Error(resData.pesan || 'Gagal memperbarui pengguna.');
+      }
+    } catch (err) {
+      throw new Error(err.message || 'Gagal memperbarui pengguna.');
+    }
   },
 
+  // 11. Reset Password Pengguna
   resetPassword: async (penggunaId, newPassword) => {
-    const users = getStoredUsers();
-    const updated = users.map((u) =>
-      u.penggunaId === penggunaId ? { ...u, password: newPassword || 'password123' } : u
-    );
-    setStoredUsers(updated);
-    return { success: true };
+    try {
+      const response = await fetch(`${API_BASE_URL}/pengguna/${penggunaId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: newPassword || 'password123' }),
+      });
+
+      const resData = await response.json();
+
+      if (response.ok && resData.status === 'sukses') {
+        return { success: true, pesan: resData.pesan };
+      } else {
+        throw new Error(resData.pesan || 'Gagal me-reset password.');
+      }
+    } catch (err) {
+      throw new Error(err.message || 'Gagal me-reset password.');
+    }
   },
 
+  // 12. Hapus Pengguna dari Database
   deleteUser: async (penggunaId) => {
-    const users = getStoredUsers();
-    const updated = users.filter((u) => u.penggunaId !== penggunaId);
-    setStoredUsers(updated);
-    return { success: true };
+    try {
+      const response = await fetch(`${API_BASE_URL}/pengguna/${penggunaId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const resData = await response.json();
+
+      if (response.ok && resData.status === 'sukses') {
+        return { success: true, pesan: resData.pesan };
+      } else {
+        throw new Error(resData.pesan || 'Gagal menghapus pengguna.');
+      }
+    } catch (err) {
+      throw new Error(err.message || 'Gagal menghapus pengguna.');
+    }
   },
 };
 
 export default authService;
+

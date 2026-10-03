@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Mail, Lock, Eye, EyeOff, ShieldCheck, Info, ArrowRight, AlertCircle } from 'lucide-react';
+import { Mail, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react';
 
 export const LoginPage = () => {
-  const [email, setEmail] = useState('petugas.a@jasaraharja.co.id');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
@@ -14,25 +14,28 @@ export const LoginPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  // Auto-fill Remembered Email on Load
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem('pks_remembered_email');
+    if (rememberedEmail) {
+      setEmail(rememberedEmail);
+      setRememberMe(true);
+    }
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setIsSubmitting(true);
 
     try {
-      await login(email, password);
+      await login(email, password, rememberMe);
       navigate('/dashboard');
     } catch (err) {
       setError(err.message || 'Login gagal. Periksa kembali email dan password.');
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const setTestAccount = (testEmail) => {
-    setEmail(testEmail);
-    setPassword('password123');
-    setError('');
   };
 
   return (
@@ -214,66 +217,6 @@ export const LoginPage = () => {
               </button>
             </div>
 
-            {/* PRESERVED DEMO ACCOUNTS QUICK SWITCHER BUTTONS */}
-            <div className="pt-4 border-t border-slate-100 space-y-2">
-              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider flex items-center">
-                <ShieldCheck className="w-3.5 h-3.5 mr-1 text-[#00529C]" />
-                Pilih Akun Uji Coba (Demo):
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => setTestAccount('petugas.a@jasaraharja.co.id')}
-                  className="text-[10px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-bold cursor-pointer transition-colors"
-                >
-                  Petugas JR
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTestAccount('pengelola.sw@jasaraharja.co.id')}
-                  className="text-[10px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-bold cursor-pointer transition-colors"
-                >
-                  Pengelola SW
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTestAccount('pengelola.iw@jasaraharja.co.id')}
-                  className="text-[10px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-bold cursor-pointer transition-colors"
-                >
-                  Pengelola IW
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTestAccount('kabag@jasaraharja.co.id')}
-                  className="text-[10px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-bold cursor-pointer transition-colors"
-                >
-                  Kabag
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTestAccount('pimpinan@jasaraharja.co.id')}
-                  className="text-[10px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-bold cursor-pointer transition-colors"
-                >
-                  Pimpinan
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTestAccount('admin.sw@jasaraharja.co.id')}
-                  className="text-[10px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-bold cursor-pointer transition-colors"
-                >
-                  Admin SW
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTestAccount('rahmat.baru@jasaraharja.co.id')}
-                  className="text-[10px] px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 font-extrabold cursor-pointer transition-colors"
-                  title="Uji coba akun belum disetujui"
-                >
-                  Tes Pending User
-                </button>
-              </div>
-            </div>
-
           </div>
 
         </div>
@@ -290,3 +233,4 @@ export const LoginPage = () => {
 };
 
 export default LoginPage;
+
