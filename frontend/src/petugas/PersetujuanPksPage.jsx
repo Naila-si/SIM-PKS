@@ -27,7 +27,7 @@ export const PersetujuanPksPage = () => {
     setLoading(true);
     try {
       const res = await pksService.getPksList({ per_page: 100 });
-      if (res.status === 'success' && res.data) {
+      if (res.success && res.data) {
         const rawData = Array.isArray(res.data) ? res.data : [];
         if (rawData.length > 0) {
           const mapped = rawData.map((item, idx) => ({

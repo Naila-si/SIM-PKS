@@ -53,35 +53,8 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
 
   if (!isOpen) return null;
 
-  // Mock data matching Image 4 fallback
-  const mockPks = {
-    nomorPKS: 'PKS/JR/VIII/2023/0042',
-    bidang: 'Pelayanan Klaim & Rumah Sakit',
-    jenisPKS: 'Kerjasama Strategis Nasional',
-    tanggalMulai: '15 Agu 2023',
-    tanggalBerakhir: '15 Agu 2025',
-    perusahaan: 'RSUD Bhayangkara Pusat',
-    nomorTelepon: '+62 21 5550 1234',
-    alamat: 'Jl. Sultan Hasanuddin No. 3, Kebayoran Baru, Jakarta Selatan, 12110',
-    penanggungJawab: 'dr. Ahmad Santoso, Sp.OT',
-    jabatan: 'Direktur Operasional',
-    email: 'kerjasama@bhsyangkara-rs.id',
-    statusPks: 'Aktif',
-    statusPersetujuan: 'Disetujui',
-    pengelola: 'Budi Darmawan (Admin Pusat)',
-    tanggalDibuat: '12 Agu 2023, 09:15 WIB',
-    terakhirDiperbarui: '25 Okt 2023, 11:30 WIB',
-    catatanInternal: 'Prioritas utama untuk integrasi sistem klaim online di bulan November.',
-  };
-
-  const data = pks || mockPks;
-
-  const mockAdendum = [
-    { id: 1, nomor: 'ADN/01/VIII/2023', tanggal: '10 Sep 2023', jenis: 'Penyesuaian Tarif Klaim', status: 'Selesai' },
-    { id: 2, nomor: 'ADN/02/X/2023', tanggal: '24 Okt 2023', jenis: 'Perubahan PIC Operasional', status: 'Selesai' },
-  ];
-
-  const displayAdendum = adendumList.length > 0 ? adendumList : mockAdendum;
+  const data = pks || {};
+  const displayAdendum = adendumList;
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 font-sans">
@@ -94,11 +67,11 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
             <div className="flex items-center space-x-2">
               <span className="px-3 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-100 text-emerald-700 flex items-center">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5" />
-                {data.statusPks || 'Aktif'}
+                {data.status_pks || data.statusPks || 'Draf'}
               </span>
               <span className="px-3 py-0.5 rounded-full text-[11px] font-extrabold bg-blue-100 text-blue-700 flex items-center">
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5" />
-                {data.statusPersetujuan || 'Disetujui'}
+                {data.status_persetujuan || data.statusPersetujuan || 'Draf'}
               </span>
             </div>
           </div>
@@ -132,28 +105,28 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">NOMOR PKS</p>
                     <p className="font-bold text-slate-900 text-xs mt-0.5">
-                      {data.nomorPKS || 'PKS/JR/VIII/2023/0042'}
+                      {data.nomor_pks || data.nomorPKS || '-'}
                     </p>
                   </div>
 
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">BIDANG</p>
-                    <p className="font-semibold text-slate-800 mt-0.5">{data.bidang || 'Pelayanan Klaim & Rumah Sakit'}</p>
+                    <p className="font-semibold text-slate-800 mt-0.5">{data.bidang || '-'}</p>
                   </div>
 
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">JENIS PKS</p>
-                    <p className="font-semibold text-slate-800 mt-0.5">{data.jenisPKS || 'Kerjasama Strategis Nasional'}</p>
+                    <p className="font-semibold text-slate-800 mt-0.5">{data.jenis_pks || data.jenisPKS || '-'}</p>
                   </div>
 
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">TGL MULAI</p>
-                    <p className="font-semibold text-slate-800 mt-0.5">{data.tanggalMulai || '15 Agu 2023'}</p>
+                    <p className="font-semibold text-slate-800 mt-0.5">{data.tanggal_mulai || data.tanggalMulai || '-'}</p>
                   </div>
 
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">TGL BERAKHIR</p>
-                    <p className="font-semibold text-slate-800 mt-0.5">{data.tanggalBerakhir || '15 Agu 2025'}</p>
+                    <p className="font-semibold text-slate-800 mt-0.5">{data.tanggal_berakhir || data.tanggalBerakhir || '-'}</p>
                   </div>
                 </div>
               </div>
@@ -171,38 +144,35 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">NAMA PERUSAHAAN/INSTANSI</p>
                     <p className="font-extrabold text-slate-900 text-xs mt-0.5">
-                      {data.perusahaan || data.mitra?.namaPerusahaan || 'RSUD Bhayangkara Pusat'}
+                      {data.mitra?.nama_mitra || '-'}
                     </p>
                   </div>
 
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">NOMOR TELEPON</p>
                     <p className="font-semibold text-slate-800 mt-0.5">
-                      {data.nomorTelepon || data.mitra?.kontak || '+62 21 5550 1234'}
+                      {data.mitra?.no_hp_pengelola || data.nomorTelepon || data.mitra?.kontak || '-'}
                     </p>
                   </div>
 
                   <div className="col-span-2">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ALAMAT INSTANSI</p>
                     <p className="font-medium text-slate-700 mt-0.5 leading-relaxed">
-                      {data.alamat || data.mitra?.alamat || 'Jl. Sultan Hasanuddin No. 3, Kebayoran Baru, Jakarta Selatan, 12110'}
+                      {data.mitra?.alamat_mitra || data.alamat || data.mitra?.alamat || '-'}
                     </p>
                   </div>
 
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">PENANGGUNG JAWAB</p>
                     <p className="font-semibold text-slate-800 mt-0.5">
-                      {data.penanggungJawab || 'dr. Ahmad Santoso, Sp.OT'}
-                    </p>
-                    <p className="text-[10px] text-slate-400 italic font-medium">
-                      {data.jabatan || 'Direktur Operasional'}
+                      {data.mitra?.nama_pengelola || data.penanggungJawab || '-'}
                     </p>
                   </div>
 
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">EMAIL</p>
                     <p className="font-semibold text-blue-600 mt-0.5">
-                      {data.email || 'kerjasama@bhsyangkara-rs.id'}
+                      {data.mitra?.email_pengelola || data.email || '-'}
                     </p>
                   </div>
                 </div>
@@ -220,9 +190,9 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
 
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs space-y-1">
                     <p className="font-extrabold text-slate-900 truncate">
-                      PKS_RSUD_Bhayangkara_Draft_V14.docx
+                      {data.url_berkas ? data.url_berkas.split('/').pop() : '-'}
                     </p>
-                    <p className="text-[10px] text-slate-400">Generated: 12 Agu 2023, 14:20 WIB</p>
+                    <p className="text-[10px] text-slate-400">Terakhir diperbarui: {data.updated_at ? new Date(data.updated_at).toLocaleDateString('id-ID') : '-'}</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 pt-1">
@@ -297,33 +267,41 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {displayAdendum.map((ad, idx) => (
-                        <tr key={ad.adendumId || ad.id || idx} className="hover:bg-slate-50/70 font-medium">
-                          <td className="px-3 py-3 font-bold text-slate-900">
-                            {ad.nomorAdendum || ad.nomor || 'ADN/01/VIII/2023'}
-                          </td>
-                          <td className="px-3 py-3 text-[11px] whitespace-nowrap text-slate-600">
-                            {ad.tanggal || (ad.tanggalMulai ? new Date(ad.tanggalMulai).toLocaleDateString('id-ID') : '10 Sep 2023')}
-                          </td>
-                          <td className="px-3 py-3 max-w-xs text-slate-800 font-semibold">
-                            {ad.ruangLingkupPerubahan || ad.jenis || 'Penyesuaian Tarif Klaim'}
-                          </td>
-                          <td className="px-3 py-3 whitespace-nowrap">
-                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                              Selesai
-                            </span>
-                          </td>
-                          <td className="px-3 py-3 text-center whitespace-nowrap">
-                            <button
-                              type="button"
-                              onClick={() => setViewingAdendum(ad)}
-                              className="text-xs font-bold text-blue-600 hover:underline cursor-pointer"
-                            >
-                              Detail
-                            </button>
+                      {displayAdendum && displayAdendum.length > 0 ? (
+                        displayAdendum.map((ad, idx) => (
+                          <tr key={ad.adendumId || ad.id || idx} className="hover:bg-slate-50/70 font-medium">
+                            <td className="px-3 py-3 font-bold text-slate-900">
+                              {ad.nomor_adendum || ad.nomorAdendum || ad.nomor || '-'}
+                            </td>
+                            <td className="px-3 py-3 text-[11px] whitespace-nowrap text-slate-600">
+                              {(ad.tanggal_mulai || ad.tanggalMulai) ? new Date(ad.tanggal_mulai || ad.tanggalMulai).toLocaleDateString('id-ID') : '-'}
+                            </td>
+                            <td className="px-3 py-3 max-w-xs text-slate-800 font-semibold">
+                              {ad.ruang_lingkup || ad.ruangLingkupPerubahan || ad.jenis || '-'}
+                            </td>
+                            <td className="px-3 py-3 whitespace-nowrap">
+                              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                Selesai
+                              </span>
+                            </td>
+                            <td className="px-3 py-3 text-center whitespace-nowrap">
+                              <button
+                                type="button"
+                                onClick={() => setViewingAdendum(ad)}
+                                className="text-xs font-bold text-blue-600 hover:underline cursor-pointer"
+                              >
+                                Detail
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="5" className="px-3 py-6 text-center text-slate-400 font-medium">
+                            Belum ada adendum.
                           </td>
                         </tr>
-                      ))}
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -349,7 +327,7 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
                     </div>
                     <div>
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Pengelola PKS</p>
-                      <p className="font-bold text-slate-900 mt-0.5">{data.pengelola || 'Budi Darmawan (Admin Pusat)'}</p>
+                      <p className="font-bold text-slate-900 mt-0.5">{data.pengguna?.nama_pengguna || data.pengelola || '-'}</p>
                     </div>
                   </div>
 
@@ -359,7 +337,9 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
                     </div>
                     <div>
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tanggal Dibuat</p>
-                      <p className="font-semibold text-slate-800 mt-0.5">{data.tanggalDibuat || '12 Agu 2023, 09:15 WIB'}</p>
+                      <p className="font-semibold text-slate-800 mt-0.5">
+                        {data.created_at ? new Date(data.created_at).toLocaleString('id-ID', {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit'}) : '-'}
+                      </p>
                     </div>
                   </div>
 
@@ -369,7 +349,9 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
                     </div>
                     <div>
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Terakhir Diperbarui</p>
-                      <p className="font-semibold text-slate-800 mt-0.5">{data.terakhirDiperbarui || '25 Okt 2023, 11:30 WIB'}</p>
+                      <p className="font-semibold text-slate-800 mt-0.5">
+                        {data.updated_at ? new Date(data.updated_at).toLocaleString('id-ID', {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit'}) : '-'}
+                      </p>
                     </div>
                   </div>
 
@@ -377,7 +359,7 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
                   <div className="p-3.5 rounded-xl bg-[#EEF4FF] border border-blue-100/80 text-xs space-y-1">
                     <p className="text-[10px] font-bold text-slate-500">Catatan Internal:</p>
                     <p className="text-slate-800 font-medium italic">
-                      "{data.catatanInternal || 'Prioritas utama untuk integrasi sistem klaim online di bulan November.'}"
+                      "{data.catatan_internal || data.catatanInternal || 'Tidak ada catatan'}"
                     </p>
                   </div>
                 </div>
@@ -393,41 +375,24 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
                 </div>
 
                 <div className="space-y-3.5 text-xs">
-                  {/* Step 1 */}
-                  <div className="flex items-start space-x-3">
-                    <div className="w-6 h-6 rounded-full bg-[#00529C] text-white flex items-center justify-center shrink-0 mt-0.5">
-                      <CheckCircle2 className="w-4 h-4" />
+                  {data.riwayat_persetujuan && data.riwayat_persetujuan.length > 0 ? (
+                    data.riwayat_persetujuan.map((riwayat, idx) => (
+                      <div key={idx} className="flex items-start space-x-3">
+                        <div className="w-6 h-6 rounded-full bg-[#00529C] text-white flex items-center justify-center shrink-0 mt-0.5">
+                          <CheckCircle2 className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className="font-extrabold text-slate-900">{riwayat.judul || '-'}</p>
+                          <p className="text-[11px] text-slate-500 font-medium">{riwayat.aktor || '-'}</p>
+                          <p className="text-[10px] text-slate-400">{riwayat.tanggal || '-'}</p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-4 text-slate-400 font-medium text-xs">
+                      Belum ada riwayat persetujuan.
                     </div>
-                    <div>
-                      <p className="font-extrabold text-slate-900">Pengajuan Draft</p>
-                      <p className="text-[11px] text-slate-500 font-medium">Staf Administrasi Kemitraan</p>
-                      <p className="text-[10px] text-slate-400">12 Agu 2023 • 10:00</p>
-                    </div>
-                  </div>
-
-                  {/* Step 2 */}
-                  <div className="flex items-start space-x-3">
-                    <div className="w-6 h-6 rounded-full bg-[#00529C] text-white flex items-center justify-center shrink-0 mt-0.5">
-                      <CheckCircle2 className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="font-extrabold text-slate-900">Verifikasi Dokumen</p>
-                      <p className="text-[11px] text-slate-500 font-medium">Kepala Bagian Kerjasama</p>
-                      <p className="text-[10px] text-slate-400">13 Agu 2023 • 15:45</p>
-                    </div>
-                  </div>
-
-                  {/* Step 3 (Highlighted Box Matching Image 4) */}
-                  <div className="p-3.5 rounded-xl bg-[#EEF4FF] border border-blue-100 flex items-start space-x-3">
-                    <div className="w-6 h-6 rounded-full bg-[#00529C] text-white flex items-center justify-center shrink-0 mt-0.5">
-                      <CheckCircle2 className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="font-extrabold text-slate-900">Persetujuan Pimpinan</p>
-                      <p className="text-[11px] text-slate-600 font-medium">Kepala Cabang / Divisi Pusat</p>
-                      <p className="text-[10px] text-slate-400">14 Agu 2023 • 09:20</p>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>

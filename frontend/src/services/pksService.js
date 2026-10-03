@@ -100,53 +100,41 @@ export const pksService = {
   },
 
   getPksById: async (id) => {
-    const list = loadStorage();
-    const item = list.find((p) => String(p.pksId) === String(id)) || list[0];
-    return { success: true, data: item };
+    try {
+      const res = await fetch(`http://localhost:8000/api/pks-documents/${id}`);
+      const data = await res.json();
+      return { success: true, data: data };
+    } catch (err) {
+      return { success: false, message: 'Gagal' };
+    }
   },
 
   createPks: async (data) => {
-    const list = loadStorage();
-    const newPks = {
-      pksId: Date.now(),
-      nomorPKS: `PKS/${new Date().getFullYear()}/${String(list.length + 1).padStart(3, '0')}`,
-      judulPKS: data.judulPKS || data.ruangLingkup || 'PKS Baru',
-      bidang: data.bidang || 'Pelayanan',
-      jenisPKS: data.jenisPKS || 'Kerja Sama Operasional',
-      tanggalMulai: data.tanggalMulai || new Date().toISOString().split('T')[0],
-      tanggalBerakhir: data.tanggalBerakhir || '2028-12-31',
-      statusPks: 'Draft',
-      statusPersetujuan: 'Draft',
-      statusDokumen: 'Belum Diunggah',
-      ruangLingkup: data.ruangLingkup || data.judulPKS || 'Ruang lingkup kerjasama.',
-      mitra: {
-        namaPerusahaan: data.namaPerusahaan || data.namaMitra || 'Perusahaan Mitra Baru',
-        kontak: data.teleponMitra || '08123456789',
-        alamat: data.alamatMitra || 'Alamat Perusahaan',
-        penanggungJawab: data.penanggungJawabMitra || 'Penanggung Jawab',
-        email: data.emailMitra || 'mitra@email.com',
-      },
-      pembuat: { nama: 'Petugas JR' },
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    const updated = [newPks, ...list];
-    saveStorage(updated);
-    return { success: true, data: newPks };
+    try {
+      const res = await fetch('http://localhost:8000/api/pks-documents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const newPks = await res.json();
+      return { success: true, data: newPks };
+    } catch (err) {
+      return { success: false, message: 'Gagal' };
+    }
   },
 
   updatePks: async (id, data) => {
-    const list = loadStorage();
-    let updatedItem = null;
-    const updated = list.map((p) => {
-      if (String(p.pksId) === String(id)) {
-        updatedItem = { ...p, ...data, updatedAt: new Date().toISOString() };
-        return updatedItem;
-      }
-      return p;
-    });
-    saveStorage(updated);
-    return { success: true, data: updatedItem };
+    try {
+      const res = await fetch(`http://localhost:8000/api/pks-documents/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const updatedItem = await res.json();
+      return { success: true, data: updatedItem };
+    } catch (err) {
+      return { success: false, message: 'Gagal update' };
+    }
   },
 
   deletePks: async (id) => {

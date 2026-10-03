@@ -8,11 +8,7 @@ export const ModalTolakPks = ({ isOpen, pksData, onClose, onSuccess }) => {
 
   if (!isOpen) return null;
 
-  const data = pksData || {
-    nomorPKS: 'PKS/2023/XI/0892',
-    bidang: 'Teknologi Informasi',
-    perusahaan: 'PT Integritas Nusantara Jaya',
-  };
+  const data = pksData || {};
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -50,16 +46,16 @@ export const ModalTolakPks = ({ isOpen, pksData, onClose, onSuccess }) => {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">NOMOR PKS</p>
-                <p className="font-extrabold text-[#001D38] text-xs mt-0.5">{data.nomorPKS}</p>
+                <p className="font-extrabold text-[#001D38] text-xs mt-0.5">{data.nomor_pks || data.nomorPKS || '-'}</p>
               </div>
               <div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">BIDANG</p>
-                <p className="font-extrabold text-[#001D38] text-xs mt-0.5">{data.bidang}</p>
+                <p className="font-extrabold text-[#001D38] text-xs mt-0.5">{data.bidang || '-'}</p>
               </div>
             </div>
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">PERUSAHAAN / INSTANSI</p>
-              <p className="font-extrabold text-[#001D38] text-xs mt-0.5">{data.perusahaan}</p>
+              <p className="font-extrabold text-[#001D38] text-xs mt-0.5">{data.mitra?.nama_mitra || data.perusahaan || '-'}</p>
             </div>
           </div>
 

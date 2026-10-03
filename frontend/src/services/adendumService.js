@@ -4,38 +4,14 @@ export const adendumService = {
   getAdendumListByPks: async (pksId) => {
     return {
       success: true,
-      data: [
-        {
-          adendumId: 1,
-          nomorAdendum: 'AD/2024/0045/JR/X',
-          nomorPKS: 'PKS/2022/JR/1102',
-          jenisPerubahan: 'Perpanjangan Jangka Waktu',
-          ruangLingkupPerubahan: 'Para Pihak sepakat untuk memperpanjang jangka waktu perjanjian selama 12 bulan.',
-          tanggalMulai: '2025-01-01',
-          tanggalBerakhir: '2025-12-31',
-          status: 'Draft',
-          statusPersetujuan: 'Draft',
-          createdAt: new Date().toISOString(),
-        }
-      ],
+      data: [],
     };
   },
 
   getAdendumById: async (id) => {
     return {
       success: true,
-      data: {
-        adendumId: id,
-        nomorAdendum: 'AD/2024/0045/JR/X',
-        nomorPKS: 'PKS/2022/JR/1102',
-        jenisPerubahan: 'Perpanjangan Jangka Waktu',
-        ruangLingkupPerubahan: 'Para Pihak sepakat untuk memperpanjang jangka waktu perjanjian selama 12 bulan.',
-        tanggalMulai: '2025-01-01',
-        tanggalBerakhir: '2025-12-31',
-        status: 'Draft',
-        statusPersetujuan: 'Draft',
-        createdAt: new Date().toISOString(),
-      },
+      data: null,
     };
   },
 

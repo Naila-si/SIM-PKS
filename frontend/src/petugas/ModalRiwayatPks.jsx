@@ -10,103 +10,9 @@ export const ModalRiwayatPks = ({ isOpen, pksData, onClose }) => {
 
   if (!isOpen) return null;
 
-  const data = pksData || {
-    nomorPKS: 'PKS/2026/08/001',
-    bidang: 'Pelayanan',
-    jenisPKS: 'PKS Baru',
-    perusahaan: 'RSUD Dr. Soetomo',
-    tanggalMulai: '05 Agustus 2026',
-    tanggalBerakhir: '05 Agustus 2029',
-    statusPks: 'Aktif',
-    statusPersetujuan: 'Disetujui',
-  };
+  const data = pksData || {};
 
-  const timelineEvents = [
-    {
-      id: 1,
-      title: 'Adendum disetujui.',
-      actorRole: 'Pengelola PKS',
-      actorUser: 'Admin_JR',
-      tanggal: '11 Januari 2027',
-      waktu: '',
-      icon: CheckCircle2,
-      color: 'bg-emerald-500 text-white',
-      jenisAktivitas: 'Persetujuan Adendum',
-      deskripsi: 'Pengelola PKS telah menyetujui adendum PKS dan memperbarui tenggat waktu kontrak.',
-      fileName: 'Draft_PKS_RSUD_Soetomo.pdf',
-      fileVersion: 'v2.0',
-    },
-    {
-      id: 2,
-      title: 'Adendum berhasil dibuat.',
-      actorRole: 'Petugas JR',
-      actorUser: '',
-      tanggal: '10 Januari 2027',
-      waktu: '',
-      icon: PlusCircle,
-      color: 'bg-blue-500 text-white',
-      jenisAktivitas: 'Pembuatan Adendum',
-      deskripsi: 'Petugas JR telah mengajukan draft adendum perpanjangan kerjasama.',
-      fileName: 'Draft_Adendum_v1.docx',
-      fileVersion: 'v1.0',
-    },
-    {
-      id: 3,
-      title: 'Status PKS berubah menjadi Aktif.',
-      actorRole: 'Sistem',
-      actorUser: '',
-      tanggal: '05 Agustus 2026',
-      waktu: '13:25',
-      icon: Settings,
-      color: 'bg-[#0F2238] text-white',
-      jenisAktivitas: 'Perubahan Status',
-      deskripsi: 'Sistem mengubah status PKS menjadi Aktif secara otomatis setelah dokumen scan diunggah.',
-      fileName: 'PKS_Final_Signed.pdf',
-      fileVersion: 'v1.0',
-    },
-    {
-      id: 4,
-      title: 'Dokumen PKS final berhasil diunggah.',
-      actorRole: 'Pengelola PKS',
-      actorUser: '',
-      tanggal: '05 Agustus 2026',
-      waktu: '13:20',
-      icon: FileText,
-      color: 'bg-blue-600 text-white',
-      jenisAktivitas: 'Unggah Dokumen Final',
-      deskripsi: 'Pengelola PKS telah mengunggah dokumen PKS bertanda tangan basah.',
-      fileName: 'Draft_PKS_RSUD_Soetomo.pdf',
-      fileVersion: 'v2.0',
-    },
-    {
-      id: 5,
-      title: 'PKS disetujui oleh Pimpinan.',
-      actorRole: 'Pimpinan',
-      actorUser: '',
-      tanggal: '04 Agustus 2026',
-      waktu: '09:30',
-      icon: ThumbsUp,
-      color: 'bg-emerald-500 text-white',
-      jenisAktivitas: 'Persetujuan Dokumen',
-      deskripsi: 'Pimpinan telah menyetujui dokumen PKS dan meneruskan ke pengelola PKS untuk upload scan final.',
-      fileName: 'Draft_PKS_RSUD_Soetomo.pdf',
-      fileVersion: 'v1.5',
-    },
-    {
-      id: 6,
-      title: 'PKS disetujui oleh Kepala Bagian.',
-      actorRole: '',
-      actorUser: '',
-      tanggal: '03 Agustus 2026',
-      waktu: '',
-      icon: ShieldCheck,
-      color: 'bg-emerald-500 text-white',
-      jenisAktivitas: 'Persetujuan Kabag',
-      deskripsi: 'Kepala Bagian telah melakukan pemeriksaan dan memberikan persetujuan.',
-      fileName: 'Draft_PKS_RSUD_Soetomo.pdf',
-      fileVersion: 'v1.0',
-    },
-  ];
+  const timelineEvents = data.riwayat_aktivitas || [];
 
   const handleExport = () => {
     alert(`Mengekspor riwayat lengkap PKS ${data.nomorPKS}...`);
@@ -151,32 +57,32 @@ export const ModalRiwayatPks = ({ isOpen, pksData, onClose }) => {
             <div className="grid grid-cols-3 gap-y-3.5 gap-x-6 text-xs">
               <div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">NOMOR PKS</p>
-                <p className="font-extrabold text-slate-900 text-xs mt-0.5">{data.nomorPKS}</p>
+                <p className="font-extrabold text-slate-900 text-xs mt-0.5">{data.nomor_pks || data.nomorPKS || '-'}</p>
               </div>
 
               <div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">BIDANG</p>
-                <p className="font-semibold text-slate-800 text-xs mt-0.5">{data.bidang}</p>
+                <p className="font-semibold text-slate-800 text-xs mt-0.5">{data.bidang || '-'}</p>
               </div>
 
               <div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">JENIS PKS</p>
-                <p className="font-semibold text-slate-800 text-xs mt-0.5">{data.jenisPKS || 'PKS Baru'}</p>
+                <p className="font-semibold text-slate-800 text-xs mt-0.5">{data.jenis_pks || data.jenisPKS || '-'}</p>
               </div>
 
               <div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">PERUSAHAAN / INSTANSI</p>
-                <p className="font-extrabold text-slate-900 text-xs mt-0.5">{data.perusahaan}</p>
+                <p className="font-extrabold text-slate-900 text-xs mt-0.5">{data.mitra?.nama_mitra || data.perusahaan || '-'}</p>
               </div>
 
               <div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">TANGGAL MULAI</p>
-                <p className="font-medium text-slate-800 text-xs mt-0.5">{data.tanggalMulai}</p>
+                <p className="font-medium text-slate-800 text-xs mt-0.5">{data.tanggal_mulai || data.tanggalMulai || '-'}</p>
               </div>
 
               <div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">TANGGAL BERAKHIR</p>
-                <p className="font-medium text-slate-800 text-xs mt-0.5">{data.tanggalBerakhir}</p>
+                <p className="font-medium text-slate-800 text-xs mt-0.5">{data.tanggal_berakhir || data.tanggalBerakhir || '-'}</p>
               </div>
             </div>
           </div>

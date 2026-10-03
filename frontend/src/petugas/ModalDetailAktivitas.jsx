@@ -29,21 +29,21 @@ export const ModalDetailAktivitas = ({ isOpen, activityData, onClose }) => {
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">TANGGAL</p>
               <p className="font-extrabold text-slate-900 text-xs mt-0.5">
-                {activityData.tanggal || '12 Januari 2027'}
+                {activityData.tanggal || '-'}
               </p>
             </div>
 
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">WAKTU</p>
               <p className="font-extrabold text-slate-900 text-xs mt-0.5">
-                {activityData.waktu || '14:20 WIB'}
+                {activityData.waktu || '-'}
               </p>
             </div>
 
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">NAMA PENGGUNA</p>
               <p className="font-extrabold text-slate-900 text-xs mt-0.5">
-                {activityData.actorUser || 'Budi Santoso'}
+                {activityData.actorUser || '-'}
               </p>
             </div>
 
@@ -51,7 +51,7 @@ export const ModalDetailAktivitas = ({ isOpen, activityData, onClose }) => {
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">PERAN</p>
               <div className="mt-1">
                 <span className="px-3 py-1 bg-[#3B82F6] text-white font-extrabold text-[11px] rounded-lg inline-block shadow-2xs">
-                  {activityData.actorRole || 'Pengelola PKS'}
+                  {activityData.actorRole || '-'}
                 </span>
               </div>
             </div>
@@ -62,14 +62,14 @@ export const ModalDetailAktivitas = ({ isOpen, activityData, onClose }) => {
                 <span className="w-4 h-4 rounded-full border border-blue-600 text-blue-600 flex items-center justify-center font-bold text-[9px] mr-1.5 shrink-0">
                   ✓
                 </span>
-                {activityData.jenisAktivitas || 'Persetujuan Dokumen'}
+                {activityData.jenisAktivitas || '-'}
               </p>
             </div>
 
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">NOMOR PKS</p>
               <p className="font-extrabold text-[#001D38] text-xs mt-0.5">
-                {activityData.nomorPKS || 'PKS/2026/08/001'}
+                {activityData.nomor_pks || activityData.nomorPKS || '-'}
               </p>
             </div>
           </div>
@@ -81,7 +81,7 @@ export const ModalDetailAktivitas = ({ isOpen, activityData, onClose }) => {
           <div className="space-y-1">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">DESKRIPSI</p>
             <p className="font-medium text-slate-700 leading-relaxed text-xs">
-              {activityData.deskripsi || 'Pengelola PKS telah menyetujui dokumen PKS dan meneruskan ke tahap berikutnya.'}
+              {activityData.deskripsi || '-'}
             </p>
           </div>
 
@@ -92,13 +92,13 @@ export const ModalDetailAktivitas = ({ isOpen, activityData, onClose }) => {
                 <FileText className="w-5 h-5" />
               </div>
               <div>
-                <p className="font-extrabold text-slate-900 text-xs">{activityData.fileName || 'Draft_PKS_RSUD_Soetomo.pdf'}</p>
+                <p className="font-extrabold text-slate-900 text-xs">{activityData.fileName || '-'}</p>
                 <p className="text-[10px] text-slate-400 font-medium">Dokumen terlampir untuk aktivitas ini</p>
               </div>
             </div>
 
             <span className="px-2.5 py-1 bg-slate-200/80 rounded-lg text-[10px] font-mono font-bold text-slate-600">
-              {activityData.fileVersion || 'v2.0'}
+              {activityData.fileVersion || '-'}
             </span>
           </div>
 

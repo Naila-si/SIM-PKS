@@ -60,20 +60,20 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
           if (pksRes.success) {
             const p = pksRes.data;
             setPksData(p);
-            setNomorPKS(p.nomorPKS || '-');
+            setNomorPKS(p.nomor_pks || p.nomorPKS || '-');
             setBidang(p.bidang || '');
-            setJenisPKS(p.jenisPKS || 'Kerja Sama Operasional');
-            setTanggalMulai(p.tanggalMulai ? p.tanggalMulai.split('T')[0] : '');
-            setTanggalBerakhir(p.tanggalBerakhir ? p.tanggalBerakhir.split('T')[0] : '');
-            setJudulPKS(p.judulPKS || p.ruangLingkup || '');
+            setJenisPKS(p.jenis_pks || p.jenisPKS || '');
+            setTanggalMulai(p.tanggal_mulai ? p.tanggal_mulai.split('T')[0] : (p.tanggalMulai ? p.tanggalMulai.split('T')[0] : ''));
+            setTanggalBerakhir(p.tanggal_berakhir ? p.tanggal_berakhir.split('T')[0] : (p.tanggalBerakhir ? p.tanggalBerakhir.split('T')[0] : ''));
+            setJudulPKS(p.ringkasan_pks || p.judulPKS || p.ruangLingkup || '');
 
             // Data Mitra
-            setNamaPerusahaan(p.mitra?.namaPerusahaan || p.namaMitra || '');
-            setAlamat(p.mitra?.alamat || p.alamatMitra || '');
-            setPenanggungJawab(p.mitra?.penanggungJawab || p.penanggungJawabMitra || '');
-            setJabatan(p.mitra?.jabatan || p.jabatanMitra || 'Direktur Utama');
-            setTelepon(p.mitra?.kontak || p.teleponMitra || '');
-            setEmail(p.mitra?.email || p.emailMitra || '');
+            setNamaPerusahaan(p.mitra?.nama_mitra || p.mitra?.namaPerusahaan || p.namaMitra || '');
+            setAlamat(p.mitra?.alamat_mitra || p.mitra?.alamat || p.alamatMitra || '');
+            setPenanggungJawab(p.mitra?.nama_pengelola || p.mitra?.penanggungJawab || p.penanggungJawabMitra || '');
+            setJabatan(p.mitra?.jabatan || p.jabatanMitra || '-');
+            setTelepon(p.mitra?.no_hp_pengelola || p.mitra?.kontak || p.teleponMitra || '');
+            setEmail(p.mitra?.email_pengelola || p.mitra?.email || p.emailMitra || '');
           }
 
           if (adendumRes.success) {
@@ -131,19 +131,11 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
 
     try {
       const payload = {
-        mitraId: pksData?.mitraId || (selectedMitraId ? parseInt(selectedMitraId) : undefined),
-        ruangLingkup: judulPKS || pksData?.ruangLingkup || `PKS ${bidang} - ${namaPerusahaan}`,
-        judulPKS: judulPKS || `PKS ${bidang} - ${namaPerusahaan}`,
         bidang,
-        jenisPKS,
-        namaMitra: namaPerusahaan,
-        alamatMitra: alamat,
-        penanggungJawabMitra: penanggungJawab,
-        jabatanMitra: jabatan,
-        teleponMitra: telepon,
-        emailMitra: email,
-        tanggalMulai,
-        tanggalBerakhir,
+        jenis_pks: jenisPKS,
+        ringkasan_pks: judulPKS || pksData?.ringkasan_pks || `PKS ${bidang} - ${namaPerusahaan}`,
+        tanggal_mulai: tanggalMulai,
+        tanggal_berakhir: tanggalBerakhir,
       };
 
       const res = await pksService.updatePks(pksId, payload);
@@ -265,7 +257,7 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
                     <input
                       type="text"
                       disabled
-                      value={nomorPKS || 'PKS/2024/JR/MEDIKA/001'}
+                      value={nomorPKS || '-'}
                       className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-[#EEF4FF] text-slate-700 font-bold outline-none cursor-not-allowed"
                     />
                   </div>
@@ -275,8 +267,8 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
                     <div className="relative">
                       <input
                         type="text"
-                        placeholder="10/12/2024"
-                        value={tanggalMulai || '10/12/2024'}
+                        placeholder="Misal: 2026-10-03"
+                        value={tanggalMulai || ''}
                         onChange={(e) => setTanggalMulai(e.target.value)}
                         className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
                       />
@@ -292,7 +284,7 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
                     <input
                       type="text"
                       disabled
-                      value={bidang || 'Pelayanan'}
+                      value={bidang || '-'}
                       className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-[#EEF4FF] text-slate-700 font-medium outline-none cursor-not-allowed"
                     />
                   </div>
@@ -302,8 +294,8 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
                     <div className="relative">
                       <input
                         type="text"
-                        placeholder="10/12/2025"
-                        value={tanggalBerakhir || '10/12/2025'}
+                        placeholder="Misal: 2026-10-31"
+                        value={tanggalBerakhir || ''}
                         onChange={(e) => setTanggalBerakhir(e.target.value)}
                         className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
                       />
@@ -316,7 +308,7 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Jenis PKS</label>
                   <select
-                    value={jenisPKS || 'PKS Rumah Sakit'}
+                    value={jenisPKS || ''}
                     onChange={(e) => setJenisPKS(e.target.value)}
                     className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
                   >
@@ -349,7 +341,7 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
                     <label className="block text-xs font-semibold text-slate-700 mb-1">Nama Perusahaan</label>
                     <input
                       type="text"
-                      value={namaPerusahaan || 'PT Medika Sejahtera'}
+                      value={namaPerusahaan || ''}
                       onChange={(e) => setNamaPerusahaan(e.target.value)}
                       className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
                     />
@@ -359,7 +351,7 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
                     <label className="block text-xs font-semibold text-slate-700 mb-1">Jabatan</label>
                     <input
                       type="text"
-                      value={jabatan || 'Direktur Utama'}
+                      value={jabatan || ''}
                       onChange={(e) => setJabatan(e.target.value)}
                       className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
                     />
@@ -369,7 +361,7 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
                     <label className="block text-xs font-semibold text-slate-700 mb-1">Alamat</label>
                     <textarea
                       rows="3"
-                      value={alamat || 'Jl. Rasuna Said Kav. 10-11, Kuningan, Jakarta Selatan'}
+                      value={alamat || ''}
                       onChange={(e) => setAlamat(e.target.value)}
                       className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
                     />
@@ -380,7 +372,7 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
                       <label className="block text-xs font-semibold text-slate-700 mb-1">Nomor Telepon</label>
                       <input
                         type="text"
-                        value={telepon || '0811-987-654'}
+                        value={telepon || ''}
                         onChange={(e) => setTelepon(e.target.value)}
                         className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
                       />
@@ -390,7 +382,7 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
                       <label className="block text-xs font-semibold text-slate-700 mb-1">Email</label>
                       <input
                         type="email"
-                        value={email || 'contact@medikasejahtera.co.id'}
+                        value={email || ''}
                         onChange={(e) => setEmail(e.target.value)}
                         className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
                       />
@@ -401,7 +393,7 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
                     <label className="block text-xs font-semibold text-slate-700 mb-1">Nama Penanggung Jawab</label>
                     <input
                       type="text"
-                      value={penanggungJawab || 'Dr. Andi Budiman'}
+                      value={penanggungJawab || ''}
                       onChange={(e) => setPenanggungJawab(e.target.value)}
                       className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
                     />

@@ -333,8 +333,8 @@ export const PksRiwayatPage = () => {
         {/* Pagination Footer */}
         <div className="px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 font-medium">
           <p>
-            Menampilkan <span className="font-bold text-slate-800">1-10</span> dari{' '}
-            <span className="font-bold text-slate-800">1,284</span> entri
+            Menampilkan <span className="font-bold text-slate-800">1-{Math.min(10, filteredData.length)}</span> dari{' '}
+            <span className="font-bold text-slate-800">{filteredData.length}</span> entri
           </p>
 
           <div className="flex items-center space-x-1">
@@ -347,10 +347,6 @@ export const PksRiwayatPage = () => {
             </button>
 
             <button className="w-7 h-7 rounded-lg text-xs font-bold bg-[#00529C] text-white shadow-xs">1</button>
-            <button className="w-7 h-7 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100">2</button>
-            <button className="w-7 h-7 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100">3</button>
-            <span className="px-1 text-slate-400">...</span>
-            <button className="w-8 h-7 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100">129</button>
 
             <button
               disabled={currentPage === totalPages}

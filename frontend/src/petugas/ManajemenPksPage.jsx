@@ -53,7 +53,7 @@ export const ManajemenPksPage = () => {
     setLoading(true);
     try {
       const pksRes = await pksService.getPksList({ per_page: 100 });
-      if (pksRes.status === 'success' && pksRes.data) {
+      if (pksRes.success && pksRes.data) {
         setPksList(pksRes.data);
       } else {
         setPksList([]);
@@ -427,8 +427,8 @@ export const ManajemenPksPage = () => {
         {/* Pagination Footer */}
         <div className="px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 font-medium">
           <p>
-            Menampilkan <span className="font-bold text-slate-800">1 - 10</span> dari{' '}
-            <span className="font-bold text-slate-800">159</span> data
+            Menampilkan <span className="font-bold text-slate-800">1 - {Math.min(10, filteredData.length)}</span> dari{' '}
+            <span className="font-bold text-slate-800">{filteredData.length}</span> data
           </p>
 
           <div className="flex items-center space-x-1">
@@ -436,10 +436,6 @@ export const ManajemenPksPage = () => {
               <ChevronLeft className="w-4 h-4 text-slate-600" />
             </button>
             <button className="w-7 h-7 rounded-lg text-xs font-bold bg-[#00529C] text-white">1</button>
-            <button className="w-7 h-7 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-100">2</button>
-            <button className="w-7 h-7 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-100">3</button>
-            <span className="px-1 text-slate-400">...</span>
-            <button className="w-8 h-7 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-100">16</button>
             <button className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
               <ChevronRight className="w-4 h-4 text-slate-600" />
             </button>

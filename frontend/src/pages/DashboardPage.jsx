@@ -128,7 +128,7 @@ export const DashboardPage = () => {
           </div>
           <div>
             <p className="text-[10px] font-bold text-slate-500 leading-tight">Menunggu<br />Persetujuan Saya</p>
-            <p className="text-2xl font-extrabold text-slate-900 mt-0.5">12</p>
+            <p className="text-2xl font-extrabold text-slate-900 mt-0.5">{summary.menunggu_persetujuan || '0'}</p>
           </div>
         </div>
 
@@ -220,7 +220,9 @@ export const DashboardPage = () => {
                 />
               </svg>
               <div className="absolute text-center">
-                <span className="text-lg font-extrabold text-slate-900">169</span>
+                <span className="text-lg font-extrabold text-slate-900">
+                  {summary.total_pks_bulan_ini || '0'}
+                </span>
                 <p className="text-[9px] font-bold text-slate-400">TOTAL</p>
               </div>
             </div>
@@ -230,17 +232,17 @@ export const DashboardPage = () => {
               <div className="flex items-center space-x-3">
                 <span className="w-3 h-3 rounded-full bg-slate-900" />
                 <span className="text-slate-600">Aktif</span>
-                <span className="font-extrabold text-slate-900 ml-4">145</span>
+                <span className="font-extrabold text-slate-900 ml-4">{summary.pks_aktif || '0'}</span>
               </div>
               <div className="flex items-center space-x-3">
                 <span className="w-3 h-3 rounded-full bg-amber-500" />
                 <span className="text-slate-600">Segera Berakhir</span>
-                <span className="font-extrabold text-slate-900 ml-4">18</span>
+                <span className="font-extrabold text-slate-900 ml-4">{summary.pks_segera_berakhir || '0'}</span>
               </div>
               <div className="flex items-center space-x-3">
                 <span className="w-3 h-3 rounded-full bg-rose-600" />
                 <span className="text-slate-600">Berakhir</span>
-                <span className="font-extrabold text-slate-900 ml-4">6</span>
+                <span className="font-extrabold text-slate-900 ml-4">{summary.pks_berakhir || '0'}</span>
               </div>
             </div>
           </div>

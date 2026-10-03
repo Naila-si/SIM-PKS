@@ -13,22 +13,7 @@ export const ModalDetailPersetujuanPks = ({ isOpen, pksData, onClose, onStatusUp
 
   if (!isOpen) return null;
 
-  const data = pksData || {
-    pksId: 101,
-    nomorPKS: 'PKS/2023/XI/0892',
-    bidang: 'Teknologi Informasi',
-    jenisPKS: 'Kerjasama Strategis',
-    tanggalMulai: '01 Januari 2024',
-    tanggalBerakhir: '31 Desember 2026',
-    perusahaan: 'PT Integritas Nusantara Jaya',
-    alamat: 'Jl. Rasuna Said Kav. 10-11, Kuningan, Jakarta Selatan, 12950',
-    penanggungJawab: 'Budi Santoso, S.Kom',
-    jabatan: 'Direktur Operasional',
-    nomorTelepon: '+62 812 3456 7890',
-    email: 'budi.santoso@integritas.id',
-    statusPks: 'Draft',
-    statusPersetujuan: 'Menunggu Persetujuan Kepala Bagian',
-  };
+  const data = pksData || {};
 
   const handleTolakSuccess = (alasan) => {
     if (onStatusUpdated) onStatusUpdated('Ditolak', alasan);
@@ -83,7 +68,7 @@ export const ModalDetailPersetujuanPks = ({ isOpen, pksData, onClose, onStatusUp
               <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1">STATUS PERSETUJUAN</p>
               <span className="px-3.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 inline-flex items-center">
                 <span className="w-1.5 h-1.5 rounded-full bg-slate-400 mr-1.5" />
-                {data.statusPersetujuan || 'Menunggu Persetujuan Kepala Bagian'}
+                {data.status_persetujuan || data.statusPersetujuan || '-'}
               </span>
             </div>
           </div>
@@ -104,27 +89,27 @@ export const ModalDetailPersetujuanPks = ({ isOpen, pksData, onClose, onStatusUp
                 <div className="grid grid-cols-2 gap-y-3 gap-x-4">
                   <div>
                     <p className="text-[10px] font-medium text-slate-400">Nomor PKS</p>
-                    <p className="font-extrabold text-slate-900 text-xs mt-0.5">{data.nomorPKS}</p>
+                    <p className="font-extrabold text-slate-900 text-xs mt-0.5">{data.nomor_pks || data.nomorPKS || '-'}</p>
                   </div>
 
                   <div>
                     <p className="text-[10px] font-medium text-slate-400">Bidang</p>
-                    <p className="font-extrabold text-slate-900 text-xs mt-0.5">{data.bidang}</p>
+                    <p className="font-extrabold text-slate-900 text-xs mt-0.5">{data.bidang || '-'}</p>
                   </div>
 
                   <div>
                     <p className="text-[10px] font-medium text-slate-400">Jenis PKS</p>
-                    <p className="font-extrabold text-slate-900 text-xs mt-0.5">{data.jenisPKS}</p>
+                    <p className="font-extrabold text-slate-900 text-xs mt-0.5">{data.jenis_pks || data.jenisPKS || '-'}</p>
                   </div>
 
                   <div>
                     <p className="text-[10px] font-medium text-slate-400">Tanggal Mulai</p>
-                    <p className="font-extrabold text-slate-900 text-xs mt-0.5">{data.tanggalMulai}</p>
+                    <p className="font-extrabold text-slate-900 text-xs mt-0.5">{data.tanggal_mulai || data.tanggalMulai || '-'}</p>
                   </div>
 
                   <div className="col-span-2">
                     <p className="text-[10px] font-medium text-slate-400">Tanggal Berakhir</p>
-                    <p className="font-extrabold text-slate-900 text-xs mt-0.5">{data.tanggalBerakhir}</p>
+                    <p className="font-extrabold text-slate-900 text-xs mt-0.5">{data.tanggal_berakhir || data.tanggalBerakhir || '-'}</p>
                   </div>
                 </div>
               </div>
@@ -139,33 +124,33 @@ export const ModalDetailPersetujuanPks = ({ isOpen, pksData, onClose, onStatusUp
                 <div className="space-y-3">
                   <div>
                     <p className="text-[10px] font-medium text-slate-400">Nama Perusahaan / Instansi</p>
-                    <p className="font-extrabold text-slate-900 text-xs mt-0.5">{data.perusahaan}</p>
+                    <p className="font-extrabold text-slate-900 text-xs mt-0.5">{data.mitra?.nama_mitra || data.perusahaan || '-'}</p>
                   </div>
 
                   <div>
                     <p className="text-[10px] font-medium text-slate-400">Alamat</p>
-                    <p className="font-bold text-slate-800 text-xs mt-0.5 leading-relaxed">{data.alamat}</p>
+                    <p className="font-bold text-slate-800 text-xs mt-0.5 leading-relaxed">{data.mitra?.alamat_mitra || data.alamat || '-'}</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-y-3 gap-x-4 pt-1">
                     <div>
                       <p className="text-[10px] font-medium text-slate-400">Nama Penanggung Jawab</p>
-                      <p className="font-extrabold text-slate-900 text-xs mt-0.5">{data.penanggungJawab}</p>
+                      <p className="font-extrabold text-slate-900 text-xs mt-0.5">{data.mitra?.nama_pengelola || data.penanggungJawab || '-'}</p>
                     </div>
 
                     <div>
                       <p className="text-[10px] font-medium text-slate-400">Jabatan</p>
-                      <p className="font-extrabold text-slate-900 text-xs mt-0.5">{data.jabatan}</p>
+                      <p className="font-extrabold text-slate-900 text-xs mt-0.5">{data.mitra?.jabatan || data.jabatan || '-'}</p>
                     </div>
 
                     <div>
                       <p className="text-[10px] font-medium text-slate-400">Nomor Telepon</p>
-                      <p className="font-bold text-slate-800 text-xs mt-0.5">{data.nomorTelepon}</p>
+                      <p className="font-bold text-slate-800 text-xs mt-0.5">{data.mitra?.no_hp_pengelola || data.nomorTelepon || '-'}</p>
                     </div>
 
                     <div>
                       <p className="text-[10px] font-medium text-slate-400">Email</p>
-                      <p className="font-bold text-slate-800 text-xs mt-0.5">{data.email}</p>
+                      <p className="font-bold text-slate-800 text-xs mt-0.5">{data.mitra?.email_pengelola || data.email || '-'}</p>
                     </div>
                   </div>
                 </div>
@@ -200,8 +185,8 @@ export const ModalDetailPersetujuanPks = ({ isOpen, pksData, onClose, onStatusUp
                     <FileText className="w-5 h-5 fill-rose-500 text-white" />
                   </div>
                   <div>
-                    <p className="font-extrabold text-slate-900 text-xs">Draft_PKS_2023.docx</p>
-                    <p className="text-[10px] text-slate-400 font-medium">v1.0 • 24 Oct 2023</p>
+                    <p className="font-extrabold text-slate-900 text-xs">{data.url_berkas ? data.url_berkas.split('/').pop() : '-'}</p>
+                    <p className="text-[10px] text-slate-400 font-medium">{data.updated_at ? new Date(data.updated_at).toLocaleDateString('id-ID') : '-'}</p>
                   </div>
                 </div>
 
