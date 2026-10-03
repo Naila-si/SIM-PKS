@@ -93,38 +93,37 @@ export const mitraService = {
   },
 
   createMitra: async (data) => {
-    const list = loadMitraStorage();
-    const newMitra = {
-      perusahaanId: Date.now(),
-      mitraId: `MITRA-${String(Math.floor(Math.random() * 90000) + 10000)}`,
-      namaPerusahaan: data.namaPerusahaan || data.nama || 'Mitra Baru',
-      jenisMitra: data.jenisMitra || 'Perusahaan Angkutan Umum',
-      bidang: data.bidang || 'IW',
-      penanggungJawab: data.penanggungJawab || 'Penanggung Jawab',
-      kontak: data.kontak || data.telepon || '08123456789',
-      email: data.email || 'mitra@email.com',
-      statusPks: 'Aktif',
-      status: 'Aktif',
-      alamat: data.alamat || 'Alamat Perusahaan',
-      jumlahPksAktif: 1,
-    };
-    const updated = [newMitra, ...list];
-    saveMitraStorage(updated);
-    return { success: true, data: newMitra };
+    try {
+      const res = await fetch('http://localhost:8000/api/mitra', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+      const newMitra = await res.json();
+      return { success: true, data: newMitra };
+    } catch (err) {
+      return { success: false, message: 'Gagal menambah mitra' };
+    }
   },
 
   updateMitra: async (id, data) => {
-    const list = loadMitraStorage();
-    let updatedItem = null;
-    const updated = list.map((m) => {
-      if (String(m.perusahaanId) === String(id) || String(m.mitraId) === String(id)) {
-        updatedItem = { ...m, ...data };
-        return updatedItem;
-      }
-      return m;
-    });
-    saveMitraStorage(updated);
-    return { success: true, data: updatedItem };
+    try {
+      const res = await fetch(`http://localhost:8000/api/mitra/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+      const updatedItem = await res.json();
+      return { success: true, data: updatedItem };
+    } catch (err) {
+      return { success: false, message: 'Gagal update' };
+    }
   },
 
   updateStatus: async (id, status) => {

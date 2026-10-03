@@ -43,14 +43,14 @@ export const PksRiwayatPage = () => {
           const mapped = rawData.map((item, idx) => ({
             id: item.pksId || idx + 1,
             pksId: item.pksId,
-            nomorPKS: item.nomorPKS || `PKS/2024/${String(idx + 1).padStart(3, '0')}`,
-            namaPerusahaan: item.mitra?.namaPerusahaan || item.namaMitra || 'Perusahaan Mitra',
-            mitraCategory: item.mitra?.jenisMitra || 'Partner Kerjasama',
-            bidang: item.bidang || 'Pelayanan',
-            statusPks: item.statusPks || item.status || 'Aktif',
-            statusPersetujuan: item.statusPersetujuan || 'Disetujui',
-            aktivitasTerakhir: item.statusPersetujuan === 'Draft' ? 'Pengajuan Draft' : 'Pembaruan Berkas',
-            tanggal: item.updatedAt ? new Date(item.updatedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '24 Okt 2024',
+            nomorPKS: item.nomor_pks || item.nomorPKS || '-',
+            namaPerusahaan: item.mitra?.nama_mitra || item.mitra?.namaPerusahaan || '-',
+            mitraCategory: '-',
+            bidang: item.bidang || '-',
+            statusPks: item.status_pks || item.statusPks || item.status || 'Draf',
+            statusPersetujuan: item.status_persetujuan || item.statusPersetujuan || 'Draf',
+            aktivitasTerakhir: (item.status_persetujuan || item.statusPersetujuan) === 'Draf' ? 'Pengajuan Draf' : 'Pembaruan Berkas',
+            tanggal: (item.updated_at || item.updatedAt) ? new Date(item.updated_at || item.updatedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-',
           }));
           setRiwayatList(mapped);
         } else {
@@ -282,7 +282,6 @@ export const PksRiwayatPage = () => {
                     {/* Perusahaan / Instansi */}
                     <td className="px-5 py-4">
                       <p className="font-extrabold text-slate-900 text-xs">{item.namaPerusahaan}</p>
-                      <p className="text-[10px] text-slate-400 font-semibold">{item.mitraCategory}</p>
                     </td>
 
                     {/* Bidang */}

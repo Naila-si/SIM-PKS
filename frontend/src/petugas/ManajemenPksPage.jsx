@@ -306,12 +306,12 @@ export const ManajemenPksPage = () => {
                     <tr key={item.pksId} className="hover:bg-slate-50/70 transition-colors">
                       {/* NOMOR PKS */}
                       <td className="px-6 py-4 font-bold text-slate-900 whitespace-nowrap">
-                        {item.nomorPKS}
+                        {item.nomor_pks || '-'}
                       </td>
 
-                      {/* JUDUL PKS */}
+                      {/* JUDUL / RINGKASAN PKS */}
                       <td className="px-6 py-4 font-extrabold text-slate-900 max-w-xs leading-snug">
-                        {item.judulPKS}
+                        {item.ringkasan_pks || item.judulPKS || '-'}
                       </td>
 
                       {/* BIDANG Badge */}
@@ -329,38 +329,38 @@ export const ManajemenPksPage = () => {
 
                       {/* PIHAK KEDUA */}
                       <td className="px-6 py-4 font-bold text-slate-800">
-                        {item.pihakKedua || item.mitra?.namaPerusahaan || '-'}
+                        {item.mitra?.nama_mitra || item.mitra?.namaPerusahaan || '-'}
                       </td>
 
                       {/* TGL MULAI/AKHIR */}
                       <td className="px-4 py-4 whitespace-nowrap text-[11px]">
-                        <p className="font-bold text-slate-800">{item.tglMulai}</p>
-                        <p className="text-slate-400 text-[10px] font-medium">{item.tglAkhir}</p>
+                        <p className="font-bold text-slate-800">{item.tanggal_mulai || item.tglMulai || '-'}</p>
+                        <p className="text-slate-400 text-[10px] font-medium">{item.tanggal_berakhir || item.tglAkhir || '-'}</p>
                       </td>
 
                       {/* STATUS Badge */}
                       <td className="px-4 py-4 whitespace-nowrap">
                         <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${
-                          item.statusPks === 'Aktif'
+                          (item.status_pks || item.statusPks) === 'Aktif'
                             ? 'bg-emerald-100 text-emerald-700'
-                            : item.statusPks === 'Draft'
+                            : (item.status_pks || item.statusPks) === 'Draft'
                             ? 'bg-sky-100 text-sky-700'
                             : 'bg-rose-100 text-rose-700'
                         }`}>
-                          {item.statusPks}
+                          {item.status_pks || item.statusPks || 'Draft'}
                         </span>
                       </td>
 
                       {/* PERSETUJUAN Badge */}
                       <td className="px-4 py-4 whitespace-nowrap">
                         <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${
-                          item.statusPersetujuan === 'Disetujui'
+                          (item.status_persetujuan || item.statusPersetujuan) === 'Disetujui'
                             ? 'bg-emerald-100 text-emerald-700'
-                            : item.statusPersetujuan.includes('Kabag')
+                            : (item.status_persetujuan || item.statusPersetujuan || '').includes('Kabag')
                             ? 'bg-purple-100 text-purple-700'
                             : 'bg-sky-100 text-sky-700'
                         }`}>
-                          {item.statusPersetujuan}
+                          {item.status_persetujuan || item.statusPersetujuan || 'Draf'}
                         </span>
                       </td>
 

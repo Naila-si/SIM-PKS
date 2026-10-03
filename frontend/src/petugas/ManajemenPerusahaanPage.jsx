@@ -301,8 +301,6 @@ export const ManajemenPerusahaanPage = () => {
               <thead className="bg-slate-50/80 border-b border-slate-100 text-slate-500 uppercase font-extrabold text-[10px] tracking-wider">
                 <tr>
                   <th className="px-5 py-3.5">Nama Perusahaan / Instansi</th>
-                  <th className="px-4 py-3.5">Jenis Mitra</th>
-                  <th className="px-4 py-3.5">Bidang</th>
                   <th className="px-4 py-3.5">Penanggung Jawab</th>
                   <th className="px-4 py-3.5">Kontak</th>
                   <th className="px-4 py-3.5">Status PKS</th>
@@ -311,45 +309,29 @@ export const ManajemenPerusahaanPage = () => {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {paginatedData.map((item) => {
-                  const statusPks = item.statusPks || item.status || 'Aktif';
+                  const statusPks = item.statusPks || item.status_mitra || item.status || 'Aktif';
 
                   return (
                     <tr key={item.perusahaanId || item.mitraId} className="hover:bg-slate-50/70 transition-colors">
                       {/* Nama Perusahaan / Instansi + ID */}
                       <td className="px-5 py-4">
-                        <p className="font-extrabold text-slate-900 text-xs">{item.namaPerusahaan || item.nama}</p>
+                        <p className="font-extrabold text-slate-900 text-xs">{item.namaPerusahaan || item.nama_mitra || item.nama}</p>
                         <p className="text-[10px] text-slate-400 font-semibold mt-0.5">
-                          ID: {item.mitraId || `MITRA-${item.perusahaanId}`}
+                          ID: {item.mitraId || `MITRA-${item.mitraId}`}
                         </p>
                       </td>
 
-                      {/* Jenis Mitra */}
-                      <td className="px-4 py-4 font-medium text-slate-700">
-                        {item.jenisMitra || 'Perusahaan Angkutan Umum'}
-                      </td>
 
-                      {/* Bidang Badge */}
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <span className={`px-2.5 py-1 rounded-md text-[10px] font-extrabold uppercase ${
-                          item.bidang === 'IW'
-                            ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                            : item.bidang === 'SW'
-                            ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
-                            : 'bg-amber-50 text-amber-700 border border-amber-200'
-                        }`}>
-                          {item.bidang || 'PELAYANAN'}
-                        </span>
-                      </td>
 
                       {/* Penanggung Jawab */}
                       <td className="px-4 py-4 font-semibold text-slate-800">
-                        {item.penanggungJawab || '-'}
+                        {item.penanggungJawab || item.nama_pengelola || '-'}
                       </td>
 
                       {/* Kontak */}
                       <td className="px-4 py-4 text-[11px] leading-tight">
-                        <p className="font-semibold text-slate-700">{item.kontak || item.telepon || '-'}</p>
-                        <p className="text-slate-400 font-medium">{item.email || '-'}</p>
+                        <p className="font-semibold text-slate-700">{item.kontak || item.no_hp_pengelola || item.telepon || '-'}</p>
+                        <p className="text-slate-400 font-medium">{item.email || item.email_pengelola || '-'}</p>
                       </td>
 
                       {/* Status PKS Badge */}

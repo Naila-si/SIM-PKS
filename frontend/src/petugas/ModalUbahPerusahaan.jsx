@@ -19,12 +19,12 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
 
   useEffect(() => {
     if (mitraData) {
-      setPenanggungJawab(mitraData.penanggungJawab || '');
-      setJabatan(mitraData.jabatan || 'Head of Partnerships');
-      setKontak(mitraData.kontak || mitraData.telepon || '');
-      setEmail(mitraData.email || '');
+      setPenanggungJawab(mitraData.nama_pengelola || mitraData.penanggungJawab || '');
+      setJabatan(mitraData.jabatan || '');
+      setKontak(mitraData.no_hp_pengelola || mitraData.kontak || '');
+      setEmail(mitraData.email_pengelola || mitraData.email || '');
       setWebsite(mitraData.website || '');
-      setAlamat(mitraData.alamat || '');
+      setAlamat(mitraData.alamat_mitra || mitraData.alamat || '');
       setCatatan(mitraData.catatan || '');
     }
   }, [mitraData]);
@@ -57,13 +57,10 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
     setSubmitting(true);
     try {
       const payload = {
-        penanggungJawab,
-        jabatan,
-        kontak,
-        email,
-        website,
-        alamat,
-        catatan,
+        nama_pengelola: penanggungJawab,
+        no_hp_pengelola: kontak,
+        email_pengelola: email,
+        alamat_mitra: alamat,
       };
 
       const res = await mitraService.updateMitra(mitraData.perusahaanId || mitraData.mitraId, payload);
@@ -133,33 +130,7 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
                     <input
                       type="text"
                       disabled
-                      value={mitraData.namaPerusahaan || mitraData.nama || 'PT. Teknologi Maju Indonesia'}
-                      className="w-full pl-9 pr-3 py-2 bg-[#EEF4FF] border border-blue-100 rounded-xl text-slate-700 font-medium outline-none cursor-not-allowed"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Jenis Mitra</label>
-                  <div className="relative">
-                    <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
-                    <input
-                      type="text"
-                      disabled
-                      value={mitraData.jenisMitra || 'BUMN / Korporasi'}
-                      className="w-full pl-9 pr-3 py-2 bg-[#EEF4FF] border border-blue-100 rounded-xl text-slate-700 font-medium outline-none cursor-not-allowed"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Bidang</label>
-                  <div className="relative">
-                    <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
-                    <input
-                      type="text"
-                      disabled
-                      value={mitraData.bidang || 'Teknologi Informasi'}
+                      value={mitraData.nama_mitra || mitraData.namaPerusahaan || '-'}
                       className="w-full pl-9 pr-3 py-2 bg-[#EEF4FF] border border-blue-100 rounded-xl text-slate-700 font-medium outline-none cursor-not-allowed"
                     />
                   </div>
@@ -172,7 +143,7 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
                     <input
                       type="text"
                       disabled
-                      value={`${mitraData.jumlahPksAktif || 12} Dokumen`}
+                      value={`${mitraData.totalPks || 0} Dokumen`}
                       className="w-full pl-9 pr-3 py-2 bg-[#EEF4FF] border border-blue-100 rounded-xl text-slate-700 font-medium outline-none cursor-not-allowed"
                     />
                   </div>
@@ -211,7 +182,7 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
                     <Briefcase className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
                     <input
                       type="text"
-                      placeholder="Head of Partnerships"
+                      placeholder="Jabatan"
                       value={jabatan}
                       onChange={(e) => setJabatan(e.target.value)}
                       className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none font-medium text-slate-800"
@@ -241,7 +212,7 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
                     <input
                       type="email"
                       required
-                      placeholder="budi.santoso@perusahaan"
+                      placeholder="email@perusahaan.com"
                       value={email}
                       onChange={(e) => validateEmail(e.target.value)}
                       className={`w-full pl-9 pr-3 py-2 bg-white border rounded-xl focus:ring-2 outline-none font-medium text-slate-800 ${

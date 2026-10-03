@@ -10,7 +10,7 @@ export const DrawerDetailPerusahaan = ({ isOpen, mitraData, onClose }) => {
 
   // Inisial avatar penanggung jawab
   const getInitials = (name) => {
-    if (!name) return 'AS';
+    if (!name) return 'PIC';
     const parts = name.trim().split(' ');
     if (parts.length >= 2) {
       return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
@@ -18,7 +18,7 @@ export const DrawerDetailPerusahaan = ({ isOpen, mitraData, onClose }) => {
     return name.slice(0, 2).toUpperCase();
   };
 
-  const statusPks = mitraData.statusPks || mitraData.status || 'Aktif';
+  const statusPks = mitraData.status_mitra || mitraData.status || 'Aktif';
 
   return createPortal(
     <div className="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 font-sans">
@@ -65,21 +65,14 @@ export const DrawerDetailPerusahaan = ({ isOpen, mitraData, onClose }) => {
               <div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Nama Perusahaan / Instansi</p>
                 <h3 className="text-base font-extrabold text-[#001D38] mt-0.5 leading-snug">
-                  {mitraData.namaPerusahaan || mitraData.nama || 'PT Riau Transport'}
+                  {mitraData.nama_mitra || mitraData.namaPerusahaan || '-'}
                 </h3>
-              </div>
-
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Jenis Mitra</p>
-                <p className="text-xs font-bold text-slate-800 mt-0.5">
-                  {mitraData.jenisMitra || 'Perusahaan Angkutan Umum (PO)'}
-                </p>
               </div>
 
               <div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Alamat Lengkap</p>
                 <p className="text-xs font-medium text-slate-700 mt-0.5 leading-relaxed">
-                  {mitraData.alamat || 'Jl. Jenderal Sudirman No. 123, Kel. Sago, Kec. Senapelan, Kota Pekanbaru, Riau 28155'}
+                  {mitraData.alamat_mitra || mitraData.alamat || '-'}
                 </p>
               </div>
             </div>
@@ -96,14 +89,14 @@ export const DrawerDetailPerusahaan = ({ isOpen, mitraData, onClose }) => {
             <div className="bg-[#EEF4FF] rounded-2xl p-4.5 space-y-3.5 border border-blue-100/80">
               <div className="flex items-center space-x-3">
                 <div className="w-11 h-11 rounded-full bg-[#3B82F6] text-white font-extrabold flex items-center justify-center text-sm shadow-xs shrink-0">
-                  {getInitials(mitraData.penanggungJawab || 'Andi Saputra')}
+                  {getInitials(mitraData.nama_pengelola || mitraData.penanggungJawab || '')}
                 </div>
                 <div>
                   <h4 className="text-xs font-extrabold text-slate-900">
-                    {mitraData.penanggungJawab || 'Andi Saputra'}
+                    {mitraData.nama_pengelola || mitraData.penanggungJawab || '-'}
                   </h4>
                   <p className="text-[11px] text-slate-500 font-medium mt-0.5">
-                    {mitraData.jabatan || 'Manager Operasional'}
+                    {mitraData.jabatan || '-'}
                   </p>
                 </div>
               </div>
@@ -112,13 +105,13 @@ export const DrawerDetailPerusahaan = ({ isOpen, mitraData, onClose }) => {
                 <div>
                   <p className="text-[10px] font-bold text-slate-400 uppercase">Nomor Telepon</p>
                   <p className="font-extrabold text-slate-900 mt-0.5 truncate">
-                    {mitraData.kontak || mitraData.telepon || '081212345678'}
+                    {mitraData.no_hp_pengelola || mitraData.kontak || '-'}
                   </p>
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-slate-400 uppercase">Alamat Email</p>
                   <p className="font-extrabold text-slate-900 mt-0.5 truncate">
-                    {mitraData.email || 'transport@email.com'}
+                    {mitraData.email_pengelola || mitraData.email || '-'}
                   </p>
                 </div>
               </div>
@@ -135,17 +128,17 @@ export const DrawerDetailPerusahaan = ({ isOpen, mitraData, onClose }) => {
 
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-white border border-slate-200 rounded-2xl p-4 text-center shadow-2xs">
-                <p className="text-xl font-extrabold text-slate-900">{mitraData.totalPks || 3}</p>
+                <p className="text-xl font-extrabold text-slate-900">{mitraData.totalPks || 0}</p>
                 <p className="text-[10px] font-semibold text-slate-400 mt-0.5">Total PKS</p>
               </div>
 
               <div className="bg-white border border-slate-200 rounded-2xl p-4 text-center shadow-2xs">
-                <p className="text-xl font-extrabold text-emerald-600">{mitraData.pksAktif || 2}</p>
+                <p className="text-xl font-extrabold text-emerald-600">{mitraData.pksAktif || 0}</p>
                 <p className="text-[10px] font-semibold text-slate-400 mt-0.5">Aktif</p>
               </div>
 
               <div className="bg-white border border-slate-200 rounded-2xl p-4 text-center shadow-2xs">
-                <p className="text-xl font-extrabold text-rose-600">{mitraData.pksBerakhir || 1}</p>
+                <p className="text-xl font-extrabold text-rose-600">{mitraData.pksBerakhir || 0}</p>
                 <p className="text-[10px] font-semibold text-slate-400 mt-0.5">Berakhir</p>
               </div>
             </div>
