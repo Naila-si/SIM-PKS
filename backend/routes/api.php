@@ -46,3 +46,14 @@ Route::prefix('pengguna')->group(function () {
     Route::put('{id}', [PenggunaKontroller::class, 'perbaruiPengguna']);
     Route::delete('{id}', [PenggunaKontroller::class, 'hapusPengguna']);
 });
+
+// ================= RUTE MITRA (PARTNERS) =================
+Route::apiResource('mitra', \App\Http\Controllers\MitraController::class);
+
+// ================= RUTE TEMPLATE PKS =================
+Route::apiResource('pks-templates', \App\Http\Controllers\PksTemplateController::class);
+
+// ================= RUTE DOKUMEN PKS =================
+Route::get('pks-documents/{id}/generate-docx', [\App\Http\Controllers\PksDocumentController::class, 'generateDocx']);
+Route::apiResource('pks-documents', \App\Http\Controllers\PksDocumentController::class);
+

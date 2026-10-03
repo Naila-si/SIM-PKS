@@ -74,4 +74,20 @@ class Pengguna extends Authenticatable
     {
         return $this->hasMany(SesiPengguna::class, 'penggunaId');
     }
+
+    /**
+     * Relasi ke Tabel PKS Documents
+     */
+    public function pksDocuments()
+    {
+        return $this->hasMany(PksDocument::class, 'penggunaId', 'penggunaId');
+    }
+
+    /**
+     * Relasi ke Tabel PKS Templates
+     */
+    public function pksTemplates()
+    {
+        return $this->hasMany(PksTemplate::class, 'penggunaId', 'penggunaId');
+    }
 }

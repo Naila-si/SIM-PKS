@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { pksService } from '../services/pksService';
 import { mitraService } from '../services/mitraService';
@@ -66,6 +67,7 @@ const SAMPLE_PKS_DATA = [
 
 export const ManajemenPksPage = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const isPetugas = user?.role === 'petugas_jr';
 
   const [pksList, setPksList] = useState([]);
@@ -153,7 +155,7 @@ export const ManajemenPksPage = () => {
         {isPetugas && (
           <button
             type="button"
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => navigate('/pks/buat')}
             className="px-5 py-2.5 bg-[#00529C] hover:bg-[#003E75] text-white text-xs font-bold rounded-xl shadow-xs flex items-center transition-all cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4 mr-1.5 stroke-[2.5]" />

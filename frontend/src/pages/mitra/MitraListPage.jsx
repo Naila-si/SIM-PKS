@@ -33,11 +33,11 @@ export const MitraListPage = () => {
   }, [search]);
 
   const handleToggleStatus = async (mitra) => {
-    if (mitra.status === 'Aktif') {
+    if (mitra.status_mitra === 'Aktif') {
       setSelectedMitraId(mitra.mitraId);
       setIsDeactivateModalOpen(true);
     } else {
-      if (window.confirm(`Aktifkan kembali perusahaan mitra ${mitra.namaPerusahaan}?`)) {
+      if (window.confirm(`Aktifkan kembali perusahaan mitra ${mitra.nama_mitra}?`)) {
         try {
           const res = await mitraService.updateStatus(mitra.mitraId, 'Aktif');
           if (res.success) fetchMitra();
@@ -97,22 +97,22 @@ export const MitraListPage = () => {
                   <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#00529C] flex items-center justify-center font-bold shrink-0">
                     <Building2 className="w-5 h-5" />
                   </div>
-                  <span className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full border ${m.status === 'Aktif' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' : 'bg-rose-50 text-rose-700 border-rose-300'}`}>
-                    {m.status}
+                  <span className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full border ${m.status_mitra === 'Aktif' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' : 'bg-rose-50 text-rose-700 border-rose-300'}`}>
+                    {m.status_mitra}
                   </span>
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">{m.namaPerusahaan}</h3>
-                  <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{m.alamat || 'Alamat belum diisi'}</p>
+                  <h3 className="text-sm font-bold text-slate-900">{m.nama_mitra}</h3>
+                  <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{m.alamat_mitra || 'Alamat belum diisi'}</p>
                 </div>
                 <div className="pt-2 border-t border-slate-100 text-xs space-y-1 text-slate-600">
                   <p className="flex items-center">
                     <Phone className="w-3.5 h-3.5 mr-1.5 text-slate-400 shrink-0" />
-                    {m.kontak || '-'}
+                    {m.no_hp_pengelola || '-'}
                   </p>
                   <p className="flex items-center">
                     <UserCheck className="w-3.5 h-3.5 mr-1.5 text-slate-400 shrink-0" />
-                    PJ: {m.penanggungJawab || '-'}
+                    PJ: {m.nama_pengelola || '-'}
                   </p>
                 </div>
               </div>
@@ -130,13 +130,13 @@ export const MitraListPage = () => {
                   <button
                     onClick={() => handleToggleStatus(m)}
                     className={`inline-flex items-center px-2.5 py-1.5 text-xs font-semibold rounded-lg cursor-pointer transition-colors ${
-                      m.status === 'Aktif'
+                      m.status_mitra === 'Aktif'
                         ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
                         : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
                     }`}
                   >
                     <Power className="w-3.5 h-3.5 mr-1" />
-                    {m.status === 'Aktif' ? 'Nonaktifkan' : 'Aktifkan'}
+                    {m.status_mitra === 'Aktif' ? 'Nonaktifkan' : 'Aktifkan'}
                   </button>
                 )}
               </div>
