@@ -11,7 +11,7 @@ export const Header = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(12);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const searchRef = useRef(null);
   const notifRef = useRef(null);
@@ -39,55 +39,12 @@ export const Header = () => {
   }, []);
 
   // Sample Search Data Pool
-  const mockPksData = [
-    { id: 101, nomor: 'PKS/2024/001', mitra: 'RSUD Dr. Soetomo', bidang: 'Pelayanan', status: 'Disetujui' },
-    { id: 102, nomor: 'PKS/2024/052', mitra: 'PT Astra International', bidang: 'IW', status: 'Menunggu Pimpinan' },
-    { id: 103, nomor: 'PKS/2023/118', mitra: 'Bank Mandiri (Persero)', bidang: 'SW', status: 'Disetujui' },
-    { id: 104, nomor: 'PKS/2022/902', mitra: 'RS Siloam Karawaci', bidang: 'Pelayanan', status: 'Ditolak' },
-    { id: 105, nomor: 'PKS/2023/XI/0892', mitra: 'PT Integritas Nusantara Jaya', bidang: 'Teknologi Informasi', status: 'Draft' },
-  ];
+  const mockPksData = [];
 
-  const mockMitraData = [
-    { id: 1, nama: 'PT Riau Transport', jenis: 'Perusahaan Angkutan Umum (PO)', status: 'Aktif' },
-    { id: 2, nama: 'RSUD Bhayangkara Pusat', jenis: 'Provider Kesehatan', status: 'Aktif' },
-    { id: 3, nama: 'PT Integritas Nusantara Jaya', jenis: 'Partner Teknologi', status: 'Aktif' },
-  ];
+  const mockMitraData = [];
 
   // Sample Notifications List for Quick Popover
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: 'PKS menunggu pemeriksaan Anda.',
-      time: '10 menit yang lalu',
-      type: 'Persetujuan',
-      unread: true,
-      color: 'bg-blue-100 text-blue-600',
-    },
-    {
-      id: 2,
-      title: 'PKS akan berakhir dalam 30 hari.',
-      time: '2 jam yang lalu',
-      type: 'Masa Berlaku',
-      unread: true,
-      color: 'bg-amber-100 text-amber-600',
-    },
-    {
-      id: 3,
-      title: 'PKS telah berakhir (RS Medika).',
-      time: 'Kemarin, 14:20',
-      type: 'Berakhir',
-      unread: true,
-      color: 'bg-rose-100 text-rose-600',
-    },
-    {
-      id: 4,
-      title: 'PKS PT Global Transindo disetujui.',
-      time: '2 hari yang lalu',
-      type: 'Disetujui',
-      unread: false,
-      color: 'bg-emerald-100 text-emerald-600',
-    },
-  ]);
+  const [notifications, setNotifications] = useState([]);
 
   // Filter Search Items
   const filteredPks = searchQuery.trim()

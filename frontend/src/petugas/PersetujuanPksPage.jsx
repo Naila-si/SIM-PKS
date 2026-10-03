@@ -21,85 +21,7 @@ export const PersetujuanPksPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Sample Data Fallback matching Image 1 mockup exactly
-  const sampleApprovalData = [
-    {
-      pksId: 201,
-      nomorPKS: 'PKS/2023/XI/0892',
-      jenisTag: 'Baru (New)',
-      bidang: 'Teknologi Informasi',
-      jenisPKS: 'Kerjasama Strategis',
-      tanggalMulai: '01 Januari 2024',
-      tanggalBerakhir: '31 Desember 2026',
-      perusahaan: 'PT Integritas Nusantara Jaya',
-      alamat: 'Jl. Rasuna Said Kav. 10-11, Kuningan, Jakarta Selatan, 12950',
-      penanggungJawab: 'Budi Santoso, S.Kom',
-      jabatan: 'Direktur Operasional',
-      nomorTelepon: '+62 812 3456 7890',
-      email: 'budi.santoso@integritas.id',
-      petugas: 'Andi Pratama',
-      tglPengajuan: '12 Okt 2023',
-      statusPks: 'Draft',
-      statusPersetujuan: 'Menunggu Persetujuan Kepala Bagian',
-    },
-    {
-      pksId: 202,
-      nomorPKS: 'PKS/2023/IX/0015',
-      jenisTag: 'Perpanjangan',
-      bidang: 'SW',
-      jenisPKS: 'Kerjasama Penjaminan Biaya',
-      tanggalMulai: '01 Februari 2024',
-      tanggalBerakhir: '31 Januari 2027',
-      perusahaan: 'RSUD Tangerang Selatan',
-      alamat: 'Jl. Raya Pajajaran No. 20, Tangerang Selatan',
-      penanggungJawab: 'dr. Siska Wijaya',
-      jabatan: 'Direktur RSUD',
-      nomorTelepon: '+62 811 9876 5432',
-      email: 'siska@rsudtangerang.go.id',
-      petugas: 'Siska Wijaya',
-      tglPengajuan: '10 Okt 2023',
-      statusPks: 'Aktif',
-      statusPersetujuan: 'Menunggu Persetujuan Pimpinan',
-    },
-    {
-      pksId: 203,
-      nomorPKS: 'PKS/2023/X/0051',
-      jenisTag: 'Kerjasama Baru',
-      bidang: 'Pelayanan',
-      jenisPKS: 'MoU Pertukaran Data',
-      tanggalMulai: '15 Maret 2024',
-      tanggalBerakhir: '14 Maret 2026',
-      perusahaan: 'BPJS Kesehatan Divisi Regional',
-      alamat: 'Jl. Letjen Suprapto No. 100, Jakarta Pusat',
-      penanggungJawab: 'Rendy Kurniawan',
-      jabatan: 'Kepala Divisi',
-      nomorTelepon: '+62 813 1122 3344',
-      email: 'rendy@bpjs.go.id',
-      petugas: 'Rendy Kurniawan',
-      tglPengajuan: '08 Okt 2023',
-      statusPks: 'Segera Berakhir',
-      statusPersetujuan: 'Menunggu Pemeriksaan Pengelola',
-    },
-    {
-      pksId: 204,
-      nomorPKS: 'PKS/2023/IX/0002',
-      jenisTag: 'Penyesuaian Tarif',
-      bidang: 'IW',
-      jenisPKS: 'Kerjasama Layanan Evakuasi',
-      tanggalMulai: '01 Januari 2023',
-      tanggalBerakhir: '31 Desember 2025',
-      perusahaan: 'PT Transportasi Jakarta (TransJakarta)',
-      alamat: 'Jl. Mayjen Sutoyo No. 1, Jakarta Timur',
-      penanggungJawab: 'Andi Pratama',
-      jabatan: 'Direktur Utama',
-      nomorTelepon: '+62 815 5566 7788',
-      email: 'andi@transjakarta.co.id',
-      petugas: 'Andi Pratama',
-      tglPengajuan: '05 Okt 2023',
-      statusPks: 'Berakhir',
-      statusPersetujuan: 'Disetujui',
-    },
-  ];
+
 
   const fetchApprovalData = async () => {
     setLoading(true);
@@ -129,13 +51,13 @@ export const PersetujuanPksPage = () => {
           }));
           setPksList(mapped);
         } else {
-          setPksList(sampleApprovalData);
+          setPksList([]);
         }
       } else {
-        setPksList(sampleApprovalData);
+        setPksList([]);
       }
     } catch (err) {
-      setPksList(sampleApprovalData);
+      setPksList([]);
     } finally {
       setLoading(false);
     }
@@ -192,7 +114,7 @@ export const PersetujuanPksPage = () => {
         <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-2xs relative overflow-hidden flex items-center justify-between">
           <div>
             <p className="text-xs font-bold text-slate-400">Menunggu Persetujuan Saya</p>
-            <p className="text-3xl font-extrabold text-slate-900 mt-1">14</p>
+            <p className="text-3xl font-extrabold text-slate-900 mt-1">0</p>
             <p className="text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded-full inline-block mt-2">
               📋 Perlu tindakan segera
             </p>
@@ -204,7 +126,7 @@ export const PersetujuanPksPage = () => {
         <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-2xs flex items-center justify-between">
           <div>
             <p className="text-xs font-bold text-slate-400">Disetujui Hari Ini</p>
-            <p className="text-3xl font-extrabold text-blue-600 mt-1">05</p>
+            <p className="text-3xl font-extrabold text-blue-600 mt-1">0</p>
             <p className="text-[10px] text-emerald-600 font-bold flex items-center mt-2">
               <span className="w-3.5 h-3.5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-extrabold text-[10px] mr-1">✓</span>
               +2 dari kemarin
@@ -216,7 +138,7 @@ export const PersetujuanPksPage = () => {
         <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-2xs flex items-center justify-between">
           <div>
             <p className="text-xs font-bold text-slate-400">Ditolak Hari Ini</p>
-            <p className="text-3xl font-extrabold text-rose-600 mt-1">02</p>
+            <p className="text-3xl font-extrabold text-rose-600 mt-1">0</p>
             <p className="text-[10px] text-rose-600 font-bold flex items-center mt-2">
               <span className="w-3.5 h-3.5 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center font-extrabold text-[10px] mr-1">✕</span>
               Memerlukan revisi
@@ -228,7 +150,7 @@ export const PersetujuanPksPage = () => {
         <div className="bg-[#0F2238] text-white rounded-2xl p-5 shadow-md flex flex-col justify-between">
           <div>
             <p className="text-xs font-bold text-slate-300">Total Persetujuan Bulan Ini</p>
-            <p className="text-3xl font-extrabold text-white mt-1">120</p>
+            <p className="text-3xl font-extrabold text-white mt-1">0</p>
           </div>
           <p className="text-[10px] text-sky-300 font-semibold flex items-center mt-2">
             <TrendingUp className="w-3.5 h-3.5 mr-1 text-sky-300" />

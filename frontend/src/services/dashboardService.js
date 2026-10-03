@@ -3,12 +3,12 @@ export const dashboardService = {
     return {
       status: 'success',
       data: {
-        total_pks: 24,
-        pks_aktif: 14,
-        pks_diproses: 6,
-        pks_akan_berakhir: 3,
-        pks_kadaluarsa: 1,
-        total_mitra: 18,
+        total_pks: 0,
+        pks_aktif: 0,
+        pks_diproses: 0,
+        pks_akan_berakhir: 0,
+        pks_kadaluarsa: 0,
+        total_mitra: 0,
       }
     };
   },

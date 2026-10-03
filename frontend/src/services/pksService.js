@@ -89,8 +89,14 @@ const saveStorage = (list) => {
 
 export const pksService = {
   getPksList: async () => {
-    const list = loadStorage();
-    return { success: true, data: list };
+    localStorage.removeItem('mock_pks_list');
+    try {
+      const res = await fetch('http://localhost:8000/api/pks-documents');
+      const data = await res.json();
+      return { success: true, data: data };
+    } catch (err) {
+      return { success: true, data: [] };
+    }
   },
 
   getPksById: async (id) => {

@@ -39,9 +39,9 @@ export const Sidebar = () => {
   const isPetugas = role === 'petugas_jr';
 
   // Badge counters config
-  const unreadNotifCount = 12;
-  const approvalPendingCount = 3;
-  const revisionCount = 2;
+  const unreadNotifCount = 0;
+  const approvalPendingCount = 0;
+  const revisionCount = 0;
 
   return (
     <>

@@ -11,21 +11,21 @@ import {
 export const DashboardPage = () => {
   const { user } = useAuth();
   const [summary, setSummary] = useState({
-    total_pks: 24,
-    pks_aktif: 145,
-    pks_segera_berakhir: 18,
-    pks_berakhir: 6,
-    total_mitra: 52,
-    draft_pks: 12,
-    pks_disetujui: 145,
-    pks_ditolak: 8,
-    persetujuan_bulan_ini: 42,
-    belum_diperiksa: 5,
-    ditolak: 2,
-    menunggu_kabag: 8,
-    diverifikasi_bulan_ini: 124,
-    rata_rata_waktu: '1h 8j',
-    total_pks_selesai: '2,850',
+    total_pks: 0,
+    pks_aktif: 0,
+    pks_segera_berakhir: 0,
+    pks_berakhir: 0,
+    total_mitra: 0,
+    draft_pks: 0,
+    pks_disetujui: 0,
+    pks_ditolak: 0,
+    persetujuan_bulan_ini: 0,
+    belum_diperiksa: 0,
+    ditolak: 0,
+    menunggu_kabag: 0,
+    diverifikasi_bulan_ini: 0,
+    rata_rata_waktu: '-',
+    total_pks_selesai: 0,
   });
 
   useEffect(() => {
@@ -46,32 +46,7 @@ export const DashboardPage = () => {
     return <Dashboard />;
   }
 
-  const sampleActivities = [
-    {
-      id: 1,
-      title: 'Pembaruan Dokumen PKS Rumah Sakit Medika',
-      user: 'Siti Aminah',
-      time: '10:25 WIB',
-      badge: 'Aktif',
-      badgeStyle: 'bg-blue-50 text-blue-700 border-blue-200',
-    },
-    {
-      id: 2,
-      title: 'PKS Baru: PT Transportasi Jaya Utama',
-      user: 'Budi Santoso',
-      time: '09:15 WIB',
-      badge: 'Menunggu pemeriksaan',
-      badgeStyle: 'bg-amber-50 text-amber-800 border-amber-200',
-    },
-    {
-      id: 3,
-      title: 'Persetujuan Perpanjangan PKS - PO Selamet',
-      user: 'Sistem Otomatis',
-      time: 'Kemarin, 16:40 WIB',
-      badge: 'Aktif',
-      badgeStyle: 'bg-blue-50 text-blue-700 border-blue-200',
-    },
-  ];
+  const sampleActivities = [];
 
   return (
     <div className="space-y-6 font-sans">

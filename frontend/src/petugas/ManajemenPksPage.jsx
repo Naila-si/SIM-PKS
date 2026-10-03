@@ -14,56 +14,8 @@ import {
   ChevronLeft, ChevronRight, AlertTriangle
 } from 'lucide-react';
 
-const SAMPLE_PKS_DATA = [
-  {
-    pksId: 1,
-    nomorPKS: 'PKS/OPS/2023/001',
-    judulPKS: 'PKS Layanan Perawatan Korban Laka Lantas RS Medika',
-    bidang: 'Pelayanan',
-    pihakKedua: 'RS Medika Utama',
-    tglMulai: '01 Jan 2023',
-    tglAkhir: '31 Des 2023',
-    statusPks: 'Aktif',
-    statusPersetujuan: 'Disetujui',
-    statusDokumen: 'Belum Diunggah',
-  },
-  {
-    pksId: 2,
-    nomorPKS: 'PKS/OPS/2024/045',
-    judulPKS: 'PKS Integrasi Data Samsat Nasional Tahap III',
-    bidang: 'SW',
-    pihakKedua: 'Korlantas Polri',
-    tglMulai: '15 Mar 2024',
-    tglAkhir: '14 Mar 2026',
-    statusPks: 'Draft',
-    statusPersetujuan: 'Menunggu Pemeriksaan',
-    statusDokumen: 'Belum Diunggah',
-  },
-  {
-    pksId: 3,
-    nomorPKS: 'PKS/OPS/2022/112',
-    judulPKS: 'Pengadaan APK Sosialisasi Keselamatan Berlalu Lintas',
-    bidang: 'Pelayanan',
-    pihakKedua: 'CV Media Mandiri',
-    tglMulai: '20 Jun 2022',
-    tglAkhir: '20 Jun 2023',
-    statusPks: 'Berakhir',
-    statusPersetujuan: 'Disetujui',
-    statusDokumen: 'Sudah Diunggah',
-  },
-  {
-    pksId: 4,
-    nomorPKS: 'PKS/OPS/2023/088',
-    judulPKS: 'PKS Digitalisasi Iuran Wajib Pelabuhan Gilimanuk',
-    bidang: 'IW',
-    pihakKedua: 'PT ASDP Indonesia Ferry',
-    tglMulai: '12 Nov 2023',
-    tglAkhir: '11 Nov 2024',
-    statusPks: 'Aktif',
-    statusPersetujuan: 'Persetujuan Kabag',
-    statusDokumen: 'Sudah Diunggah',
-  },
-];
+
+
 
 export const ManajemenPksPage = () => {
   const { user } = useAuth();
@@ -76,10 +28,10 @@ export const ManajemenPksPage = () => {
 
   // Stats Summary State
   const [summary, setSummary] = useState({
-    draft: 14,
-    aktif: 138,
-    segeraBerakhir: 12,
-    berakhir: 5,
+    draft: 0,
+    aktif: 0,
+    segeraBerakhir: 0,
+    berakhir: 0,
   });
 
   // Modal States
@@ -101,13 +53,14 @@ export const ManajemenPksPage = () => {
     setLoading(true);
     try {
       const pksRes = await pksService.getPksList({ per_page: 100 });
-      if (pksRes.status === 'success' && pksRes.data && pksRes.data.length > 0) {
+      if (pksRes.status === 'success' && pksRes.data) {
         setPksList(pksRes.data);
       } else {
-        setPksList(SAMPLE_PKS_DATA);
+        setPksList([]);
       }
     } catch (err) {
-      setPksList(SAMPLE_PKS_DATA);
+      console.error(err);
+      setPksList([]);
     } finally {
       setLoading(false);
     }

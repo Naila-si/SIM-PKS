@@ -76,8 +76,14 @@ const saveMitraStorage = (list) => {
 
 export const mitraService = {
   getMitraList: async () => {
-    const list = loadMitraStorage();
-    return { success: true, data: list };
+    localStorage.removeItem('mock_mitra_list');
+    try {
+      const res = await fetch('http://localhost:8000/api/mitra');
+      const data = await res.json();
+      return { success: true, data: data };
+    } catch (err) {
+      return { success: true, data: [] };
+    }
   },
 
   getMitraById: async (id) => {

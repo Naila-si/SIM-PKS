@@ -14,10 +14,10 @@ export const PksRiwayatPage = () => {
 
   // Stats State
   const [summary, setSummary] = useState({
-    totalPks: '1,284',
-    totalAktivitas: '8,422',
-    aktivitasHariIni: 42,
-    pksAktif: 912,
+    totalPks: 0,
+    totalAktivitas: 0,
+    aktivitasHariIni: 0,
+    pksAktif: 0,
   });
 
   // Filter States
@@ -31,57 +31,7 @@ export const PksRiwayatPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Sample data fallback matching Screenshot 1 mockup
-  const sampleRiwayatData = [
-    {
-      id: 1,
-      pksId: 101,
-      nomorPKS: 'PKS/2024/001',
-      namaPerusahaan: 'RSUD Dr. Soetomo',
-      mitraCategory: 'Provider Kesehatan',
-      bidang: 'Pelayanan',
-      statusPks: 'Aktif',
-      statusPersetujuan: 'Disetujui',
-      aktivitasTerakhir: 'Pembaruan Berkas',
-      tanggal: '24 Okt 2024',
-    },
-    {
-      id: 2,
-      pksId: 102,
-      nomorPKS: 'PKS/2024/052',
-      namaPerusahaan: 'PT Astra International',
-      mitraCategory: 'Partner Logistik',
-      bidang: 'IW',
-      statusPks: 'Draft',
-      statusPersetujuan: 'Menunggu Pimpinan',
-      aktivitasTerakhir: 'Pengajuan Draft',
-      tanggal: '23 Okt 2024',
-    },
-    {
-      id: 3,
-      pksId: 103,
-      nomorPKS: 'PKS/2023/118',
-      namaPerusahaan: 'Bank Mandiri (Persero)',
-      mitraCategory: 'Fasilitas Perbankan',
-      bidang: 'SW',
-      statusPks: 'Segera Berakhir',
-      statusPersetujuan: 'Disetujui',
-      aktivitasTerakhir: 'Notifikasi Kadaluarsa',
-      tanggal: '22 Okt 2024',
-    },
-    {
-      id: 4,
-      pksId: 104,
-      nomorPKS: 'PKS/2022/902',
-      namaPerusahaan: 'RS Siloam Karawaci',
-      mitraCategory: 'Provider Kesehatan',
-      bidang: 'Pelayanan',
-      statusPks: 'Berakhir',
-      statusPersetujuan: 'Ditolak',
-      aktivitasTerakhir: 'Penolakan Perpanjangan',
-      tanggal: '20 Okt 2024',
-    },
-  ];
+
 
   const fetchRiwayatData = async () => {
     setLoading(true);
@@ -104,13 +54,13 @@ export const PksRiwayatPage = () => {
           }));
           setRiwayatList(mapped);
         } else {
-          setRiwayatList(sampleRiwayatData);
+          setRiwayatList([]);
         }
       } else {
-        setRiwayatList(sampleRiwayatData);
+        setRiwayatList([]);
       }
     } catch (err) {
-      setRiwayatList(sampleRiwayatData);
+      setRiwayatList([]);
     } finally {
       setLoading(false);
     }

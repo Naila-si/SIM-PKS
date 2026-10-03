@@ -11,12 +11,11 @@ export const ManajemenPerusahaanPage = () => {
   const [loading, setLoading] = useState(true);
   const [mitraList, setMitraList] = useState([]);
   
-  // Stat Summary State
   const [summary, setSummary] = useState({
-    total: 52,
-    aktif: 40,
-    segeraBerakhir: 8,
-    berakhir: 4,
+    total: 0,
+    aktif: 0,
+    segeraBerakhir: 0,
+    berakhir: 0,
   });
 
   // Filter States
@@ -34,79 +33,6 @@ export const ManajemenPerusahaanPage = () => {
   const [viewingMitra, setViewingMitra] = useState(null);
   const [editingMitra, setEditingMitra] = useState(null);
 
-  // Initial Sample Data (Dummy fallback matching Gambar 1 screenshot)
-  const sampleMitraData = [
-    {
-      perusahaanId: 1,
-      mitraId: 'MITRA-00122',
-      namaPerusahaan: 'PT Riau Transport',
-      jenisMitra: 'Perusahaan Angkutan Umum',
-      bidang: 'IW',
-      penanggungJawab: 'Andi Saputra',
-      jabatan: 'Manager Operasional',
-      kontak: '081212345678',
-      email: 'transport@email.com',
-      statusPks: 'Aktif',
-      alamat: 'Jl. Jenderal Sudirman No. 123, Kel. Sago, Kec. Senapelan, Kota Pekanbaru, Riau 28155',
-      jumlahPksAktif: 5,
-    },
-    {
-      perusahaanId: 2,
-      mitraId: 'MITRA-00045',
-      namaPerusahaan: 'Bapenda Provinsi Riau',
-      jenisMitra: 'Instansi Pemerintah',
-      bidang: 'SW',
-      penanggungJawab: 'Dedi Kurniawan',
-      jabatan: 'Kepala Bidang Pendapatan',
-      kontak: '0761123455',
-      email: 'bapenda@email.com',
-      statusPks: 'Aktif',
-      alamat: 'Jl. Cut Nyak Dien No. 8, Pekanbaru, Riau',
-      jumlahPksAktif: 8,
-    },
-    {
-      perusahaanId: 3,
-      mitraId: 'MITRA-00210',
-      namaPerusahaan: 'RSUD Arifin Achmad',
-      jenisMitra: 'Rumah Sakit',
-      bidang: 'PELAYANAN',
-      penanggungJawab: 'dr. Ahmad',
-      jabatan: 'Direktur Pelayanan',
-      kontak: '081398765432',
-      email: 'rsud@email.com',
-      statusPks: 'Segera Berakhir',
-      alamat: 'Jl. Diponegoro No. 2, Pekanbaru, Riau',
-      jumlahPksAktif: 3,
-    },
-    {
-      perusahaanId: 4,
-      mitraId: 'MITRA-00305',
-      namaPerusahaan: 'PT ASDP Indonesia Ferry',
-      jenisMitra: 'BUMN / Korporasi',
-      bidang: 'IW',
-      penanggungJawab: 'Budi Santoso',
-      jabatan: 'Head of Partnerships',
-      kontak: '081234567890',
-      email: 'budi.santoso@perusahaan.com',
-      statusPks: 'Aktif',
-      alamat: 'Jl. Sudirman No. 123, Blok M, Jakarta Selatan',
-      jumlahPksAktif: 12,
-    },
-    {
-      perusahaanId: 5,
-      mitraId: 'MITRA-00108',
-      namaPerusahaan: 'RS Medika Sejahtera',
-      jenisMitra: 'Rumah Sakit',
-      bidang: 'PELAYANAN',
-      penanggungJawab: 'dr. Hendra',
-      jabatan: 'Kepala Kerjasama',
-      kontak: '081198761234',
-      email: 'medika@email.com',
-      statusPks: 'Berakhir',
-      alamat: 'Jl. Ahmad Yani No. 45, Pekanbaru',
-      jumlahPksAktif: 0,
-    }
-  ];
 
   const fetchMitraData = async () => {
     setLoading(true);
@@ -118,18 +44,18 @@ export const ManajemenPerusahaanPage = () => {
           setMitraList(rawData);
           setSummary({
             total: rawData.length,
-            aktif: rawData.filter(m => (m.statusPks || m.status) === 'Aktif').length || 40,
-            segeraBerakhir: rawData.filter(m => (m.statusPks || m.status) === 'Segera Berakhir').length || 8,
-            berakhir: rawData.filter(m => (m.statusPks || m.status) === 'Berakhir').length || 4,
+            aktif: rawData.filter(m => (m.statusPks || m.status) === 'Aktif').length,
+            segeraBerakhir: rawData.filter(m => (m.statusPks || m.status) === 'Segera Berakhir').length,
+            berakhir: rawData.filter(m => (m.statusPks || m.status) === 'Berakhir').length,
           });
         } else {
-          setMitraList(sampleMitraData);
+          setMitraList([]);
         }
       } else {
-        setMitraList(sampleMitraData);
+        setMitraList([]);
       }
     } catch (err) {
-      setMitraList(sampleMitraData);
+      setMitraList([]);
     } finally {
       setLoading(false);
     }

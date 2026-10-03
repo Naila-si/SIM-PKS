@@ -11,10 +11,10 @@ export const NotificationPage = () => {
   const navigate = useNavigate();
 
   // State Stats
-  const [unreadCount, setUnreadCount] = useState(12);
-  const [totalNotifications, setTotalNotifications] = useState(84);
-  const [segeraBerakhirCount, setSegeraBerakhirCount] = useState(5);
-  const [berakhirCount, setBerakhirCount] = useState(2);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [totalNotifications, setTotalNotifications] = useState(0);
+  const [segeraBerakhirCount, setSegeraBerakhirCount] = useState(0);
+  const [berakhirCount, setBerakhirCount] = useState(0);
 
   // Filters State
   const [statusFilter, setStatusFilter] = useState('Semua'); // Semua, Belum Dibaca, Sudah Dibaca
@@ -24,88 +24,7 @@ export const NotificationPage = () => {
   const [isMarkAllModalOpen, setIsMarkAllModalOpen] = useState(false);
   const [isClearReadModalOpen, setIsClearReadModalOpen] = useState(false);
 
-  // Sample Notifications List matching Image 3 mockup
-  const [notificationList, setNotificationList] = useState([
-    {
-      id: 1,
-      pksId: 101,
-      type: 'PERSETUJUAN',
-      statusBaca: 'Belum Dibaca',
-      timestamp: '10 menit yang lalu',
-      title: 'PKS menunggu pemeriksaan Anda.',
-      description: 'PKS No. 124/JR-MKS/2023 dengan PT Indobakti Nusantara memerlukan tinjauan administratif dan verifikasi data sebelum lanjut ke tahap direksi.',
-      actionText: 'Lihat Persetujuan',
-      actionType: 'solid',
-      color: 'blue',
-      icon: UserCheck,
-    },
-    {
-      id: 2,
-      pksId: 102,
-      type: 'MASA BERLAKU',
-      statusBaca: 'Belum Dibaca',
-      timestamp: '2 jam yang lalu',
-      title: 'PKS akan berakhir dalam 30 hari.',
-      description: 'Kerjasama dengan PT Logistik Maju Sejahtera (PKS-889-JKT) dijadwalkan berakhir pada 30 Desember 2023. Mohon persiapkan dokumen perpanjangan.',
-      actionText: 'Lihat PKS',
-      actionType: 'outline',
-      color: 'amber',
-      icon: AlertTriangle,
-    },
-    {
-      id: 3,
-      pksId: 103,
-      type: 'BERAKHIR',
-      statusBaca: 'Belum Dibaca',
-      timestamp: 'Kemarin, 14:20',
-      title: 'PKS telah berakhir.',
-      description: 'Masa berlaku PKS No. 002/PKS-MEDAN/2021 dengan Rumah Sakit Medika Utama telah habis. Seluruh proses klaim otomatis ditangguhkan.',
-      actionText: 'Lihat PKS',
-      actionType: 'solid',
-      color: 'rose',
-      icon: XCircle,
-    },
-    {
-      id: 4,
-      pksId: 104,
-      type: 'DISETUJUI',
-      statusBaca: 'Sudah Dibaca',
-      timestamp: '2 hari yang lalu',
-      title: 'PKS telah disetujui.',
-      description: 'Dokumen PKS PT Global Transindo telah mendapatkan persetujuan penuh dari Direksi Operasional. Nomor PKS resmi: 455/DIR-OPS/2023.',
-      actionText: 'Lihat Detail',
-      actionType: 'outline',
-      color: 'emerald',
-      icon: CheckCircle2,
-    },
-    {
-      id: 5,
-      pksId: 105,
-      type: 'DITOLAK',
-      statusBaca: 'Sudah Dibaca',
-      timestamp: '3 hari yang lalu',
-      title: 'PKS ditolak.',
-      description: '',
-      reasonText: '"Lampiran NPWP Perusahaan tidak terbaca dengan jelas. Harap unggah ulang dokumen yang dipindai dengan resolusi minimal 300 DPI."',
-      actionText: 'Lihat Detail',
-      actionType: 'solid',
-      color: 'rose',
-      icon: XCircle,
-    },
-    {
-      id: 6,
-      pksId: 106,
-      type: 'DOKUMEN FINAL',
-      statusBaca: 'Sudah Dibaca',
-      timestamp: '5 hari yang lalu',
-      title: 'Unggah Dokumen PKS Final',
-      description: 'Seluruh proses persetujuan telah selesai. Silakan unggah dokumen PKS final yang telah ditandatangani basah oleh kedua belah pihak untuk pengarsipan sistem.',
-      actionText: 'Unggah Dokumen',
-      actionType: 'solid',
-      color: 'purple',
-      icon: Upload,
-    }
-  ]);
+  const [notificationList, setNotificationList] = useState([]);
 
   const handleMarkAllRead = () => {
     setNotificationList(prev => prev.map(item => ({ ...item, statusBaca: 'Sudah Dibaca' })));
