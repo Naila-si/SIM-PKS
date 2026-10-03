@@ -3,9 +3,10 @@ import { pksService } from '../services/pksService';
 import { adendumService } from '../services/adendumService';
 import { useAuth } from '../context/AuthContext';
 import { StatusBadge } from '../components/StatusBadge';
+import { ModalTambahAdendum } from './ModalTambahAdendum';
 import {
   X, Info, FileText, Check, AlertCircle, Plus, MoreVertical,
-  Eye, Edit3, Trash2, Download, Upload, Shield
+  Eye, Edit3, Trash2, Download, Upload, Shield, Calendar
 } from 'lucide-react';
 
 export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
@@ -97,10 +98,10 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
 
   // Penentuan Status: Apakah PKS Sudah Disetujui (Final) atau Masih Draft/Revisi
   const isDisetujui =
-    pksData?.statusPersetujuan === 'Disetujui' ||
-    pksData?.statusPks === 'Aktif' ||
-    pksData?.statusPks === 'Segera Berakhir' ||
-    pksData?.statusPks === 'Berakhir';
+    (pksData?.status_persetujuan || pksData?.statusPersetujuan) === 'Disetujui' ||
+    (pksData?.status_pks || pksData?.statusPks) === 'Aktif' ||
+    (pksData?.status_pks || pksData?.statusPks) === 'Segera Berakhir' ||
+    (pksData?.status_pks || pksData?.statusPks) === 'Berakhir';
 
   const isDraftOrRevisi = !isDisetujui;
 
@@ -195,8 +196,42 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
           <div>
             <div className="flex items-center space-x-2">
               <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">Ubah PKS</h2>
-              <StatusBadge status={pksData?.statusPks || 'Draft'} />
-              <StatusBadge status={pksData?.statusPersetujuan || 'Draft'} />
+              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold ${
+                (pksData?.status_pks || pksData?.statusPks) === 'Aktif'
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : ((pksData?.status_pks || pksData?.statusPks) === 'Draft' || (pksData?.status_pks || pksData?.statusPks) === 'Draf')
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : 'bg-rose-100 text-rose-700'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+                  (pksData?.status_pks || pksData?.statusPks) === 'Aktif'
+                    ? 'bg-emerald-500'
+                    : ((pksData?.status_pks || pksData?.statusPks) === 'Draft' || (pksData?.status_pks || pksData?.statusPks) === 'Draf')
+                    ? 'bg-emerald-500'
+                    : 'bg-rose-500'
+                }`} />
+                {pksData?.status_pks || pksData?.statusPks || 'Draf'}
+              </span>
+              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold ${
+                (pksData?.status_persetujuan || pksData?.statusPersetujuan) === 'Disetujui'
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : (pksData?.status_persetujuan || pksData?.statusPersetujuan || '').includes('Kabag')
+                  ? 'bg-purple-100 text-purple-700'
+                  : ((pksData?.status_persetujuan || pksData?.statusPersetujuan || '') === 'Menunggu Penyerahan')
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'bg-emerald-100 text-emerald-700'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+                  (pksData?.status_persetujuan || pksData?.statusPersetujuan) === 'Disetujui'
+                    ? 'bg-emerald-500'
+                    : (pksData?.status_persetujuan || pksData?.statusPersetujuan || '').includes('Kabag')
+                    ? 'bg-purple-500'
+                    : ((pksData?.status_persetujuan || pksData?.statusPersetujuan || '') === 'Menunggu Penyerahan')
+                    ? 'bg-blue-500'
+                    : 'bg-emerald-500'
+                }`} />
+                {pksData?.status_persetujuan || pksData?.statusPersetujuan || 'Draf'}
+              </span>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">Perbarui Informasi PKS.</p>
           </div>
@@ -312,9 +347,28 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
                     onChange={(e) => setJenisPKS(e.target.value)}
                     className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
                   >
-                    <option value="PKS Rumah Sakit">PKS Rumah Sakit</option>
-                    <option value="Kerja Sama Operasional">Kerja Sama Operasional</option>
-                    <option value="IWKL Borongan">IWKL Borongan</option>
+                    {bidang === 'SW' && (
+                      <option value="Sumbangan Wajib Dana Kecelakaan Lalu Lintas Jalan (SWDKLLJ)">
+                        Sumbangan Wajib Dana Kecelakaan Lalu Lintas Jalan (SWDKLLJ)
+                      </option>
+                    )}
+                    {bidang === 'IW' && (
+                      <>
+                        <option value="IWKL Manifest">IWKL Manifest</option>
+                        <option value="IWKL Borongan">IWKL Borongan</option>
+                        <option value="IWKBU">IWKBU</option>
+                      </>
+                    )}
+                    {bidang === 'Pelayanan' && (
+                      <option value="Pelayanan Kesehatan">Pelayanan Kesehatan</option>
+                    )}
+                    {(!bidang || !['SW', 'IW', 'Pelayanan'].includes(bidang)) && (
+                      <>
+                        <option value="PKS Rumah Sakit">PKS Rumah Sakit</option>
+                        <option value="Kerja Sama Operasional">Kerja Sama Operasional</option>
+                        <option value="IWKL Borongan">IWKL Borongan</option>
+                      </>
+                    )}
                   </select>
                 </div>
               </div>
@@ -347,17 +401,7 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Jabatan</label>
-                    <input
-                      type="text"
-                      value={jabatan || ''}
-                      onChange={(e) => setJabatan(e.target.value)}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
-                    />
-                  </div>
-
-                  <div>
+                  <div className="sm:col-span-2">
                     <label className="block text-xs font-semibold text-slate-700 mb-1">Alamat</label>
                     <textarea
                       rows="3"
@@ -401,95 +445,7 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
                 </div>
               </div>
 
-              {/* ================= SECTION 3: INFORMASI SISTEM (MATCHING IMAGE 5) ================= */}
-              <div className="bg-slate-50/80 rounded-2xl border border-slate-200 p-5 space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Shield className="w-4 h-4 text-[#00529C]" />
-                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-800">
-                    Informasi Sistem
-                  </h3>
-                </div>
 
-                {/* Callout Notice */}
-                <div className="p-3 rounded-xl bg-[#EEF4FF] border border-blue-200 text-blue-900 text-xs flex items-start space-x-2 leading-relaxed">
-                  <span className="w-4 h-4 rounded-full bg-blue-200 text-blue-800 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">?</span>
-                  <span>
-                    Informasi berikut hanya digunakan untuk keperluan administrasi sistem dan tidak dimasukkan ke dalam dokumen PKS.
-                  </span>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Pengelola PKS (Read Only)</label>
-                  <input
-                    type="text"
-                    disabled
-                    value="Administrator Pusat"
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-[#EEF4FF] text-slate-700 font-medium outline-none cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Catatan Internal</label>
-                  <textarea
-                    rows="2"
-                    placeholder="Masukkan catatan internal khusus administrasi..."
-                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
-                  />
-                </div>
-              </div>
-
-              {/* ================= SECTION 4: DRAFT DOKUMEN PKS (MATCHING IMAGE 5) ================= */}
-              <div className="space-y-4 pt-2 border-t border-slate-100">
-                <div className="flex items-center space-x-2">
-                  <FileText className="w-4 h-4 text-[#00529C]" />
-                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-800">
-                    Draft Dokumen PKS
-                  </h3>
-                </div>
-
-                <div className="bg-white rounded-2xl border border-slate-200 p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xs">
-                  <div className="flex items-center space-x-3.5">
-                    <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center font-bold">
-                      <FileText className="w-5 h-5" />
-                    </div>
-                    <div className="flex items-center space-x-6 text-xs">
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase">NAMA FILE</p>
-                        <p className="font-extrabold text-slate-900">Draft_PKS_Medika...</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase">TANGGAL GENERATE</p>
-                        <p className="font-bold text-slate-800">12 Okt 2024</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase">VERSI DRAFT</p>
-                        <p className="font-bold text-slate-800">Versi 1</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase">STATUS DRAFT</p>
-                        <p className="font-extrabold text-blue-600">Final</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => alert('Pratinjau Draft Dokumen')}
-                      className="px-4 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center"
-                    >
-                      <Eye className="w-3.5 h-3.5 mr-1.5 text-blue-600" /> Lihat Draft
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => alert('Unduh Draft Dokumen')}
-                      className="px-4 py-2 bg-[#00529C] hover:bg-[#003E75] text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer flex items-center"
-                    >
-                      <Download className="w-3.5 h-3.5 mr-1.5" /> Unduh Draft
-                    </button>
-                  </div>
-                </div>
-              </div>
 
               {/* ================= SECTION 5: INFORMASI ADENDUM (MATCHING IMAGE 5) ================= */}
               <div className="space-y-4 pt-2 border-t border-slate-100">
@@ -503,8 +459,19 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
 
                   <button
                     type="button"
-                    onClick={() => setIsAddendumModalOpen(true)}
-                    className="inline-flex items-center px-4 py-2 bg-[#00529C] hover:bg-[#003E75] text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer shrink-0"
+                    onClick={() => {
+                      if (pksData?.status_pks === 'Aktif' || pksData?.statusPks === 'Aktif') {
+                        setIsAddendumModalOpen(true);
+                      } else {
+                        alert('Adendum hanya dapat dibuat untuk PKS yang berstatus Aktif.');
+                      }
+                    }}
+                    disabled={pksData?.status_pks !== 'Aktif' && pksData?.statusPks !== 'Aktif'}
+                    className={`inline-flex items-center px-4 py-2 text-xs font-bold rounded-xl shadow-xs transition-all shrink-0 ${
+                      (pksData?.status_pks === 'Aktif' || pksData?.statusPks === 'Aktif')
+                        ? 'bg-[#00529C] hover:bg-[#003E75] text-white cursor-pointer'
+                        : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    }`}
                   >
                     <Plus className="w-3.5 h-3.5 mr-1.5" />
                     Tambah Adendum
@@ -515,17 +482,23 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="bg-[#EEF4FF] p-3.5 rounded-2xl border border-blue-100">
                     <p className="text-[11px] font-semibold text-slate-500">Jumlah Adendum</p>
-                    <p className="text-xl font-extrabold text-slate-900 mt-0.5">1</p>
+                    <p className="text-xl font-extrabold text-slate-900 mt-0.5">{filteredAdendumList.length}</p>
                   </div>
 
                   <div className="bg-[#EEF4FF] p-3.5 rounded-2xl border border-blue-100">
                     <p className="text-[11px] font-semibold text-slate-500">Tanggal Adendum Terakhir</p>
-                    <p className="text-xs font-bold text-slate-900 mt-1">15 Nov 2024</p>
+                    <p className="text-xs font-bold text-slate-900 mt-1">
+                      {filteredAdendumList.length > 0
+                        ? (filteredAdendumList[0].tanggal_mulai || filteredAdendumList[0].tanggalMulai
+                            ? new Date(filteredAdendumList[0].tanggal_mulai || filteredAdendumList[0].tanggalMulai).toLocaleDateString('id-ID')
+                            : '-')
+                        : '-'}
+                    </p>
                   </div>
 
                   <div className="bg-[#EEF4FF] p-3.5 rounded-2xl border border-blue-100">
                     <p className="text-[11px] font-semibold text-slate-500">Status PKS Induk</p>
-                    <p className="text-xs font-bold text-emerald-600 mt-1">Aktif</p>
+                    <p className="text-xs font-bold text-emerald-600 mt-1">{pksData?.status_pks || pksData?.statusPks || '-'}</p>
                   </div>
                 </div>
 
@@ -539,35 +512,35 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
                           <th className="px-4 py-3">Tanggal Dibuat</th>
                           <th className="px-4 py-3">Jenis Perubahan</th>
                           <th className="px-4 py-3">Status</th>
-                          <th className="px-4 py-3 text-center">Aksi</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
-                        <tr className="hover:bg-slate-50/70 transition-colors font-medium">
-                          <td className="px-4 py-3.5 font-bold text-slate-900">
-                            AD-001/PKS/JR/2024
-                          </td>
-                          <td className="px-4 py-3.5 text-slate-600 whitespace-nowrap">
-                            15 Nov 2024
-                          </td>
-                          <td className="px-4 py-3.5 text-slate-800">
-                            Penyesuaian Tarif
-                          </td>
-                          <td className="px-4 py-3.5 whitespace-nowrap">
-                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                              Disetujui
-                            </span>
-                          </td>
-                          <td className="px-4 py-3.5 text-center whitespace-nowrap">
-                            <button
-                              type="button"
-                              onClick={() => alert('Detail Adendum')}
-                              className="text-xs font-bold text-blue-600 hover:underline inline-flex items-center cursor-pointer"
-                            >
-                              Lihat Detail <span className="ml-1">→</span>
-                            </button>
-                          </td>
-                        </tr>
+                        {filteredAdendumList.length > 0 ? (
+                          filteredAdendumList.map((ad, idx) => (
+                            <tr key={ad.adendumId || ad.id || idx} className="hover:bg-slate-50/70 transition-colors font-medium">
+                              <td className="px-4 py-3.5 font-bold text-slate-900">
+                                {ad.nomor_adendum || ad.nomorAdendum || ad.nomor || '-'}
+                              </td>
+                              <td className="px-4 py-3.5 text-slate-600 whitespace-nowrap">
+                                {(ad.tanggal_mulai || ad.tanggalMulai) ? new Date(ad.tanggal_mulai || ad.tanggalMulai).toLocaleDateString('id-ID') : '-'}
+                              </td>
+                              <td className="px-4 py-3.5 text-slate-800">
+                                {ad.ruang_lingkup || ad.ruangLingkupPerubahan || ad.jenis || '-'}
+                              </td>
+                              <td className="px-4 py-3.5 whitespace-nowrap">
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                  {ad.status_persetujuan || ad.statusPersetujuan || ad.status || '-'}
+                                </span>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="4" className="px-4 py-6 text-center text-slate-400">
+                              Belum ada data adendum.
+                            </td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -597,71 +570,15 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
 
         {/* ================= MODAL TAMBAH ADENDUM INTERAKTIF ================= */}
         {isAddendumModalOpen && (
-          <div className="fixed inset-0 z-60 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 className="text-sm font-bold text-slate-900">Tambah Adendum PKS</h3>
-                <button type="button" onClick={() => setIsAddendumModalOpen(false)} className="text-slate-400 hover:text-slate-600">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <form onSubmit={handleCreateAddendumSubmit} className="space-y-3 text-xs">
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Ruang Lingkup Perubahan Adendum *</label>
-                  <textarea
-                    rows="3"
-                    required
-                    placeholder="Jelaskan perubahan klausul dalam adendum ini..."
-                    value={addendumRuangLingkup}
-                    onChange={(e) => setAddendumRuangLingkup(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-semibold text-slate-700 mb-1">Tanggal Mulai *</label>
-                    <input
-                      type="date"
-                      required
-                      value={addendumTglMulai}
-                      onChange={(e) => setAddendumTglMulai(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-semibold text-slate-700 mb-1">Tanggal Berakhir *</label>
-                    <input
-                      type="date"
-                      required
-                      value={addendumTglBerakhir}
-                      onChange={(e) => setAddendumTglBerakhir(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end space-x-2 pt-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsAddendumModalOpen(false)}
-                    className="px-3.5 py-2 font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={submittingAddendum}
-                    className="px-4 py-2 font-semibold bg-[#00529C] text-white rounded-xl hover:bg-[#003E75]"
-                  >
-                    {submittingAddendum ? 'Memproses...' : 'Simpan Adendum'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+          <ModalTambahAdendum
+            isOpen={isAddendumModalOpen}
+            pksId={pksId}
+            pksInitialData={pksData}
+            onClose={() => setIsAddendumModalOpen(false)}
+            onSuccess={(newAd) => {
+              setAdendumList((prev) => [newAd, ...prev]);
+            }}
+          />
         )}
       </div>
     </div>

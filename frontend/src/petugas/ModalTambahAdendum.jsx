@@ -15,12 +15,9 @@ export const ModalTambahAdendum = ({ isOpen, pksId, pksInitialData, onClose, onS
 
   // Form States
   const [tanggalAdendum, setTanggalAdendum] = useState(new Date().toISOString().split('T')[0]);
-  const [jenisPerubahan, setJenisPerubahan] = useState('Perpanjangan Jangka Waktu');
   const [judulAdendum, setJudulAdendum] = useState('');
   const [isiPerubahan, setIsiPerubahan] = useState('');
-  const [tanggalBerlaku, setTanggalBerlaku] = useState('');
-  const [catatanTambahan, setCatatanTambahan] = useState('');
-  const [catatanInternal, setCatatanInternal] = useState('');
+  const [tanggalBerakhirAdendum, setTanggalBerakhirAdendum] = useState('');
 
   // Fetch PKS data if not provided
   useEffect(() => {
@@ -43,7 +40,7 @@ export const ModalTambahAdendum = ({ isOpen, pksId, pksInitialData, onClose, onS
     e.preventDefault();
     setErrorMsg('');
 
-    if (!judulAdendum || !isiPerubahan || !tanggalBerlaku) {
+    if (!judulAdendum || !isiPerubahan || !tanggalBerakhirAdendum) {
       setErrorMsg('Harap lengkapi seluruh field wajib yang bertanda bintang (*).');
       return;
     }
@@ -52,13 +49,11 @@ export const ModalTambahAdendum = ({ isOpen, pksId, pksInitialData, onClose, onS
     try {
       const payload = {
         tanggalAdendum,
-        jenisPerubahan,
+        jenisPerubahan: 'Perpanjangan Jangka Waktu', // default
         judulAdendum,
         ruangLingkupPerubahan: isiPerubahan,
-        tanggalMulai: tanggalBerlaku,
-        tanggalBerakhir: pksData?.tanggalBerakhir || tanggalBerlaku,
-        catatan: catatanTambahan,
-        catatanInternal,
+        tanggalMulai: tanggalAdendum,
+        tanggalBerakhir: tanggalBerakhirAdendum,
       };
 
       const res = await adendumService.createAdendum(pksId || pksData?.pksId, payload);
@@ -122,30 +117,30 @@ export const ModalTambahAdendum = ({ isOpen, pksId, pksInitialData, onClose, onS
                 <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase">Nomor PKS</p>
-                    <p className="font-extrabold text-[#00529C] text-xs mt-0.5">{pksData?.nomorPKS || 'PKS/2024/JR/PEL/001'}</p>
+                    <p className="font-extrabold text-[#00529C] text-xs mt-0.5">{pksData?.nomor_pks || pksData?.nomorPKS || '-'}</p>
                   </div>
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase">Jenis PKS</p>
-                    <p className="font-semibold text-slate-800 text-xs mt-0.5">{pksData?.jenisPKS || 'Kerja Sama Operasional'}</p>
+                    <p className="font-semibold text-slate-800 text-xs mt-0.5">{pksData?.jenis_pks || pksData?.jenisPKS || '-'}</p>
                   </div>
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase">Bidang</p>
-                    <p className="font-bold text-slate-800 text-xs mt-0.5">{pksData?.bidang || 'Pelayanan'}</p>
+                    <p className="font-bold text-slate-800 text-xs mt-0.5">{pksData?.bidang || '-'}</p>
                   </div>
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase">Perusahaan / Instansi</p>
-                    <p className="font-bold text-slate-900 text-xs mt-0.5">{pksData?.mitra?.namaPerusahaan || pksData?.namaMitra || 'RS Medika Sejahtera'}</p>
+                    <p className="font-bold text-slate-900 text-xs mt-0.5">{pksData?.mitra?.nama_mitra || pksData?.mitra?.namaPerusahaan || pksData?.namaMitra || '-'}</p>
                   </div>
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase">Tanggal Mulai PKS</p>
                     <p className="font-medium text-slate-700 mt-0.5">
-                      {pksData?.tanggalMulai ? new Date(pksData.tanggalMulai).toLocaleDateString('id-ID') : '01/01/2024'}
+                      {pksData?.tanggal_mulai || pksData?.tanggalMulai ? new Date(pksData.tanggal_mulai || pksData.tanggalMulai).toLocaleDateString('id-ID') : '-'}
                     </p>
                   </div>
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase">Tanggal Berakhir PKS</p>
                     <p className="font-medium text-slate-700 mt-0.5">
-                      {pksData?.tanggalBerakhir ? new Date(pksData.tanggalBerakhir).toLocaleDateString('id-ID') : '31/12/2024'}
+                      {pksData?.tanggal_berakhir || pksData?.tanggalBerakhir ? new Date(pksData.tanggal_berakhir || pksData.tanggalBerakhir).toLocaleDateString('id-ID') : '-'}
                     </p>
                   </div>
                 </div>
@@ -161,16 +156,6 @@ export const ModalTambahAdendum = ({ isOpen, pksId, pksInitialData, onClose, onS
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Nomor Adendum</label>
-                  <input
-                    type="text"
-                    disabled
-                    value="ADD/2024/001"
-                    className="w-full px-3 py-2 bg-blue-50/60 border border-blue-200/80 rounded-xl text-slate-600 font-bold outline-none cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
                   <label className="block font-semibold text-slate-700 mb-1">Tanggal Adendum *</label>
                   <input
                     type="date"
@@ -181,19 +166,15 @@ export const ModalTambahAdendum = ({ isOpen, pksId, pksInitialData, onClose, onS
                   />
                 </div>
 
-                <div className="md:col-span-2">
-                  <label className="block font-semibold text-slate-700 mb-1">Jenis Perubahan *</label>
-                  <select
-                    value={jenisPerubahan}
-                    onChange={(e) => setJenisPerubahan(e.target.value)}
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1">Tanggal Berakhir Adendum *</label>
+                  <input
+                    type="date"
+                    required
+                    value={tanggalBerakhirAdendum}
+                    onChange={(e) => setTanggalBerakhirAdendum(e.target.value)}
                     className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none font-medium text-slate-800"
-                  >
-                    <option value="Perpanjangan Jangka Waktu">Perpanjangan Jangka Waktu</option>
-                    <option value="Penyesuaian Tarif Klaim">Penyesuaian Tarif Klaim</option>
-                    <option value="Perubahan PIC Operasional">Perubahan PIC Operasional</option>
-                    <option value="Perubahan Ruang Lingkup Kerjasama">Perubahan Ruang Lingkup Kerjasama</option>
-                    <option value="Lainnya">Lainnya</option>
-                  </select>
+                  />
                 </div>
               </div>
             </div>
@@ -234,60 +215,7 @@ export const ModalTambahAdendum = ({ isOpen, pksId, pksInitialData, onClose, onS
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Tanggal Berlaku Adendum *</label>
-                  <input
-                    type="date"
-                    required
-                    value={tanggalBerlaku}
-                    onChange={(e) => setTanggalBerlaku(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none font-medium"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Catatan Tambahan</label>
-                  <input
-                    type="text"
-                    placeholder="Tambahkan informasi pendukung lainnya jika ada..."
-                    value={catatanTambahan}
-                    onChange={(e) => setCatatanTambahan(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none font-medium"
-                  />
-                </div>
-              </div>
             </div>
-
-            {/* SECTION 4: INFORMASI SISTEM */}
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-100 pb-2">
-                <Info className="w-3.5 h-3.5 text-[#00529C]" />
-                <span>INFORMASI SISTEM</span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Pengelola PKS</label>
-                  <div className="px-3.5 py-2.5 bg-blue-50/70 border border-blue-200/80 rounded-xl text-blue-900 font-bold text-xs flex items-center space-x-2">
-                    <span className="w-2 h-2 rounded-full bg-blue-600 inline-block" />
-                    <span>{user?.nama || 'Admin Pusat'}</span>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Catatan Internal</label>
-                  <input
-                    type="text"
-                    placeholder="Tambahkan catatan apabila diperlukan..."
-                    value={catatanInternal}
-                    onChange={(e) => setCatatanInternal(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none font-medium"
-                  />
-                </div>
-              </div>
-            </div>
-
           </form>
         </div>
 

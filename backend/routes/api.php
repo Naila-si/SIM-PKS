@@ -57,3 +57,6 @@ Route::apiResource('pks-templates', \App\Http\Controllers\PksTemplateController:
 Route::get('pks-documents/{id}/generate-docx', [\App\Http\Controllers\PksDocumentController::class, 'generateDocx']);
 Route::apiResource('pks-documents', \App\Http\Controllers\PksDocumentController::class);
 
+// ================= RUTE RIWAYAT PERSETUJUAN =================
+Route::post('pks-approvals', [\App\Http\Controllers\PksApprovalController::class, 'store']);
+

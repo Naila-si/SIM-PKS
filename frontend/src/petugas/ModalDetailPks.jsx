@@ -10,7 +10,10 @@ import {
   AlertTriangle, Plus, ShieldCheck, Info
 } from 'lucide-react';
 
+import { useAuth } from '../context/AuthContext';
+
 export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [pks, setPks] = useState(null);
   const [adendumList, setAdendumList] = useState([]);
@@ -20,6 +23,44 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
   const [viewingAdendum, setViewingAdendum] = useState(null);
   const [editingAdendum, setEditingAdendum] = useState(null);
   const [deletingAdendum, setDeletingAdendum] = useState(null);
+
+  // Custom Professional Dialog State
+  const [dialog, setDialog] = useState({
+    isOpen: false,
+    type: 'info', // 'info' | 'confirm'
+    title: '',
+    message: '',
+    onConfirm: null,
+  });
+
+  const showDialog = (type, title, message, onConfirm = null) => {
+    setDialog({ isOpen: true, type, title, message, onConfirm });
+  };
+  const closeDialog = () => setDialog({ ...dialog, isOpen: false });
+
+  const handleTandaiSiap = async () => {
+    showDialog(
+      'confirm',
+      'Konfirmasi Penyerahan',
+      'Apakah Anda yakin dokumen fisik sudah siap diserahkan? Status PKS akan diubah menjadi "Menunggu Penyerahan".',
+      async () => {
+        try {
+          setLoading(true);
+          await pksService.addApproval({
+            pks_id: pksId,
+            user_id: user?.penggunaId || user?.id || null,
+            status_aksi: 'Menunggu Penyerahan',
+            catatan: 'Dokumen fisik siap diserahkan oleh Petugas'
+          });
+          window.location.reload();
+        } catch (error) {
+          showDialog('info', 'Gagal', 'Terjadi kesalahan saat mengupdate status.');
+        } finally {
+          setLoading(false);
+        }
+      }
+    );
+  };
 
   useEffect(() => {
     if (isOpen && pksId) {
@@ -56,6 +97,23 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
   const data = pks || {};
   const displayAdendum = adendumList;
 
+  // RBAC & Ownership Logic
+  const creatorName = data.pengguna?.nama || data.pengguna?.nama_pengguna || data.pembuat?.nama || data.pengelola || 'Sistem';
+  const isCreator = user?.nama === creatorName || user?.nama_pengguna === creatorName || user?.penggunaId === data?.penggunaId || user?.penggunaId === data?.pengguna?.penggunaId;
+  const isDraft = ['draft', 'draf'].includes((data.status_pks || data.statusPks || 'Draf').toLowerCase());
+  const isPemeriksaanPengelola = ['pemeriksaan pengelola', 'menunggu penyerahan'].includes((data.status_persetujuan || data.statusPersetujuan || '').toLowerCase());
+  const isDisetujui = ['disetujui', 'aktif'].includes((data.status_pks || data.statusPks || '').toLowerCase());
+  const isDraftPersetujuan = ['draft', 'draf'].includes((data.status_persetujuan || data.statusPersetujuan || 'Draf').toLowerCase());
+
+  const isPetugas = ['petugas', 'petugas_jr'].includes(user?.role);
+  const isPengelolaOrAdmin = ['pengelola_pks', 'admin_utama', 'admin', 'pengelola'].includes(user?.role);
+  const isKabagOrPimpinan = ['kabag', 'pimpinan'].includes(user?.role);
+
+  const canShowSiapDiserahkan = isPetugas && isCreator && isDraftPersetujuan;
+  const canShowTambahAdendum = isPetugas && isCreator;
+  const canShowApprovalPengelola = isPengelolaOrAdmin && isPemeriksaanPengelola;
+  const canShowUploadFinal = isPengelolaOrAdmin && isDisetujui;
+
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 font-sans">
       <div className="bg-white rounded-2xl border border-slate-200 max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
@@ -76,13 +134,48 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center space-x-3">
+            {/* Action untuk Petugas Pembuat */}
+            {canShowSiapDiserahkan && (
+              <button
+                type="button"
+                disabled={loading}
+                onClick={handleTandaiSiap}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center cursor-pointer disabled:opacity-50"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
+                {loading ? 'Memproses...' : 'Tandai Siap Diserahkan'}
+              </button>
+            )}
+
+            {/* Action untuk Pengelola / Admin Utama (Pemeriksaan) */}
+            {canShowApprovalPengelola && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => showDialog('info', 'Info', 'Menolak/Revisi PKS. (API Integrasi Menyusul)')}
+                  className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center cursor-pointer"
+                >
+                  Revisi
+                </button>
+                <button
+                  type="button"
+                  onClick={() => showDialog('info', 'Info', 'Menyetujui PKS. (API Integrasi Menyusul)')}
+                  className="px-4 py-2 bg-[#00529C] hover:bg-[#003E75] text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center cursor-pointer"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
+                  Setujui
+                </button>
+              </>
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-1 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* ================= SCROLLABLE BODY CONTENT ================= */}
@@ -178,41 +271,8 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
                 </div>
               </div>
 
-              {/* 3. DOKUMEN PKS (DRAFT & FINAL SIDE-BY-SIDE MATCHING IMAGE 4) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Left Card: Draft Dokumen */}
-                <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3 shadow-2xs">
-                  <div className="flex items-center space-x-2">
-                    <FileText className="w-4 h-4 text-[#00529C]" />
-                    <h3 className="text-xs font-bold text-slate-800">Draft Dokumen</h3>
-                  </div>
-                  <p className="text-[10px] text-slate-400 font-medium">Versi 1.4 (Internal)</p>
-
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs space-y-1">
-                    <p className="font-extrabold text-slate-900 truncate">
-                      {data.url_berkas ? data.url_berkas.split('/').pop() : '-'}
-                    </p>
-                    <p className="text-[10px] text-slate-400">Terakhir diperbarui: {data.updated_at ? new Date(data.updated_at).toLocaleDateString('id-ID') : '-'}</p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => alert('Pratinjau Draft Dokumen PKS')}
-                      className="py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl shadow-2xs transition-all cursor-pointer"
-                    >
-                      Lihat
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => alert('Unduh Draft Dokumen PKS')}
-                      className="py-2 bg-[#00529C] hover:bg-[#003E75] text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
-                    >
-                      Unduh
-                    </button>
-                  </div>
-                </div>
-
+              {/* 3. DOKUMEN PKS FINAL */}
+              <div className="grid grid-cols-1 gap-4">
                 {/* Right Card: Dokumen PKS Final Warning Box (Matching Image 4) */}
                 <div className="bg-[#FFF9EE] rounded-2xl border border-[#FDE68A] p-5 flex flex-col items-center justify-center text-center space-y-2">
                   <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center font-bold">
@@ -222,13 +282,20 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
                   <p className="text-[11px] text-amber-700 font-medium max-w-xs leading-snug">
                     Dokumen PKS final yang ditandatangani belum diunggah ke sistem.
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => alert('Silakan unggah dokumen PKS final.')}
-                    className="text-xs font-bold text-amber-800 underline hover:text-amber-900 cursor-pointer pt-1"
-                  >
-                    Unggah Sekarang
-                  </button>
+                  {canShowUploadFinal ? (
+                    <button
+                      type="button"
+                      onClick={() => showDialog('info', 'Fitur Belum Tersedia', 'Fitur Unggah Dokumen Final (API Menyusul)')}
+                      className="mt-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer flex items-center"
+                    >
+                      <FileText className="w-4 h-4 mr-1.5" />
+                      Unggah Dokumen Final
+                    </button>
+                  ) : (
+                    <p className="text-[10px] text-amber-800/80 pt-1 italic">
+                      Menunggu Pengelola PKS mengunggah dokumen akhir.
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -245,14 +312,27 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
                     </span>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setIsAddendumModalOpen(true)}
-                    className="inline-flex items-center px-3.5 py-2 bg-[#0F2238] hover:bg-[#0A1828] text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer"
-                  >
-                    <Plus className="w-3.5 h-3.5 mr-1" />
-                    Tambah Adendum
-                  </button>
+                  {canShowTambahAdendum && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (data?.status_pks === 'Aktif' || data?.statusPks === 'Aktif') {
+                          setIsAddendumModalOpen(true);
+                        } else {
+                          showDialog('info', 'Akses Ditolak', 'Adendum hanya dapat dibuat untuk PKS yang berstatus Aktif.');
+                        }
+                      }}
+                      disabled={data?.status_pks !== 'Aktif' && data?.statusPks !== 'Aktif'}
+                      className={`inline-flex items-center px-3.5 py-2 text-xs font-bold rounded-xl shadow-xs ${
+                        (data?.status_pks === 'Aktif' || data?.statusPks === 'Aktif')
+                          ? 'bg-[#0F2238] hover:bg-[#0A1828] text-white cursor-pointer'
+                          : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                      }`}
+                    >
+                      <Plus className="w-3.5 h-3.5 mr-1" />
+                      Tambah Adendum
+                    </button>
+                  )}
                 </div>
 
                 <div className="overflow-x-auto">
@@ -326,8 +406,8 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
                       <User className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Pengelola PKS</p>
-                      <p className="font-bold text-slate-900 mt-0.5">{data.pengguna?.nama_pengguna || data.pengelola || '-'}</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Dibuat Oleh</p>
+                      <p className="font-bold text-slate-900 mt-0.5">{creatorName}</p>
                     </div>
                   </div>
 
@@ -350,7 +430,9 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
                     <div>
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Terakhir Diperbarui</p>
                       <p className="font-semibold text-slate-800 mt-0.5">
-                        {data.updated_at ? new Date(data.updated_at).toLocaleString('id-ID', {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit'}) : '-'}
+                        {data.updated_at && data.created_at && Math.abs(new Date(data.updated_at) - new Date(data.created_at)) > 5000
+                          ? new Date(data.updated_at).toLocaleString('id-ID', {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit'}) 
+                          : '-'}
                       </p>
                     </div>
                   </div>
@@ -375,23 +457,34 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
                 </div>
 
                 <div className="space-y-3.5 text-xs">
-                  {data.riwayat_persetujuan && data.riwayat_persetujuan.length > 0 ? (
+                  <div className="flex items-start space-x-3">
+                    <div className="w-6 h-6 rounded-full bg-[#00529C] text-white flex items-center justify-center shrink-0 mt-0.5">
+                      <CheckCircle2 className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="font-extrabold text-slate-900">Draft Dibuat</p>
+                      <p className="text-[11px] text-slate-500 font-medium">{creatorName}</p>
+                      <p className="text-[10px] text-slate-400">
+                        {data.created_at ? new Date(data.created_at).toLocaleString('id-ID', {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit'}) : '-'}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {data.riwayat_persetujuan && data.riwayat_persetujuan.length > 0 && (
                     data.riwayat_persetujuan.map((riwayat, idx) => (
                       <div key={idx} className="flex items-start space-x-3">
                         <div className="w-6 h-6 rounded-full bg-[#00529C] text-white flex items-center justify-center shrink-0 mt-0.5">
                           <CheckCircle2 className="w-4 h-4" />
                         </div>
                         <div>
-                          <p className="font-extrabold text-slate-900">{riwayat.judul || '-'}</p>
-                          <p className="text-[11px] text-slate-500 font-medium">{riwayat.aktor || '-'}</p>
-                          <p className="text-[10px] text-slate-400">{riwayat.tanggal || '-'}</p>
+                          <p className="font-extrabold text-slate-900">{riwayat.status_aksi || riwayat.judul || '-'}</p>
+                          <p className="text-[11px] text-slate-500 font-medium">{riwayat.user?.nama || riwayat.aktor || '-'}</p>
+                          <p className="text-[10px] text-slate-400">
+                            {riwayat.created_at ? new Date(riwayat.created_at).toLocaleString('id-ID', {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit'}) : (riwayat.tanggal || '-')}
+                          </p>
                         </div>
                       </div>
                     ))
-                  ) : (
-                    <div className="text-center py-4 text-slate-400 font-medium text-xs">
-                      Belum ada riwayat persetujuan.
-                    </div>
                   )}
                 </div>
               </div>
@@ -457,6 +550,55 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
           />
         )}
       </div>
+
+      {/* ================= PROFESSIONAL CUSTOM DIALOG ================= */}
+      {dialog.isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6">
+              <div className="flex items-center justify-center w-12 h-12 rounded-full mb-4 mx-auto bg-slate-50 text-slate-600">
+                {dialog.type === 'confirm' ? (
+                  <AlertTriangle className="w-6 h-6 text-amber-500" />
+                ) : (
+                  <Info className="w-6 h-6 text-blue-500" />
+                )}
+              </div>
+              <h3 className="text-center text-base font-extrabold text-slate-900 mb-2">
+                {dialog.title}
+              </h3>
+              <p className="text-center text-sm text-slate-600 font-medium leading-relaxed">
+                {dialog.message}
+              </p>
+            </div>
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end space-x-3">
+              {dialog.type === 'confirm' && (
+                <button
+                  type="button"
+                  onClick={closeDialog}
+                  className="px-4 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  if (dialog.onConfirm) {
+                    dialog.onConfirm();
+                  } else {
+                    closeDialog();
+                  }
+                }}
+                className={`px-5 py-2 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+                  dialog.type === 'confirm' ? 'bg-[#00529C] hover:bg-[#003E75]' : 'bg-[#00529C] hover:bg-[#003E75] w-full'
+                }`}
+              >
+                {dialog.type === 'confirm' ? 'Ya, Lanjutkan' : 'Mengerti'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -138,10 +138,28 @@ export const pksService = {
   },
 
   deletePks: async (id) => {
-    const list = loadStorage();
-    const updated = list.filter((p) => String(p.pksId) !== String(id));
-    saveStorage(updated);
-    return { success: true };
+    try {
+      const res = await fetch(`http://localhost:8000/api/pks-documents/${id}`, {
+        method: 'DELETE'
+      });
+      return { success: true };
+    } catch (err) {
+      return { success: false };
+    }
+  },
+
+  addApproval: async (payload) => {
+    try {
+      const res = await fetch('http://localhost:8000/api/pks-approvals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      return { success: true, data: data };
+    } catch (err) {
+      return { success: false, message: 'Gagal' };
+    }
   },
 
   pengakhiranPks: async (id, payload) => {

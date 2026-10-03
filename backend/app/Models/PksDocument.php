@@ -33,4 +33,9 @@ class PksDocument extends Model
     {
         return $this->belongsTo(Pengguna::class, 'penggunaId', 'penggunaId');
     }
+
+    public function riwayat_persetujuan()
+    {
+        return $this->hasMany(PksApproval::class, 'pks_id', 'pksId')->orderBy('created_at', 'asc');
+    }
 }

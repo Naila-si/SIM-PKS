@@ -44,7 +44,7 @@ export const ManajemenPksPage = () => {
   // Filter States
   const [urutan, setUrutan] = useState('Terbaru');
   const [bidang, setBidang] = useState('Semua');
-  const [jenisPks, setJenisPks] = useState('Semua');
+  const [statusDokumen, setStatusDokumen] = useState('Semua');
   const [statusPks, setStatusPks] = useState('Semua');
   const [persetujuan, setPersetujuan] = useState('Semua');
   const [searchQuery, setSearchQuery] = useState('');
@@ -55,6 +55,16 @@ export const ManajemenPksPage = () => {
       const pksRes = await pksService.getPksList({ per_page: 100 });
       if (pksRes.success && pksRes.data) {
         setPksList(pksRes.data);
+        
+        let draft = 0, aktif = 0, segeraBerakhir = 0, berakhir = 0;
+        pksRes.data.forEach(item => {
+           const st = (item.status_pks || item.statusPks || 'draft').toLowerCase();
+           if (st === 'draft' || st === 'draf') draft++;
+           else if (st === 'aktif') aktif++;
+           else if (st === 'segera berakhir') segeraBerakhir++;
+           else if (st === 'berakhir') berakhir++;
+        });
+        setSummary({ draft, aktif, segeraBerakhir, berakhir });
       } else {
         setPksList([]);
       }
@@ -73,7 +83,7 @@ export const ManajemenPksPage = () => {
   const handleResetFilter = () => {
     setUrutan('Terbaru');
     setBidang('Semua');
-    setJenisPks('Semua');
+    setStatusDokumen('Semua');
     setStatusPks('Semua');
     setPersetujuan('Semua');
     setSearchQuery('');
@@ -89,8 +99,16 @@ export const ManajemenPksPage = () => {
     }
 
     if (bidang !== 'Semua' && item.bidang !== bidang) return false;
-    if (statusPks !== 'Semua' && item.statusPks !== statusPks) return false;
-    if (persetujuan !== 'Semua' && item.statusPersetujuan !== persetujuan) return false;
+    
+    const pksStat = item.status_pks || item.statusPks;
+    if (statusPks !== 'Semua' && pksStat !== statusPks) return false;
+    
+    const persStat = item.status_persetujuan || item.statusPersetujuan;
+    if (persetujuan !== 'Semua' && persStat !== persetujuan) return false;
+    
+    const hasDoc = item.statusDokumen === 'Sudah Diunggah' || !!item.url_dokumen_final || !!item.dokumen_final;
+    if (statusDokumen === 'Sudah Diunggah' && !hasDoc) return false;
+    if (statusDokumen === 'Belum Diunggah' && hasDoc) return false;
 
     return true;
   });
@@ -120,7 +138,7 @@ export const ManajemenPksPage = () => {
       {/* 2. Top 4 Stat Cards (Image 2 Mockup) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* PKS Draft */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-2xs flex items-center justify-between">
+        <div className="bg-white rounded-2xl p-5 border-l-4 border-l-[#00529C] border border-slate-200 shadow-2xs flex items-center justify-between">
           <div>
             <p className="text-xs font-bold text-slate-400">PKS Draft</p>
             <p className="text-3xl font-extrabold text-[#00529C] mt-1">{summary.draft}</p>
@@ -131,7 +149,7 @@ export const ManajemenPksPage = () => {
         </div>
 
         {/* PKS Aktif */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-2xs flex items-center justify-between">
+        <div className="bg-white rounded-2xl p-5 border-l-4 border-l-emerald-500 border border-slate-200 shadow-2xs flex items-center justify-between">
           <div>
             <p className="text-xs font-bold text-slate-400">PKS Aktif</p>
             <p className="text-3xl font-extrabold text-emerald-600 mt-1">{summary.aktif}</p>
@@ -200,17 +218,17 @@ export const ManajemenPksPage = () => {
             </select>
           </div>
 
-          {/* Jenis PKS */}
+          {/* Status Dokumen */}
           <div>
-            <label className="block text-[11px] font-semibold text-slate-500 mb-1">Jenis PKS</label>
+            <label className="block text-[11px] font-semibold text-slate-500 mb-1">Status Dokumen</label>
             <select
-              value={jenisPks}
-              onChange={(e) => setJenisPks(e.target.value)}
+              value={statusDokumen}
+              onChange={(e) => setStatusDokumen(e.target.value)}
               className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 outline-none"
             >
-              <option value="Semua">Semua Jenis</option>
-              <option value="Operasional">Kerja Sama Operasional</option>
-              <option value="Integrasi">Integrasi Data</option>
+              <option value="Semua">Semua Status</option>
+              <option value="Sudah Diunggah">Sudah Diunggah</option>
+              <option value="Belum Diunggah">Belum Diunggah</option>
             </select>
           </div>
 
@@ -239,9 +257,18 @@ export const ManajemenPksPage = () => {
               className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 outline-none"
             >
               <option value="Semua">Semua</option>
+              <option value="Draft">Draft</option>
+              <option value="Menunggu Penyerahan">Menunggu Penyerahan</option>
+              <option value="Pemeriksaan Pengelola">Pemeriksaan Pengelola</option>
+              <option value="Disetujui Pengelola">Disetujui Pengelola</option>
+              <option value="Revisi Pengelola">Revisi Pengelola</option>
+              <option value="Pemeriksaan Kabag">Pemeriksaan Kabag</option>
+              <option value="Disetujui Kabag">Disetujui Kabag</option>
+              <option value="Revisi Kabag">Revisi Kabag</option>
+              <option value="Pemeriksaan Pimpinan">Pemeriksaan Pimpinan</option>
+              <option value="Disetujui Pimpinan">Disetujui Pimpinan</option>
+              <option value="Revisi Pimpinan">Revisi Pimpinan</option>
               <option value="Disetujui">Disetujui</option>
-              <option value="Menunggu Pemeriksaan">Menunggu Pemeriksaan</option>
-              <option value="Persetujuan Kabag">Persetujuan Kabag</option>
             </select>
           </div>
 
@@ -340,26 +367,44 @@ export const ManajemenPksPage = () => {
 
                       {/* STATUS Badge */}
                       <td className="px-4 py-4 whitespace-nowrap">
-                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold ${
                           (item.status_pks || item.statusPks) === 'Aktif'
                             ? 'bg-emerald-100 text-emerald-700'
-                            : (item.status_pks || item.statusPks) === 'Draft'
-                            ? 'bg-sky-100 text-sky-700'
+                            : ((item.status_pks || item.statusPks) === 'Draft' || (item.status_pks || item.statusPks) === 'Draf')
+                            ? 'bg-emerald-100 text-emerald-700'
                             : 'bg-rose-100 text-rose-700'
                         }`}>
-                          {item.status_pks || item.statusPks || 'Draft'}
+                          <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+                            (item.status_pks || item.statusPks) === 'Aktif'
+                              ? 'bg-emerald-500'
+                              : ((item.status_pks || item.statusPks) === 'Draft' || (item.status_pks || item.statusPks) === 'Draf')
+                              ? 'bg-emerald-500'
+                              : 'bg-rose-500'
+                          }`} />
+                          {item.status_pks || item.statusPks || 'Draf'}
                         </span>
                       </td>
 
                       {/* PERSETUJUAN Badge */}
                       <td className="px-4 py-4 whitespace-nowrap">
-                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold ${
                           (item.status_persetujuan || item.statusPersetujuan) === 'Disetujui'
                             ? 'bg-emerald-100 text-emerald-700'
                             : (item.status_persetujuan || item.statusPersetujuan || '').includes('Kabag')
                             ? 'bg-purple-100 text-purple-700'
-                            : 'bg-sky-100 text-sky-700'
+                            : ((item.status_persetujuan || item.statusPersetujuan || '') === 'Menunggu Penyerahan')
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'bg-emerald-100 text-emerald-700'
                         }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+                            (item.status_persetujuan || item.statusPersetujuan) === 'Disetujui'
+                              ? 'bg-emerald-500'
+                              : (item.status_persetujuan || item.statusPersetujuan || '').includes('Kabag')
+                              ? 'bg-purple-500'
+                              : ((item.status_persetujuan || item.statusPersetujuan || '') === 'Menunggu Penyerahan')
+                              ? 'bg-blue-500'
+                              : 'bg-emerald-500'
+                          }`} />
                           {item.status_persetujuan || item.statusPersetujuan || 'Draf'}
                         </span>
                       </td>
@@ -403,15 +448,36 @@ export const ManajemenPksPage = () => {
                               >
                                 Detail
                               </button>
-                              <button
-                                onClick={() => {
-                                  setActiveActionId(null);
-                                  setEditingPksId(item.pksId);
-                                }}
-                                className="flex items-center w-full px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 font-medium cursor-pointer"
-                              >
-                                Edit
-                              </button>
+
+                              {/* LOGIKA RBAC EDIT */}
+                              {(() => {
+                                const creatorId = item.pengguna?.penggunaId || item.penggunaId;
+                                const isCreator = user?.penggunaId === creatorId;
+                                const statusPers = (item.status_persetujuan || item.statusPersetujuan || 'Draf').toLowerCase();
+                                const isDraft = ['draft', 'draf'].includes(statusPers);
+                                const isMenunggu = statusPers === 'menunggu penyerahan';
+                                
+                                const role = user?.role;
+                                const isPetugas = ['petugas', 'petugas_jr'].includes(role);
+                                const isPengelolaOrAdmin = ['pengelola_pks', 'admin_utama', 'admin', 'pengelola'].includes(role);
+                                
+                                // Petugas hanya bisa edit draf miliknya
+                                // Pengelola/Admin bisa edit kecuali saat statusnya "Menunggu Penyerahan" atau "Draft"
+                                const canEdit = (isPetugas && isCreator && isDraft) || (isPengelolaOrAdmin && !isMenunggu && !isDraft);
+
+                                if (!canEdit) return null;
+                                return (
+                                  <button
+                                    onClick={() => {
+                                      setActiveActionId(null);
+                                      setEditingPksId(item.pksId);
+                                    }}
+                                    className="flex items-center w-full px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 font-medium cursor-pointer"
+                                  >
+                                    Edit
+                                  </button>
+                                );
+                              })()}
                             </div>
                           )}
                         </div>

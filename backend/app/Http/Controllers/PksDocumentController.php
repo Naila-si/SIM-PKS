@@ -11,12 +11,12 @@ class PksDocumentController extends Controller
 {
     public function index()
     {
-        return response()->json(PksDocument::with('mitra', 'pengguna')->get());
+        return response()->json(PksDocument::with('mitra', 'pengguna', 'riwayat_persetujuan.user')->get());
     }
 
     public function show($id)
     {
-        $doc = PksDocument::with('mitra', 'pengguna')->find($id);
+        $doc = PksDocument::with('mitra', 'pengguna', 'riwayat_persetujuan.user')->find($id);
         if (!$doc) return response()->json(['message' => 'Not found'], 404);
         return response()->json($doc);
     }
