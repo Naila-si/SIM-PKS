@@ -83,7 +83,7 @@ class AutentikasiKontroller extends Controller
 
             // Simpan token pengingat sesi ke Tabel 'sesi_pengguna' di Database (Kadaluarsa 30 Hari)
             SesiPengguna::create([
-                'pengguna_id' => $pengguna->id,
+                'penggunaId' => $pengguna->penggunaId,
                 'token_ingat_saya' => $tokenIngatSaya,
                 'ip_address' => $permintaan->ip(),
                 'user_agent' => substr($permintaan->userAgent(), 0, 255),
@@ -92,7 +92,7 @@ class AutentikasiKontroller extends Controller
         }
 
         // Buat Token Sesi Akses (Bearer Token)
-        $tokenSesiAkses = 'sim-pks-token-' . $pengguna->id . '-' . time();
+        $tokenSesiAkses = 'sim-pks-token-' . $pengguna->penggunaId . '-' . time();
 
         // 6. Kembalikan Respon Sukses Login
         return response()->json([
@@ -102,7 +102,7 @@ class AutentikasiKontroller extends Controller
                 'token_akses' => $tokenSesiAkses,
                 'token_ingat_saya' => $tokenIngatSaya,
                 'pengguna' => [
-                    'penggunaId' => $pengguna->id,
+                    'penggunaId' => $pengguna->penggunaId,
                     'nama' => $pengguna->nama,
                     'email' => $pengguna->email,
                     'nomorHp' => $pengguna->nomor_hp,
@@ -111,7 +111,6 @@ class AutentikasiKontroller extends Controller
                     'wilayah' => $pengguna->wilayah,
                     'samsat' => $pengguna->samsat,
                     'bidang' => $pengguna->bidang,
-                    'unitKerja' => $pengguna->unit_kerja,
                     'status' => $pengguna->status,
                 ],
             ],
@@ -137,7 +136,7 @@ class AutentikasiKontroller extends Controller
                 return response()->json([
                     'status' => 'sukses',
                     'data' => [
-                        'penggunaId' => $p->id,
+                        'penggunaId' => $p->penggunaId,
                         'nama' => $p->nama,
                         'email' => $p->email,
                         'nomorHp' => $p->nomor_hp,
@@ -146,7 +145,6 @@ class AutentikasiKontroller extends Controller
                         'wilayah' => $p->wilayah,
                         'samsat' => $p->samsat,
                         'bidang' => $p->bidang,
-                        'unitKerja' => $p->unit_kerja,
                         'status' => $p->status,
                     ],
                 ]);

@@ -17,13 +17,15 @@ class Pengguna extends Authenticatable
     // Nama tabel khusus di database
     protected $table = 'pengguna';
 
+    // Primary Key khusus tabel 'pengguna'
+    protected $primaryKey = 'penggunaId';
+
     // Kolom yang dapat diisi secara massal (Mass Assignable)
     protected $fillable = [
         'nama',
         'email',
         'password',
         'nomor_hp',
-        'jabatan',
         'role',
         'wilayah',
         'samsat',
@@ -32,10 +34,30 @@ class Pengguna extends Authenticatable
         'status',
     ];
 
+    // Field terhitung yang otomatis disertakan pada serialisasi JSON
+    protected $appends = [
+        'jabatan',
+    ];
+
     // Kolom yang disembunyikan saat data diubah ke JSON
     protected $hidden = [
         'password',
     ];
+
+    /**
+     * Accessor Otomatis untuk Jabatan (Label Tampilan Formal Berdasarkan Kode Role)
+     */
+    public function getJabatanAttribute(): string
+    {
+        return match ($this->role) {
+            'admin_utama' => 'Administrator Utama',
+            'kabag' => 'Kepala Bagian Operasional',
+            'pimpinan' => 'Pimpinan Kanwil',
+            'pengelola_pks' => 'Pengelola PKS',
+            'petugas_jr' => 'Petugas JR',
+            default => 'Petugas JR',
+        };
+    }
 
     // Casting tipe data otomatis
     protected function casts(): array
@@ -50,6 +72,6 @@ class Pengguna extends Authenticatable
      */
     public function sesiPengguna()
     {
-        return $this->hasMany(SesiPengguna::class, 'pengguna_id');
+        return $this->hasMany(SesiPengguna::class, 'penggunaId');
     }
 }

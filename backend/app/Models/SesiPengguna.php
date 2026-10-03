@@ -18,7 +18,7 @@ class SesiPengguna extends Model
 
     // Kolom yang dapat diisi
     protected $fillable = [
-        'pengguna_id',
+        'penggunaId',
         'token_ingat_saya',
         'ip_address',
         'user_agent',
@@ -35,6 +35,6 @@ class SesiPengguna extends Model
      */
     public function pengguna()
     {
-        return $this->belongsTo(Pengguna::class, 'pengguna_id');
+        return $this->belongsTo(Pengguna::class, 'penggunaId');
     }
 }

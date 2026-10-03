@@ -16,12 +16,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('pengguna', function (Blueprint $table) {
-            $table->id(); // Primary Key ID Pengguna (Auto Increment)
+            $table->id('penggunaId'); // Primary Key ID Pengguna (Auto Increment) dengan nama kolom 'penggunaId'
             $table->string('nama'); // Nama Lengkap atau Nama Peran (misal: Siska Wijaya / Administrator SW)
             $table->string('email')->unique(); // Email Perusahaan (Harus unik untuk login)
             $table->string('password'); // Password yang sudah ter-enkripsi (Bcrypt Hash)
             $table->string('nomor_hp')->nullable(); // Nomor WhatsApp / HP (Opsional untuk akun preset)
-            $table->string('jabatan'); // Label Jabatan (Petugas JR, Pengelola PKS, dll)
             $table->string('role'); // Kode Peran (petugas_jr, pengelola_pks, kabag, pimpinan, admin_utama)
             
             // Kolom Khusus Lokasi Penugasan (Petugas JR)
@@ -30,7 +29,6 @@ return new class extends Migration
             
             // Kolom Khusus Bidang Kerja (Pengelola PKS & Admin Utama)
             $table->string('bidang')->nullable(); // Sumbangan Wajib (SW), Iuran Wajib (IW), Pelayanan
-            $table->string('unit_kerja')->default('Jasa Raharja'); // Nama Unit Kerja / Cabang
 
             // Status Persetujuan Akun
             // 'Aktif': Bisa login langsung

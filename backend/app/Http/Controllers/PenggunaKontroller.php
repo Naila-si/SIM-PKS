@@ -40,7 +40,7 @@ class PenggunaKontroller extends Controller
 
         $daftarPengguna = $query->orderBy('created_at', 'desc')->get()->map(function ($p) {
             return [
-                'penggunaId' => $p->id,
+                'penggunaId' => $p->penggunaId,
                 'nama' => $p->nama,
                 'email' => $p->email,
                 'nomorHp' => $p->nomor_hp,
@@ -49,7 +49,6 @@ class PenggunaKontroller extends Controller
                 'wilayah' => $p->wilayah,
                 'samsat' => $p->samsat,
                 'bidang' => $p->bidang,
-                'unitKerja' => $p->unit_kerja,
                 'status' => $p->status,
                 'createdAt' => $p->created_at->toIso8601String(),
             ];
@@ -77,7 +76,7 @@ class PenggunaKontroller extends Controller
         return response()->json([
             'status' => 'sukses',
             'data' => [
-                'penggunaId' => $p->id,
+                'penggunaId' => $p->penggunaId,
                 'nama' => $p->nama,
                 'email' => $p->email,
                 'nomorHp' => $p->nomor_hp,
@@ -86,7 +85,6 @@ class PenggunaKontroller extends Controller
                 'wilayah' => $p->wilayah,
                 'samsat' => $p->samsat,
                 'bidang' => $p->bidang,
-                'unitKerja' => $p->unit_kerja,
                 'status' => $p->status,
                 'createdAt' => $p->created_at->toIso8601String(),
             ],
@@ -104,7 +102,6 @@ class PenggunaKontroller extends Controller
             'namaLengkap' => 'required|string|max:100',
             'email' => 'required|email|unique:pengguna,email',
             'password' => 'required|string|min:8',
-            'jabatan' => 'required|string',
             'nomorHp' => 'nullable|string',
             'wilayah' => 'nullable|string',
             'samsat' => 'nullable|string',
@@ -115,16 +112,12 @@ class PenggunaKontroller extends Controller
             'email.unique' => 'Email tersebut sudah terdaftar di sistem. Gunakan email lain.',
             'password.required' => 'Password wajib diisi.',
             'password.min' => 'Password minimal harus 8 karakter.',
-            'jabatan.required' => 'Jabatan wajib dipilih.',
         ]);
 
-        // 2. Menentukan Role Sesuai Pilihan Jabatan
-        $role = 'petugas_jr';
-        $jabatanLabel = 'Petugas JR';
-
+        // 2. Menentukan Role Sesuai Pilihan Jabatan / Peran
+        $role = $permintaan->role ?? 'petugas_jr';
         if ($permintaan->jabatan === 'Pengelola PKS' || $permintaan->role === 'pengelola_pks') {
             $role = 'pengelola_pks';
-            $jabatanLabel = 'Pengelola PKS';
         }
 
         // 3. Simpan Pengguna Baru ke Database
@@ -133,12 +126,10 @@ class PenggunaKontroller extends Controller
             'email' => strtolower(trim($permintaan->email)),
             'password' => Hash::make($permintaan->password),
             'nomor_hp' => $permintaan->nomorHp ?? '-',
-            'jabatan' => $jabatanLabel,
             'role' => $role,
             'wilayah' => $permintaan->wilayah ?? null,
             'samsat' => $permintaan->samsat ?? null,
             'bidang' => $permintaan->bidang ?? null,
-            'unit_kerja' => 'Kantor Wilayah',
             'status' => 'Menunggu Persetujuan', // Status awal pengajuan
         ]);
 
@@ -146,7 +137,7 @@ class PenggunaKontroller extends Controller
             'status' => 'sukses',
             'pesan' => 'Registrasi berhasil! Akun Anda sedang Menunggu Persetujuan Administrator Utama.',
             'data' => [
-                'penggunaId' => $penggunaBaru->id,
+                'penggunaId' => $penggunaBaru->penggunaId,
                 'nama' => $penggunaBaru->nama,
                 'email' => $penggunaBaru->email,
                 'status' => $penggunaBaru->status,
@@ -173,20 +164,16 @@ class PenggunaKontroller extends Controller
         ]);
 
         $role = $permintaan->role;
-        $jabatanLabel = 'Petugas JR';
-        if ($role === 'pengelola_pks') $jabatanLabel = 'Pengelola PKS';
 
         $pengguna = Pengguna::create([
             'nama' => trim($permintaan->nama),
             'email' => strtolower(trim($permintaan->email)),
             'password' => Hash::make($permintaan->password),
             'nomor_hp' => $permintaan->nomorHp ?? '-',
-            'jabatan' => $jabatanLabel,
             'role' => $role,
             'wilayah' => $permintaan->wilayah ?? null,
             'samsat' => $permintaan->samsat ?? null,
             'bidang' => $permintaan->bidang ?? null,
-            'unit_kerja' => 'Kantor Wilayah',
             'status' => $permintaan->status ?? 'Aktif', // Langsung Aktif jika ditambah oleh Admin
         ]);
 

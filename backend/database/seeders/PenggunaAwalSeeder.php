@@ -24,10 +24,8 @@ class PenggunaAwalSeeder extends Seeder
                 'nama' => 'Administrator SW',
                 'password' => Hash::make('password123'),
                 'nomor_hp' => null,
-                'jabatan' => 'Administrator Utama',
                 'role' => 'admin_utama',
                 'bidang' => 'Sumbangan Wajib (SW)',
-                'unit_kerja' => 'Subbag TI & Admin Kanwil',
                 'status' => 'Aktif',
             ]
         );
@@ -39,10 +37,8 @@ class PenggunaAwalSeeder extends Seeder
                 'nama' => 'Administrator IW',
                 'password' => Hash::make('password123'),
                 'nomor_hp' => null,
-                'jabatan' => 'Administrator Utama',
                 'role' => 'admin_utama',
                 'bidang' => 'Iuran Wajib (IW)',
-                'unit_kerja' => 'Subbag TI & Admin Kanwil',
                 'status' => 'Aktif',
             ]
         );
@@ -54,10 +50,8 @@ class PenggunaAwalSeeder extends Seeder
                 'nama' => 'Administrator Pelayanan',
                 'password' => Hash::make('password123'),
                 'nomor_hp' => null,
-                'jabatan' => 'Administrator Utama',
                 'role' => 'admin_utama',
                 'bidang' => 'Pelayanan',
-                'unit_kerja' => 'Subbag TI & Admin Kanwil',
                 'status' => 'Aktif',
             ]
         );
@@ -69,10 +63,8 @@ class PenggunaAwalSeeder extends Seeder
                 'nama' => 'Kepala Bagian Operasional',
                 'password' => Hash::make('password123'),
                 'nomor_hp' => null,
-                'jabatan' => 'Kepala Bagian',
                 'role' => 'kabag',
                 'bidang' => 'Lintas Bidang',
-                'unit_kerja' => 'Bagian Operasional Kanwil',
                 'status' => 'Aktif',
             ]
         );
@@ -84,10 +76,8 @@ class PenggunaAwalSeeder extends Seeder
                 'nama' => 'Pimpinan Kanwil',
                 'password' => Hash::make('password123'),
                 'nomor_hp' => null,
-                'jabatan' => 'Pimpinan',
                 'role' => 'pimpinan',
                 'bidang' => 'Lintas Bidang',
-                'unit_kerja' => 'Kantor Wilayah',
                 'status' => 'Aktif',
             ]
         );
@@ -99,11 +89,9 @@ class PenggunaAwalSeeder extends Seeder
                 'nama' => 'Petugas JR',
                 'password' => Hash::make('password123'),
                 'nomor_hp' => '081234567890',
-                'jabatan' => 'Petugas JR',
                 'role' => 'petugas_jr',
                 'wilayah' => 'Wilayah Riau',
                 'samsat' => 'Samsat Pekanbaru Kota',
-                'unit_kerja' => 'Kantor Cabang Riau',
                 'status' => 'Aktif',
             ]
         );
@@ -115,10 +103,8 @@ class PenggunaAwalSeeder extends Seeder
                 'nama' => 'Pengelola SW',
                 'password' => Hash::make('password123'),
                 'nomor_hp' => '081298765432',
-                'jabatan' => 'Pengelola PKS',
                 'role' => 'pengelola_pks',
                 'bidang' => 'Sumbangan Wajib (SW)',
-                'unit_kerja' => 'Divisi Operasional SW',
                 'status' => 'Aktif',
             ]
         );
@@ -130,10 +116,8 @@ class PenggunaAwalSeeder extends Seeder
                 'nama' => 'Pengelola IW',
                 'password' => Hash::make('password123'),
                 'nomor_hp' => '081311223344',
-                'jabatan' => 'Pengelola PKS',
                 'role' => 'pengelola_pks',
                 'bidang' => 'Iuran Wajib (IW)',
-                'unit_kerja' => 'Divisi Operasional IW',
                 'status' => 'Aktif',
             ]
         );
@@ -145,10 +129,8 @@ class PenggunaAwalSeeder extends Seeder
                 'nama' => 'Pengelola Pelayanan',
                 'password' => Hash::make('password123'),
                 'nomor_hp' => '081355667788',
-                'jabatan' => 'Pengelola PKS',
                 'role' => 'pengelola_pks',
                 'bidang' => 'Pelayanan',
-                'unit_kerja' => 'Divisi Pelayanan',
                 'status' => 'Aktif',
             ]
         );

@@ -18,8 +18,8 @@ return new class extends Migration
         Schema::create('sesi_pengguna', function (Blueprint $table) {
             $table->id();
             
-            // Relasi ke tabel pengguna (Foreign Key)
-            $table->foreignId('pengguna_id')->constrained('pengguna')->onDelete('cascade');
+            // Relasi ke tabel pengguna (Foreign Key ke kolom penggunaId)
+            $table->foreignId('penggunaId')->constrained('pengguna', 'penggunaId')->onDelete('cascade');
             
             // Token Ingat Saya (Remember Token) berdurasi panjang
             $table->string('token_ingat_saya', 100)->unique();
