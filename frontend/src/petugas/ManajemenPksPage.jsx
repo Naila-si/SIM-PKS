@@ -124,6 +124,10 @@ export const ManajemenPksPage = () => {
     if (statusDokumen === 'Belum Diunggah' && hasDoc) return false;
 
     return true;
+  }).sort((a, b) => {
+    const dateA = new Date(a.created_at || 0).getTime();
+    const dateB = new Date(b.created_at || 0).getTime();
+    return urutan === 'Terbaru' ? dateB - dateA : dateA - dateB;
   });
 
   return (
@@ -328,9 +332,8 @@ export const ManajemenPksPage = () => {
               <thead className="bg-blue-50/50 border-b border-slate-100 text-slate-500 uppercase font-extrabold text-[10px] tracking-wider">
                 <tr>
                   <th className="px-6 py-4">NOMOR PKS</th>
-                  <th className="px-6 py-4">JUDUL PKS</th>
                   <th className="px-4 py-4">BIDANG</th>
-                  <th className="px-6 py-4">PIHAK KEDUA</th>
+                  <th className="px-6 py-4">NAMA MITRA</th>
                   <th className="px-4 py-4">TGL MULAI/AKHIR</th>
                   <th className="px-4 py-4">STATUS</th>
                   <th className="px-4 py-4">PERSETUJUAN</th>
@@ -349,11 +352,6 @@ export const ManajemenPksPage = () => {
                         {item.nomor_pks || '-'}
                       </td>
 
-                      {/* JUDUL / RINGKASAN PKS */}
-                      <td className="px-6 py-4 font-extrabold text-slate-900 max-w-xs leading-snug">
-                        {item.ringkasan_pks || item.judulPKS || '-'}
-                      </td>
-
                       {/* BIDANG Badge */}
                       <td className="px-4 py-4 whitespace-nowrap">
                         <span className={`px-2.5 py-1 rounded-md text-[10px] font-extrabold uppercase ${
@@ -367,7 +365,7 @@ export const ManajemenPksPage = () => {
                         </span>
                       </td>
 
-                      {/* PIHAK KEDUA */}
+                      {/* NAMA MITRA */}
                       <td className="px-6 py-4 font-bold text-slate-800">
                         {item.mitra?.nama_mitra || item.mitra?.namaPerusahaan || '-'}
                       </td>
@@ -381,17 +379,21 @@ export const ManajemenPksPage = () => {
                       {/* STATUS Badge */}
                       <td className="px-4 py-4 whitespace-nowrap">
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold ${
-                          (item.status_pks || item.statusPks) === 'Aktif'
+                          (item.status_pks || item.statusPks || 'Draft') === 'Aktif'
                             ? 'bg-emerald-100 text-emerald-700'
-                            : ((item.status_pks || item.statusPks) === 'Draft' || (item.status_pks || item.statusPks) === 'Draf')
-                            ? 'bg-emerald-100 text-emerald-700'
+                            : (item.status_pks || item.statusPks || 'Draft') === 'Segera Berakhir'
+                            ? 'bg-amber-100 text-amber-700'
+                            : ((item.status_pks || item.statusPks || 'Draft') === 'Draft' || (item.status_pks || item.statusPks || 'Draft') === 'Draf')
+                            ? 'bg-slate-100 text-slate-700'
                             : 'bg-rose-100 text-rose-700'
                         }`}>
                           <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-                            (item.status_pks || item.statusPks) === 'Aktif'
+                            (item.status_pks || item.statusPks || 'Draft') === 'Aktif'
                               ? 'bg-emerald-500'
-                              : ((item.status_pks || item.statusPks) === 'Draft' || (item.status_pks || item.statusPks) === 'Draf')
-                              ? 'bg-emerald-500'
+                              : (item.status_pks || item.statusPks || 'Draft') === 'Segera Berakhir'
+                              ? 'bg-amber-500'
+                              : ((item.status_pks || item.statusPks || 'Draft') === 'Draft' || (item.status_pks || item.statusPks || 'Draft') === 'Draf')
+                              ? 'bg-slate-500'
                               : 'bg-rose-500'
                           }`} />
                           {item.status_pks || item.statusPks || 'Draf'}
@@ -401,22 +403,30 @@ export const ManajemenPksPage = () => {
                       {/* PERSETUJUAN Badge */}
                       <td className="px-4 py-4 whitespace-nowrap">
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold ${
-                          (item.status_persetujuan || item.statusPersetujuan) === 'Disetujui'
+                          (item.status_persetujuan || item.statusPersetujuan || 'Draft') === 'Disetujui'
                             ? 'bg-emerald-100 text-emerald-700'
-                            : (item.status_persetujuan || item.statusPersetujuan || '').includes('Kabag')
-                            ? 'bg-purple-100 text-purple-700'
+                            : ((item.status_persetujuan || item.statusPersetujuan || '').includes('Disetujui'))
+                            ? 'bg-teal-100 text-teal-700'
+                            : ((item.status_persetujuan || item.statusPersetujuan || '').includes('Revisi'))
+                            ? 'bg-rose-100 text-rose-700'
+                            : ((item.status_persetujuan || item.statusPersetujuan || '').includes('Pemeriksaan'))
+                            ? 'bg-amber-100 text-amber-700'
                             : ((item.status_persetujuan || item.statusPersetujuan || '') === 'Menunggu Penyerahan')
                             ? 'bg-blue-100 text-blue-700'
-                            : 'bg-emerald-100 text-emerald-700'
+                            : 'bg-slate-100 text-slate-700'
                         }`}>
                           <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-                            (item.status_persetujuan || item.statusPersetujuan) === 'Disetujui'
+                            (item.status_persetujuan || item.statusPersetujuan || 'Draft') === 'Disetujui'
                               ? 'bg-emerald-500'
-                              : (item.status_persetujuan || item.statusPersetujuan || '').includes('Kabag')
-                              ? 'bg-purple-500'
+                              : ((item.status_persetujuan || item.statusPersetujuan || '').includes('Disetujui'))
+                              ? 'bg-teal-500'
+                              : ((item.status_persetujuan || item.statusPersetujuan || '').includes('Revisi'))
+                              ? 'bg-rose-500'
+                              : ((item.status_persetujuan || item.statusPersetujuan || '').includes('Pemeriksaan'))
+                              ? 'bg-amber-500'
                               : ((item.status_persetujuan || item.statusPersetujuan || '') === 'Menunggu Penyerahan')
                               ? 'bg-blue-500'
-                              : 'bg-emerald-500'
+                              : 'bg-slate-500'
                           }`} />
                           {item.status_persetujuan || item.statusPersetujuan || 'Draf'}
                         </span>

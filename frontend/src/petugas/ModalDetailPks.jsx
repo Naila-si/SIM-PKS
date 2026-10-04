@@ -123,12 +123,52 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
           <div className="flex items-center space-x-3">
             <h2 className="text-lg font-extrabold text-[#001D38] tracking-tight">Detail PKS</h2>
             <div className="flex items-center space-x-2">
-              <span className="px-3 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-100 text-emerald-700 flex items-center">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5" />
+              <span className={`inline-flex px-3 py-0.5 rounded-full text-[11px] font-extrabold items-center ${
+                (data.status_pks || data.statusPks || 'Draft') === 'Aktif'
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : (data.status_pks || data.statusPks || 'Draft') === 'Segera Berakhir'
+                  ? 'bg-amber-100 text-amber-700'
+                  : ((data.status_pks || data.statusPks || 'Draft') === 'Draft' || (data.status_pks || data.statusPks || 'Draft') === 'Draf')
+                  ? 'bg-slate-100 text-slate-700'
+                  : 'bg-rose-100 text-rose-700'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+                  (data.status_pks || data.statusPks || 'Draft') === 'Aktif'
+                    ? 'bg-emerald-500'
+                    : (data.status_pks || data.statusPks || 'Draft') === 'Segera Berakhir'
+                    ? 'bg-amber-500'
+                    : ((data.status_pks || data.statusPks || 'Draft') === 'Draft' || (data.status_pks || data.statusPks || 'Draft') === 'Draf')
+                    ? 'bg-slate-500'
+                    : 'bg-rose-500'
+                }`} />
                 {data.status_pks || data.statusPks || 'Draf'}
               </span>
-              <span className="px-3 py-0.5 rounded-full text-[11px] font-extrabold bg-blue-100 text-blue-700 flex items-center">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5" />
+              <span className={`inline-flex px-3 py-0.5 rounded-full text-[11px] font-extrabold items-center ${
+                (data.status_persetujuan || data.statusPersetujuan || 'Draft') === 'Disetujui'
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : ((data.status_persetujuan || data.statusPersetujuan || '').includes('Disetujui'))
+                  ? 'bg-teal-100 text-teal-700'
+                  : ((data.status_persetujuan || data.statusPersetujuan || '').includes('Revisi'))
+                  ? 'bg-rose-100 text-rose-700'
+                  : ((data.status_persetujuan || data.statusPersetujuan || '').includes('Pemeriksaan'))
+                  ? 'bg-amber-100 text-amber-700'
+                  : ((data.status_persetujuan || data.statusPersetujuan || '') === 'Menunggu Penyerahan')
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'bg-slate-100 text-slate-700'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+                  (data.status_persetujuan || data.statusPersetujuan || 'Draft') === 'Disetujui'
+                    ? 'bg-emerald-500'
+                    : ((data.status_persetujuan || data.statusPersetujuan || '').includes('Disetujui'))
+                    ? 'bg-teal-500'
+                    : ((data.status_persetujuan || data.statusPersetujuan || '').includes('Revisi'))
+                    ? 'bg-rose-500'
+                    : ((data.status_persetujuan || data.statusPersetujuan || '').includes('Pemeriksaan'))
+                    ? 'bg-amber-500'
+                    : ((data.status_persetujuan || data.statusPersetujuan || '') === 'Menunggu Penyerahan')
+                    ? 'bg-blue-500'
+                    : 'bg-slate-500'
+                }`} />
                 {data.status_persetujuan || data.statusPersetujuan || 'Draf'}
               </span>
             </div>
@@ -221,6 +261,11 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">TGL BERAKHIR</p>
                     <p className="font-semibold text-slate-800 mt-0.5">{data.tanggal_berakhir || data.tanggalBerakhir || '-'}</p>
                   </div>
+                  
+                  <div className="col-span-2">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">RINGKASAN PKS</p>
+                    <p className="font-semibold text-slate-800 mt-0.5 whitespace-pre-wrap">{data.ringkasan_pks || '-'}</p>
+                  </div>
                 </div>
               </div>
 
@@ -229,7 +274,7 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
                 <div className="flex items-center space-x-2 border-b border-slate-100 pb-3">
                   <Building2 className="w-4 h-4 text-[#00529C]" />
                   <h3 className="text-xs font-extrabold text-slate-800">
-                    Data Dokumen PKS (Mitra)
+                    Data Mitra
                   </h3>
                 </div>
 
