@@ -10,26 +10,22 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
 
   // Form State
   const [penanggungJawab, setPenanggungJawab] = useState('');
-  const [jabatan, setJabatan] = useState('');
   const [kontak, setKontak] = useState('');
   const [email, setEmail] = useState('');
-  const [website, setWebsite] = useState('');
   const [alamat, setAlamat] = useState('');
-  const [catatan, setCatatan] = useState('');
 
   useEffect(() => {
     if (mitraData) {
       setPenanggungJawab(mitraData.nama_pengelola || mitraData.penanggungJawab || '');
-      setJabatan(mitraData.jabatan || '');
       setKontak(mitraData.no_hp_pengelola || mitraData.kontak || '');
       setEmail(mitraData.email_pengelola || mitraData.email || '');
-      setWebsite(mitraData.website || '');
       setAlamat(mitraData.alamat_mitra || mitraData.alamat || '');
-      setCatatan(mitraData.catatan || '');
     }
   }, [mitraData]);
 
   if (!isOpen || !mitraData) return null;
+
+  const isDraft = !mitraData.totalPks || mitraData.totalPks === 0;
 
   const validateEmail = (val) => {
     setEmail(val);
@@ -164,28 +160,15 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
                 <div>
                   <label className="block text-slate-700 font-semibold mb-1">Nama Penanggung Jawab *</label>
                   <div className="relative">
-                    <User className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
+                    {isDraft ? <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" /> : <User className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />}
                     <input
                       type="text"
                       required
+                      disabled={isDraft}
                       placeholder="Masukkan nama penanggung jawab..."
                       value={penanggungJawab}
                       onChange={(e) => setPenanggungJawab(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none font-medium text-slate-800"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Jabatan</label>
-                  <div className="relative">
-                    <Briefcase className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
-                    <input
-                      type="text"
-                      placeholder="Jabatan"
-                      value={jabatan}
-                      onChange={(e) => setJabatan(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none font-medium text-slate-800"
+                      className={`w-full pl-9 pr-3 py-2 border rounded-xl outline-none font-medium text-slate-800 ${isDraft ? 'bg-[#EEF4FF] border-blue-100 cursor-not-allowed' : 'bg-white border-slate-200 focus:ring-2 focus:ring-blue-500/20'}`}
                     />
                   </div>
                 </div>
@@ -193,25 +176,25 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
                 <div>
                   <label className="block text-slate-700 font-semibold mb-1">Nomor Telepon *</label>
                   <div className="relative">
-                    <Phone className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
+                    {isDraft ? <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" /> : <Phone className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />}
                     <input
                       type="text"
                       required
+                      disabled={isDraft}
                       placeholder="081234567890"
                       value={kontak}
                       onChange={(e) => setKontak(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none font-medium text-slate-800"
+                      className={`w-full pl-9 pr-3 py-2 border rounded-xl outline-none font-medium text-slate-800 ${isDraft ? 'bg-[#EEF4FF] border-blue-100 cursor-not-allowed' : 'bg-white border-slate-200 focus:ring-2 focus:ring-blue-500/20'}`}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Email *</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Email</label>
                   <div className="relative">
                     <Mail className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
                     <input
                       type="email"
-                      required
                       placeholder="email@perusahaan.com"
                       value={email}
                       onChange={(e) => validateEmail(e.target.value)}
@@ -229,52 +212,24 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-slate-700 font-semibold mb-1">Website (Opsional)</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Alamat Perusahaan *</label>
                   <div className="relative">
-                    <Globe className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
-                    <input
-                      type="url"
-                      placeholder="https://www.perusahaan.com"
-                      value={website}
-                      onChange={(e) => setWebsite(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none font-medium text-slate-800"
+                    {isDraft ? <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" /> : <MapPin className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />}
+                    <textarea
+                      rows="2"
+                      required
+                      disabled={isDraft}
+                      placeholder="Jl. Sudirman No. 123, Blok M, Jakarta Selatan, 12160"
+                      value={alamat}
+                      onChange={(e) => setAlamat(e.target.value)}
+                      className={`w-full pl-9 pr-3 py-2 border rounded-xl outline-none font-medium text-slate-800 ${isDraft ? 'bg-[#EEF4FF] border-blue-100 cursor-not-allowed' : 'bg-white border-slate-200 focus:ring-2 focus:ring-blue-500/20'}`}
                     />
                   </div>
                 </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-slate-700 font-semibold mb-1">Alamat Perusahaan</label>
-                  <textarea
-                    rows="2"
-                    placeholder="Jl. Sudirman No. 123, Blok M, Jakarta Selatan, 12160"
-                    value={alamat}
-                    onChange={(e) => setAlamat(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none font-medium text-slate-800"
-                  />
-                </div>
               </div>
             </div>
 
-            {/* SECTION 3: INFORMASI TAMBAHAN */}
-            <div className="space-y-3">
-              <div className="flex items-center space-x-2 pb-1">
-                <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider shrink-0">
-                  INFORMASI TAMBAHAN
-                </span>
-                <div className="flex-1 border-t border-slate-200" />
-              </div>
 
-              <div>
-                <label className="block text-slate-700 font-semibold mb-1">Catatan</label>
-                <textarea
-                  rows="2"
-                  placeholder="Tuliskan informasi tambahan apabila diperlukan."
-                  value={catatan}
-                  onChange={(e) => setCatatan(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none font-medium text-slate-800"
-                />
-              </div>
-            </div>
 
           </form>
         </div>

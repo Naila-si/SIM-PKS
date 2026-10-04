@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Upload, FileText, Plus, Trash2, CheckCircle2, Clock } from 'lucide-react';
+import { Upload, FileText, Plus, Trash2, CheckCircle2, Clock, Edit3, Power } from 'lucide-react';
+import { ModalPerbaruiTemplate } from './ModalPerbaruiTemplate';
 
 export const TemplateListPage = () => {
   const { user } = useAuth();
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState(null);
   const [formData, setFormData] = useState({
     nama_template: '',
     bidang: 'Pelayanan',
@@ -19,7 +21,19 @@ export const TemplateListPage = () => {
     try {
       const res = await fetch('http://localhost:8000/api/pks-templates');
       const data = await res.json();
-      setTemplates(data || []);
+      
+      const userRole = user?.role?.toLowerCase() || '';
+      let validData = data || [];
+      
+      if (userRole === 'pengelola_pks' || userRole === 'pengelola') {
+        validData = validData.filter(item => {
+          const docBidang = (item.bidang || '').toLowerCase();
+          const myBidang = (user?.bidang || '').toLowerCase();
+          return docBidang === myBidang;
+        });
+      }
+      
+      setTemplates(validData);
     } catch (err) {
       console.error(err);
     } finally {
@@ -60,15 +74,32 @@ export const TemplateListPage = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Yakin ingin menghapus template ini?')) return;
+  const handleToggleStatus = async (template) => {
+    const newStatus = template.status_template === 'Aktif' ? 'Tidak Aktif' : 'Aktif';
+    if (!window.confirm(`Yakin ingin mengubah status template ini menjadi ${newStatus}?`)) return;
+    
     try {
-      await fetch(`http://localhost:8000/api/pks-templates/${id}`, { method: 'DELETE' });
-      fetchTemplates();
+      // Create FormData to simulate a PUT/PATCH if needed, or simply POST with _method=PUT
+      const form = new FormData();
+      form.append('_method', 'PUT');
+      form.append('status_template', newStatus);
+
+      const res = await fetch(`http://localhost:8000/api/pks-templates/${template.templateId}`, {
+        method: 'POST',
+        body: form
+      });
+      if (res.ok) {
+        fetchTemplates();
+      } else {
+        alert('Gagal mengubah status template');
+      }
     } catch (err) {
       console.error(err);
+      alert('Terjadi kesalahan jaringan');
     }
   };
+  
+  const canManage = ['pengelola_pks', 'pengelola', 'admin_utama', 'admin'].includes(user?.role?.toLowerCase());
 
   return (
     <div className="space-y-6">
@@ -106,18 +137,42 @@ export const TemplateListPage = () => {
                 <h3 className="font-bold text-sm text-slate-900">{t.nama_template}</h3>
                 <p className="text-xs text-slate-500 mt-1">
                   Bidang: <strong>{t.bidang}</strong> • Jenis: <strong>{t.jenis_pks}</strong><br />
-                  Versi: {t.versi_template}
+                  Versi: <strong>{t.versi_template || '1.0'}</strong>
                 </p>
-                <div className="flex items-center text-[10px] text-slate-400 mt-2">
-                  <Clock className="w-3 h-3 mr-1" />
-                  Diperbarui: {new Date(t.updated_at).toLocaleDateString('id-ID')}
+                <div className="flex flex-col space-y-1 mt-3">
+                  <div className="flex items-center text-[10px] text-slate-400">
+                    <Clock className="w-3 h-3 mr-1" />
+                    Dibuat: {new Date(t.created_at).toLocaleDateString('id-ID')}
+                  </div>
+                  <div className="flex items-center text-[10px] text-slate-400">
+                    <Clock className="w-3 h-3 mr-1 text-blue-400" />
+                    Diperbarui: {new Date(t.updated_at).toLocaleDateString('id-ID')}
+                  </div>
                 </div>
               </div>
-              <div className="mt-4 pt-3 border-t border-slate-100 flex justify-end">
-                <button onClick={() => handleDelete(t.templateId)} className="text-rose-500 hover:text-rose-700 p-1.5 rounded-lg hover:bg-rose-50 cursor-pointer">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
+              
+              {canManage && (
+                <div className="mt-4 pt-3 border-t border-slate-100 flex justify-end space-x-2">
+                  <button 
+                    onClick={() => setEditingTemplate(t)} 
+                    className="text-amber-500 hover:text-amber-700 p-1.5 rounded-lg hover:bg-amber-50 cursor-pointer transition-colors"
+                    title="Edit/Perbarui Template"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={() => handleToggleStatus(t)} 
+                    className={`p-1.5 rounded-lg cursor-pointer transition-colors ${
+                      t.status_template === 'Aktif'
+                        ? 'text-rose-500 hover:text-rose-700 hover:bg-rose-50'
+                        : 'text-emerald-500 hover:text-emerald-700 hover:bg-emerald-50'
+                    }`}
+                    title={t.status_template === 'Aktif' ? 'Nonaktifkan Template' : 'Aktifkan Template'}
+                  >
+                    <Power className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
           ))
         )}
@@ -187,6 +242,20 @@ export const TemplateListPage = () => {
           </div>
         </div>
       )}
+      
+      {/* Modal Perbarui Template */}
+      {editingTemplate && (
+        <ModalPerbaruiTemplate
+          isOpen={!!editingTemplate}
+          templateData={editingTemplate}
+          onClose={() => setEditingTemplate(null)}
+          onSuccess={() => {
+            setEditingTemplate(null);
+            fetchTemplates();
+          }}
+        />
+      )}
+
     </div>
   );
 };

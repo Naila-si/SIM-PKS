@@ -45,6 +45,19 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
   const [addendumTglMulai, setAddendumTglMulai] = useState('');
   const [addendumTglBerakhir, setAddendumTglBerakhir] = useState('');
   const [submittingAddendum, setSubmittingAddendum] = useState(false);
+  
+  // --- STATE CUSTOM DIALOG ---
+  const [dialog, setDialog] = useState({
+    isOpen: false,
+    type: 'info',
+    title: '',
+    message: '',
+    onConfirm: null
+  });
+
+  const showDialog = (type, title, message, onConfirm = null) => {
+    setDialog({ isOpen: true, type, title, message, onConfirm });
+  };
 
   // Load Data PKS & Adendum saat modal dibuka / pksId berubah
   useEffect(() => {
@@ -175,7 +188,7 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
         setAddendumTglBerakhir('');
       }
     } catch (err) {
-      alert(err.response?.data?.message || 'Gagal membuat Adendum baru.');
+      showDialog('error', 'Gagal', err.response?.data?.message || 'Gagal membuat Adendum baru.');
     } finally {
       setSubmittingAddendum(false);
     }

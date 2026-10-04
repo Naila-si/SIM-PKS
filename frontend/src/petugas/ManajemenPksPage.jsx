@@ -54,10 +54,23 @@ export const ManajemenPksPage = () => {
     try {
       const pksRes = await pksService.getPksList({ per_page: 100 });
       if (pksRes.success && pksRes.data) {
-        setPksList(pksRes.data);
+        // --- LOGIK: FILTERING BERBASIS BIDANG ---
+        const userRole = user?.role?.toLowerCase() || '';
+        let validData = pksRes.data;
+
+        // Jika user adalah Pengelola, dia HANYA boleh melihat PKS yang bidangnya sama dengan bidangnya.
+        if (userRole === 'pengelola_pks' || userRole === 'pengelola') {
+          validData = pksRes.data.filter(item => {
+            const docBidang = (item.bidang || '').toLowerCase();
+            const myBidang = (user?.bidang || '').toLowerCase();
+            return docBidang === myBidang;
+          });
+        }
+
+        setPksList(validData);
         
         let draft = 0, aktif = 0, segeraBerakhir = 0, berakhir = 0;
-        pksRes.data.forEach(item => {
+        validData.forEach(item => {
            const st = (item.status_pks || item.statusPks || 'draft').toLowerCase();
            if (st === 'draft' || st === 'draf') draft++;
            else if (st === 'aktif') aktif++;

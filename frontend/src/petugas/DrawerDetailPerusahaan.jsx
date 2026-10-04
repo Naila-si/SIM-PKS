@@ -1,12 +1,65 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { X, Building2, FileText } from 'lucide-react';
+import { X, Building2, FileText, Star } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export const DrawerDetailPerusahaan = ({ isOpen, mitraData, onClose }) => {
   const navigate = useNavigate();
 
   if (!isOpen || !mitraData) return null;
+
+  const { user } = useAuth();
+  const isPengelolaOrAdmin = ['pengelola_pks', 'admin_utama', 'admin', 'pengelola'].includes(user?.role);
+
+  const storageKey = `survey_mitra_${mitraData.perusahaanId || mitraData.id}`;
+  
+  // State for survey
+  const [surveyRatings, setSurveyRatings] = React.useState(() => {
+    const saved = localStorage.getItem(storageKey);
+    if (saved) return JSON.parse(saved);
+    return { q1: 0, q2: 0, q3: 0, q4: 0, q5: 0 };
+  });
+
+  React.useEffect(() => {
+    if (isOpen) {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        setSurveyRatings(JSON.parse(saved));
+      } else {
+        setSurveyRatings({ q1: 0, q2: 0, q3: 0, q4: 0, q5: 0 });
+      }
+    }
+  }, [isOpen, storageKey]);
+
+  const surveyQuestions = [
+    { id: 'q1', text: 'Mitra responsif dan kooperatif dalam berkomunikasi.' },
+    { id: 'q2', text: 'Mitra memenuhi komitmen tepat waktu sesuai kesepakatan.' },
+    { id: 'q3', text: 'Kualitas layanan/data mitra sangat akurat dan andal.' },
+    { id: 'q4', text: 'Teknologi dan integrasi sistem mitra berjalan stabil.' },
+    { id: 'q5', text: 'Kerja sama ini memberi nilai tambah bagi Jasa Raharja.' },
+  ];
+
+  const handleRating = (qId, val) => {
+    setSurveyRatings(prev => {
+      const newRatings = { ...prev, [qId]: val };
+      localStorage.setItem(storageKey, JSON.stringify(newRatings));
+      return newRatings;
+    });
+  };
+  const totalScore = Object.values(surveyRatings).reduce((a, b) => a + b, 0);
+  const isComplete = Object.values(surveyRatings).every(r => r > 0);
+  
+  let recommendation = { text: '', color: '' };
+  if (isComplete) {
+    if (totalScore >= 20) {
+      recommendation = { text: 'Sangat Baik - Perusahaan Jasa Raharja tetap harus bekerja sama dengan mitra ini.', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+    } else if (totalScore >= 15) {
+      recommendation = { text: 'Cukup Baik - Perlu evaluasi bersama untuk peningkatan kinerja.', color: 'bg-amber-50 text-amber-700 border-amber-200' };
+    } else {
+      recommendation = { text: 'Buruk - Disarankan untuk meninjau ulang kelayakan kerja sama.', color: 'bg-rose-50 text-rose-700 border-rose-200' };
+    }
+  }
 
   // Inisial avatar penanggung jawab
   const getInitials = (name) => {
@@ -143,6 +196,61 @@ export const DrawerDetailPerusahaan = ({ isOpen, mitraData, onClose }) => {
               </div>
             </div>
           </div>
+
+          {/* SECTION 4: SURVEI KUALITAS KERJA SAMA (KHUSUS PENGELOLA) */}
+          {isPengelolaOrAdmin && (
+            <>
+              <div className="border-t border-slate-100" />
+              <div className="space-y-4">
+                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
+                  EVALUASI KUALITAS KERJA SAMA
+                </span>
+                
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4.5 space-y-4">
+                  <p className="text-[11px] text-slate-500 font-medium">
+                    Berikan rating 1-5 untuk menilai kualitas mitra. Penilaian ini bersifat internal.
+                  </p>
+
+                  <div className="space-y-3">
+                    {surveyQuestions.map((q, idx) => (
+                      <div key={q.id} className="flex flex-col space-y-1.5">
+                        <p className="text-[11px] font-semibold text-slate-800">{idx + 1}. {q.text}</p>
+                        <div className="flex space-x-1">
+                          {[1, 2, 3, 4, 5].map(val => (
+                            <button
+                              key={val}
+                              onClick={() => handleRating(q.id, val)}
+                              className="p-1 focus:outline-none transition-transform hover:scale-110"
+                            >
+                              <Star
+                                className={`w-5 h-5 transition-colors ${
+                                  surveyRatings[q.id] >= val
+                                    ? 'fill-amber-400 text-amber-400'
+                                    : 'fill-slate-200 text-slate-200 hover:text-amber-200'
+                                }`}
+                              />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {isComplete && (
+                    <div className="pt-3 border-t border-slate-200 mt-2">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-slate-600">Total Skor:</span>
+                        <span className="text-lg font-extrabold text-[#00529C]">{totalScore} / 25</span>
+                      </div>
+                      <div className={`p-3 rounded-xl border text-[11px] font-bold leading-relaxed ${recommendation.color}`}>
+                        {recommendation.text}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
 
         </div>
 

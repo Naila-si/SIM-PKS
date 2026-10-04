@@ -9,10 +9,10 @@ export const ModalPerbaruiTemplate = ({ isOpen, templateData, onClose, onSuccess
   if (!isOpen) return null;
 
   const data = templateData || {
-    namaTemplate: 'Template PKS Penjaminan RS',
-    versiSaatIni: 'v3.0',
-    tanggalUpload: '12 Sep 2023',
-    diunggahOleh: 'Admin Pusat',
+    nama_template: 'Template PKS',
+    versi_template: 1,
+    created_at: new Date().toISOString(),
+    pengguna: { nama: 'Admin' }
   };
 
   const handleFileChange = (e) => {
@@ -20,14 +20,33 @@ export const ModalPerbaruiTemplate = ({ isOpen, templateData, onClose, onSuccess
     if (f) setFile(f);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!file) return alert('Silakan pilih file .docx yang baru');
     setSubmitting(true);
-    setTimeout(() => {
+    
+    try {
+      const form = new FormData();
+      form.append('_method', 'PUT');
+      form.append('file_template', file);
+      
+      const res = await fetch(`http://localhost:8000/api/pks-templates/${data.templateId}`, {
+        method: 'POST',
+        body: form
+      });
+      
+      if (res.ok) {
+        if (onSuccess) onSuccess();
+        onClose();
+      } else {
+        alert('Gagal memperbarui template');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Terjadi kesalahan jaringan');
+    } finally {
       setSubmitting(false);
-      if (onSuccess) onSuccess();
-      onClose();
-    }, 600);
+    }
   };
 
   return createPortal(
@@ -57,22 +76,22 @@ export const ModalPerbaruiTemplate = ({ isOpen, templateData, onClose, onSuccess
           <div className="bg-[#EEF4FF] rounded-2xl p-4.5 border border-blue-100/90 grid grid-cols-2 gap-3.5 text-xs">
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">NAMA TEMPLATE</p>
-              <p className="font-extrabold text-[#001D38] text-xs mt-0.5">{data.namaTemplate}</p>
+              <p className="font-extrabold text-[#001D38] text-xs mt-0.5">{data.nama_template}</p>
             </div>
 
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">VERSI SAAT INI</p>
-              <p className="font-extrabold text-[#001D38] text-xs mt-0.5">{data.versiSaatIni || 'v3.0'}</p>
+              <p className="font-extrabold text-[#001D38] text-xs mt-0.5">v{data.versi_template || 1}</p>
             </div>
 
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">TANGGAL UPLOAD</p>
-              <p className="font-bold text-slate-800 mt-0.5">{data.tanggalUpload || '12 Sep 2023'}</p>
+              <p className="font-bold text-slate-800 mt-0.5">{data.created_at ? new Date(data.created_at).toLocaleDateString('id-ID') : '-'}</p>
             </div>
 
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">DIUNGGAH OLEH</p>
-              <p className="font-bold text-slate-800 mt-0.5">{data.diunggahOleh || 'Admin Pusat'}</p>
+              <p className="font-bold text-slate-800 mt-0.5">{data.pengguna?.nama || 'Admin'}</p>
             </div>
           </div>
 
@@ -107,7 +126,7 @@ export const ModalPerbaruiTemplate = ({ isOpen, templateData, onClose, onSuccess
               <Upload className="w-5 h-5" />
             </div>
             <div>
-              <p className="font-extrabold text-[#001D38] text-xs">Versi Baru: v4.0</p>
+              <p className="font-extrabold text-[#001D38] text-xs">Versi Baru: v{(data.versi_template || 1) + 1}</p>
               <p className="text-[11px] text-slate-500 font-medium">Otomatis ditingkatkan dari versi sebelumnya</p>
             </div>
           </div>

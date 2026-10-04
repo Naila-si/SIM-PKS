@@ -2,26 +2,39 @@ import React, { useState, useEffect } from 'react';
 import { mitraService } from '../services/mitraService';
 import { DrawerDetailPerusahaan } from './DrawerDetailPerusahaan';
 import { ModalUbahPerusahaan } from './ModalUbahPerusahaan';
+import { useAuth } from '../context/AuthContext';
 import {
   Building2, CheckCircle2, AlertTriangle, XCircle, Search, RotateCcw,
-  Download, RefreshCw, Eye, Edit3, MoreVertical, ChevronLeft, ChevronRight, FileText
+  Download, RefreshCw, Eye, Edit3, MoreVertical, ChevronLeft, ChevronRight, FileText, Power
 } from 'lucide-react';
 
 export const ManajemenPerusahaanPage = () => {
+  const { user } = useAuth();
+  const role = user?.role || '';
+  
+  const canEdit = ['petugas_jr', 'petugas', 'pengelola_pks', 'pengelola', 'admin_utama', 'admin'].includes(role);
+  const canToggleStatus = ['pengelola_pks', 'pengelola', 'admin_utama', 'admin'].includes(role);
+
   const [loading, setLoading] = useState(true);
   const [mitraList, setMitraList] = useState([]);
   
-  const [summary, setSummary] = useState({
-    total: 0,
-    aktif: 0,
-    segeraBerakhir: 0,
-    berakhir: 0,
+  // --- STATE UNTUK CUSTOM DIALOG ---
+  const [dialog, setDialog] = useState({
+    isOpen: false,
+    type: 'info',
+    title: '',
+    message: '',
+    onConfirm: null
   });
 
+  const showDialog = (type, title, message, onConfirm = null) => {
+    setDialog({ isOpen: true, type, title, message, onConfirm });
+  };
+
+
+
   // Filter States
-  const [statusPksFilter, setStatusPksFilter] = useState('Semua');
-  const [jenisMitraFilter, setJenisMitraFilter] = useState('Semua');
-  const [bidangFilter, setBidangFilter] = useState('Semua');
+  const [statusMitraFilter, setStatusMitraFilter] = useState('Semua');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Pagination State
@@ -42,12 +55,6 @@ export const ManajemenPerusahaanPage = () => {
         const rawData = Array.isArray(res.data) ? res.data : (Array.isArray(res.data?.data) ? res.data.data : []);
         if (rawData.length > 0) {
           setMitraList(rawData);
-          setSummary({
-            total: rawData.length,
-            aktif: rawData.filter(m => (m.statusPks || m.status) === 'Aktif').length,
-            segeraBerakhir: rawData.filter(m => (m.statusPks || m.status) === 'Segera Berakhir').length,
-            berakhir: rawData.filter(m => (m.statusPks || m.status) === 'Berakhir').length,
-          });
         } else {
           setMitraList([]);
         }
@@ -66,9 +73,7 @@ export const ManajemenPerusahaanPage = () => {
   }, []);
 
   const handleResetFilter = () => {
-    setStatusPksFilter('Semua');
-    setJenisMitraFilter('Semua');
-    setBidangFilter('Semua');
+    setStatusMitraFilter('Semua');
     setSearchQuery('');
   };
 
@@ -83,7 +88,7 @@ export const ManajemenPerusahaanPage = () => {
       link.click();
       link.remove();
     } catch (err) {
-      alert('Mengunduh data ekspor Excel...');
+      showDialog('info', 'Ekspor Data', 'Mengunduh data ekspor Excel...');
     }
   };
 
@@ -97,17 +102,9 @@ export const ManajemenPerusahaanPage = () => {
       if (!nama.includes(query) && !idStr.includes(query) && !pj.includes(query)) return false;
     }
 
-    if (statusPksFilter !== 'Semua') {
-      const status = item.statusPks || item.status || 'Aktif';
-      if (status !== statusPksFilter) return false;
-    }
-
-    if (jenisMitraFilter !== 'Semua') {
-      if (item.jenisMitra !== jenisMitraFilter) return false;
-    }
-
-    if (bidangFilter !== 'Semua') {
-      if (item.bidang !== bidangFilter) return false;
+    if (statusMitraFilter !== 'Semua') {
+      const status = item.status_mitra || item.statusMitra || item.status || 'Aktif';
+      if (status !== statusMitraFilter) return false;
     }
 
     return true;
@@ -128,122 +125,9 @@ export const ManajemenPerusahaanPage = () => {
         </p>
       </div>
 
-      {/* 2. Ringkasan 4 Kartu Statistik (Matching Gambar 1 Mockup) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        
-        {/* Card 1: Total Perusahaan Mitra */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs flex items-center justify-between">
-          <div>
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Perusahaan Mitra</p>
-            <p className="text-2xl font-extrabold text-slate-900 mt-0.5">{summary.total}</p>
-            <p className="text-[10px] text-slate-400 mt-0.5 font-medium">Seluruh mitra terdaftar</p>
-          </div>
-          <div className="w-11 h-11 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-            <Building2 className="w-6 h-6" />
-          </div>
-        </div>
 
-        {/* Card 2: Memiliki PKS Aktif */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs flex items-center justify-between">
-          <div>
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Memiliki PKS Aktif</p>
-            <p className="text-2xl font-extrabold text-emerald-600 mt-0.5">{summary.aktif}</p>
-            <p className="text-[10px] text-slate-400 mt-0.5 font-medium">Sesuai masa berlaku</p>
-          </div>
-          <div className="w-11 h-11 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">
-            <CheckCircle2 className="w-6 h-6" />
-          </div>
-        </div>
 
-        {/* Card 3: PKS Segera Berakhir */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs flex items-center justify-between">
-          <div>
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">PKS Segera Berakhir</p>
-            <p className="text-2xl font-extrabold text-amber-500 mt-0.5">{summary.segeraBerakhir}</p>
-            <p className="text-[10px] text-slate-400 mt-0.5 font-medium">H-30 masa berakhir</p>
-          </div>
-          <div className="w-11 h-11 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center font-bold">
-            <AlertTriangle className="w-6 h-6" />
-          </div>
-        </div>
 
-        {/* Card 4: PKS Berakhir */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs flex items-center justify-between">
-          <div>
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">PKS Berakhir</p>
-            <p className="text-2xl font-extrabold text-rose-600 mt-0.5">{summary.berakhir}</p>
-            <p className="text-[10px] text-slate-400 mt-0.5 font-medium">Kontrak telah habis</p>
-          </div>
-          <div className="w-11 h-11 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center font-bold">
-            <XCircle className="w-6 h-6" />
-          </div>
-        </div>
-
-      </div>
-
-      {/* 3. Section Filter Data Perusahaan */}
-      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-2xs space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          
-          {/* Dropdown 1: Status PKS */}
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-500 mb-1">Status PKS</label>
-            <select
-              value={statusPksFilter}
-              onChange={(e) => setStatusPksFilter(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 focus:ring-2 focus:ring-blue-500/20 outline-none"
-            >
-              <option value="Semua">Semua</option>
-              <option value="Aktif">Aktif</option>
-              <option value="Segera Berakhir">Segera Berakhir</option>
-              <option value="Berakhir">Berakhir</option>
-            </select>
-          </div>
-
-          {/* Dropdown 2: Jenis Mitra */}
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-500 mb-1">Jenis Mitra</label>
-            <select
-              value={jenisMitraFilter}
-              onChange={(e) => setJenisMitraFilter(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 focus:ring-2 focus:ring-blue-500/20 outline-none"
-            >
-              <option value="Semua">Semua</option>
-              <option value="Perusahaan Angkutan Umum">Perusahaan Angkutan Umum (PO)</option>
-              <option value="Instansi Pemerintah">Instansi Pemerintah</option>
-              <option value="Rumah Sakit">Rumah Sakit</option>
-              <option value="BUMN / Korporasi">BUMN / Korporasi</option>
-            </select>
-          </div>
-
-          {/* Dropdown 3: Bidang */}
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-500 mb-1">Bidang</label>
-            <select
-              value={bidangFilter}
-              onChange={(e) => setBidangFilter(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 focus:ring-2 focus:ring-blue-500/20 outline-none"
-            >
-              <option value="Semua">Semua</option>
-              <option value="IW">IW (Iuran Wajib)</option>
-              <option value="SW">SW (Sumbangan Wajib)</option>
-              <option value="PELAYANAN">Pelayanan</option>
-            </select>
-          </div>
-
-          {/* Reset Filter Button */}
-          <div className="flex items-end">
-            <button
-              onClick={handleResetFilter}
-              className="w-full inline-flex items-center justify-center px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-all cursor-pointer h-[38px]"
-            >
-              <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
-              Reset Filter
-            </button>
-          </div>
-
-        </div>
-      </div>
 
       {/* 4. Tabel Daftar Perusahaan Mitra */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
@@ -269,19 +153,22 @@ export const ManajemenPerusahaanPage = () => {
               />
             </div>
 
+            <select
+              value={statusMitraFilter}
+              onChange={(e) => setStatusMitraFilter(e.target.value)}
+              className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer"
+            >
+              <option value="Semua">Semua Status</option>
+              <option value="Aktif">Aktif</option>
+              <option value="Tidak Aktif">Tidak Aktif</option>
+            </select>
+
             <button
               onClick={handleExportExcel}
               className="px-3 py-1.5 border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold rounded-xl flex items-center shadow-2xs transition-all cursor-pointer shrink-0"
             >
               <Download className="w-3.5 h-3.5 mr-1 text-slate-500" />
               Export Excel
-            </button>
-
-            <button
-              onClick={fetchMitraData}
-              className="p-2 border border-slate-200 text-slate-500 hover:bg-slate-50 rounded-xl shadow-2xs transition-all cursor-pointer shrink-0"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -303,13 +190,13 @@ export const ManajemenPerusahaanPage = () => {
                   <th className="px-5 py-3.5">Nama Perusahaan / Instansi</th>
                   <th className="px-4 py-3.5">Penanggung Jawab</th>
                   <th className="px-4 py-3.5">Kontak</th>
-                  <th className="px-4 py-3.5">Status PKS</th>
+                  <th className="px-4 py-3.5">Status Mitra</th>
                   <th className="px-4 py-3.5 text-center">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {paginatedData.map((item) => {
-                  const statusPks = item.statusPks || item.status_mitra || item.status || 'Aktif';
+                  const statusMitra = item.status_mitra || item.statusMitra || item.status || 'Aktif';
 
                   return (
                     <tr key={item.perusahaanId || item.mitraId} className="hover:bg-slate-50/70 transition-colors">
@@ -334,19 +221,19 @@ export const ManajemenPerusahaanPage = () => {
                         <p className="text-slate-400 font-medium">{item.email || item.email_pengelola || '-'}</p>
                       </td>
 
-                      {/* Status PKS Badge */}
+                      {/* Status Mitra Badge */}
                       <td className="px-4 py-4 whitespace-nowrap">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                          statusPks === 'Aktif'
+                          statusMitra === 'Aktif'
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                            : statusPks === 'Segera Berakhir'
+                            : statusMitra === 'Segera Berakhir'
                             ? 'bg-amber-50 text-amber-700 border-amber-300'
                             : 'bg-rose-50 text-rose-700 border-rose-300'
                         }`}>
                           <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-                            statusPks === 'Aktif' ? 'bg-emerald-500' : statusPks === 'Segera Berakhir' ? 'bg-amber-500' : 'bg-rose-500'
+                            statusMitra === 'Aktif' ? 'bg-emerald-500' : statusMitra === 'Segera Berakhir' ? 'bg-amber-500' : 'bg-rose-500'
                           }`} />
-                          {statusPks}
+                          {statusMitra}
                         </span>
                       </td>
 
@@ -362,53 +249,46 @@ export const ManajemenPerusahaanPage = () => {
                             <Eye className="w-4 h-4" />
                           </button>
 
-                          <button
-                            type="button"
-                            title="Ubah Perusahaan"
-                            onClick={() => setEditingMitra(item)}
-                            className="p-1.5 rounded-lg hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-colors cursor-pointer"
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => setActiveActionId(activeActionId === item.perusahaanId ? null : item.perusahaanId)}
-                            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors cursor-pointer"
-                          >
-                            <MoreVertical className="w-4 h-4" />
-                          </button>
-
-                          {/* Popover Menu */}
-                          {activeActionId === item.perusahaanId && (
-                            <div
-                              className="origin-top-right absolute right-0 top-8 w-36 rounded-xl shadow-lg bg-white border border-slate-200 ring-1 ring-black/5 z-30 py-1 text-left"
-                              onMouseLeave={() => setActiveActionId(null)}
+                          {canEdit && (
+                            <button
+                              type="button"
+                              title="Ubah Perusahaan"
+                              onClick={() => setEditingMitra(item)}
+                              className="p-1.5 rounded-lg hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-colors cursor-pointer"
                             >
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setActiveActionId(null);
-                                  setViewingMitra(item);
-                                }}
-                                className="flex items-center w-full px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 font-medium cursor-pointer"
-                              >
-                                <Eye className="w-3.5 h-3.5 mr-2 text-blue-600" />
-                                Detail
-                              </button>
+                              <Edit3 className="w-4 h-4" />
+                            </button>
+                          )}
 
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setActiveActionId(null);
-                                  setEditingMitra(item);
-                                }}
-                                className="flex items-center w-full px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 font-medium cursor-pointer"
-                              >
-                                <Edit3 className="w-3.5 h-3.5 mr-2 text-amber-600" />
-                                Edit
-                              </button>
-                            </div>
+                          {canToggleStatus && (
+                            <button
+                              type="button"
+                              title={statusMitra === 'Aktif' ? 'Nonaktifkan Mitra' : 'Aktifkan Mitra'}
+                              onClick={() => {
+                                const newStatus = statusMitra === 'Aktif' ? 'Tidak Aktif' : 'Aktif';
+                                showDialog(
+                                  'confirm', 
+                                  'Konfirmasi Perubahan Status', 
+                                  `Yakin ingin mengubah status mitra ini menjadi ${newStatus}?`, 
+                                  async () => {
+                                    setDialog(prev => ({ ...prev, isOpen: false }));
+                                    const res = await mitraService.updateMitra(item.perusahaanId || item.mitraId || item.id, { status_mitra: newStatus });
+                                    if (res.success) {
+                                      window.location.reload();
+                                    } else {
+                                      setTimeout(() => showDialog('error', 'Gagal', 'Gagal mengubah status mitra'), 300);
+                                    }
+                                  }
+                                );
+                              }}
+                              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                                statusMitra === 'Aktif'
+                                  ? 'hover:bg-rose-50 text-slate-500 hover:text-rose-600'
+                                  : 'hover:bg-emerald-50 text-slate-500 hover:text-emerald-600'
+                              }`}
+                            >
+                              <Power className="w-4 h-4" />
+                            </button>
                           )}
                         </div>
                       </td>
@@ -490,6 +370,53 @@ export const ManajemenPerusahaanPage = () => {
         />
       )}
 
+      {/* --- KOMPONEN CUSTOM DIALOG --- */}
+      {dialog.isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setDialog({ ...dialog, isOpen: false })}></div>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden z-10 animate-in fade-in zoom-in duration-200">
+            <div className="p-6 text-center">
+              <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${
+                dialog.type === 'info' ? 'bg-blue-100 text-blue-600' :
+                dialog.type === 'confirm' ? 'bg-amber-100 text-amber-600' :
+                dialog.type === 'success' ? 'bg-emerald-100 text-emerald-600' :
+                'bg-rose-100 text-rose-600'
+              }`}>
+                {dialog.type === 'info' && <CheckCircle2 className="w-8 h-8" />}
+                {dialog.type === 'confirm' && <AlertTriangle className="w-8 h-8" />}
+                {dialog.type === 'success' && <CheckCircle2 className="w-8 h-8" />}
+                {dialog.type === 'error' && <XCircle className="w-8 h-8" />}
+              </div>
+              <h3 className="text-lg font-extrabold text-slate-900 mb-2">{dialog.title}</h3>
+              <p className="text-sm text-slate-500 mb-6">{dialog.message}</p>
+              
+              {dialog.type === 'confirm' ? (
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => setDialog({ ...dialog, isOpen: false })}
+                    className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-colors"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    onClick={dialog.onConfirm}
+                    className="flex-1 px-4 py-2.5 bg-[#00529C] hover:bg-[#003E75] text-white text-sm font-bold rounded-xl transition-colors"
+                  >
+                    Ya, Lanjutkan
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setDialog({ ...dialog, isOpen: false })}
+                  className="w-full px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-colors"
+                >
+                  Tutup
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -45,7 +45,15 @@ class PksTemplateController extends Controller
         $template = PksTemplate::find($id);
         if (!$template) return response()->json(['message' => 'Not found'], 404);
 
-        $template->update($request->only(['status_template', 'nama_template']));
+        $dataToUpdate = $request->only(['status_template', 'nama_template']);
+
+        if ($request->hasFile('file_template')) {
+            $path = $request->file('file_template')->store('templates', 'public');
+            $dataToUpdate['url_berkas'] = $path;
+            $dataToUpdate['versi_template'] = ($template->versi_template ?? 1) + 1;
+        }
+
+        $template->update($dataToUpdate);
         return response()->json($template);
     }
 
