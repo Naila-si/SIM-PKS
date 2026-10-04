@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, FileText, Upload, Info } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 export const ModalPerbaruiTemplate = ({ isOpen, templateData, onClose, onSuccess }) => {
+  const { user } = useAuth();
   const [file, setFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -29,6 +31,9 @@ export const ModalPerbaruiTemplate = ({ isOpen, templateData, onClose, onSuccess
       const form = new FormData();
       form.append('_method', 'PUT');
       form.append('file_template', file);
+      if (user?.penggunaId) {
+        form.append('penggunaId', user.penggunaId);
+      }
       
       const res = await fetch(`http://localhost:8000/api/pks-templates/${data.templateId}`, {
         method: 'POST',
@@ -73,7 +78,7 @@ export const ModalPerbaruiTemplate = ({ isOpen, templateData, onClose, onSuccess
         <form id="form-perbarui-template" onSubmit={handleSubmit} className="p-6 overflow-y-auto flex-1 space-y-5 text-xs">
           
           {/* Card 1: Informational Current Details */}
-          <div className="bg-[#EEF4FF] rounded-2xl p-4.5 border border-blue-100/90 grid grid-cols-2 gap-3.5 text-xs">
+          <div className="bg-[#EEF4FF] rounded-2xl p-4.5 border border-blue-100/90 grid grid-cols-2 gap-y-4 gap-x-3.5 text-xs">
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">NAMA TEMPLATE</p>
               <p className="font-extrabold text-[#001D38] text-xs mt-0.5">{data.nama_template}</p>
@@ -85,14 +90,25 @@ export const ModalPerbaruiTemplate = ({ isOpen, templateData, onClose, onSuccess
             </div>
 
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">TANGGAL UPLOAD</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">TANGGAL UPLOAD AWAL</p>
               <p className="font-bold text-slate-800 mt-0.5">{data.created_at ? new Date(data.created_at).toLocaleDateString('id-ID') : '-'}</p>
             </div>
 
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">DIUNGGAH OLEH</p>
-              <p className="font-bold text-slate-800 mt-0.5">{data.pengguna?.nama || 'Admin'}</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">PEMBUAT AWAL</p>
+              <p className="font-bold text-slate-800 mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis" title={data.pengguna ? `${data.pengguna.nama} (${(data.pengguna.role || '').replace('_', ' ').toUpperCase()})` : '-'}>
+                {data.pengguna ? `${data.pengguna.nama} (${(data.pengguna.role || '').replace('_', ' ').toUpperCase()})` : '-'}
+              </p>
             </div>
+
+            {data.pengubah && (
+              <div className="col-span-2 pt-2 border-t border-blue-200/60 mt-1">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">TERAKHIR DIPERBARUI OLEH</p>
+                <p className="font-bold text-emerald-700 mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis" title={`${data.pengubah.nama} (${(data.pengubah.role || '').replace('_', ' ').toUpperCase()}) - ${new Date(data.updated_at).toLocaleDateString('id-ID')}`}>
+                  {data.pengubah.nama} ({(data.pengubah.role || '').replace('_', ' ').toUpperCase()}) pada {new Date(data.updated_at).toLocaleDateString('id-ID')}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Section Upload Template Baru */}

@@ -9,7 +9,7 @@ class PksTemplateController extends Controller
 {
     public function index()
     {
-        return response()->json(PksTemplate::all());
+        return response()->json(PksTemplate::with(['pengguna', 'pengubah'])->get());
     }
 
     public function store(Request $request)
@@ -18,6 +18,7 @@ class PksTemplateController extends Controller
             'nama_template' => 'required|string|max:255',
             'bidang' => 'required|string|max:255',
             'jenis_pks' => 'required|string|max:255',
+            'kategori_template' => 'nullable|string|in:PKS,Adendum',
             'file_template' => 'required|file|mimes:docx,doc|max:10240',
         ]);
 
@@ -25,14 +26,16 @@ class PksTemplateController extends Controller
         
         PksTemplate::where('bidang', $request->bidang)
                     ->where('jenis_pks', $request->jenis_pks)
+                    ->where('kategori_template', $request->input('kategori_template', 'PKS'))
                     ->update(['status_template' => 'Tidak Aktif']);
 
         $template = PksTemplate::create([
             'penggunaId' => $request->input('penggunaId', 1), 
             'nama_template' => $request->nama_template,
+            'kategori_template' => $request->input('kategori_template', 'PKS'),
             'bidang' => $request->bidang,
             'jenis_pks' => $request->jenis_pks,
-            'versi_template' => PksTemplate::where('bidang', $request->bidang)->where('jenis_pks', $request->jenis_pks)->count() + 1,
+            'versi_template' => 1,
             'status_template' => 'Aktif',
             'url_berkas' => $path,
         ]);
@@ -46,6 +49,11 @@ class PksTemplateController extends Controller
         if (!$template) return response()->json(['message' => 'Not found'], 404);
 
         $dataToUpdate = $request->only(['status_template', 'nama_template']);
+        
+        // Simpan siapa yang memperbarui
+        if ($request->has('penggunaId')) {
+            $dataToUpdate['diperbarui_oleh'] = $request->input('penggunaId');
+        }
 
         if ($request->hasFile('file_template')) {
             $path = $request->file('file_template')->store('templates', 'public');
