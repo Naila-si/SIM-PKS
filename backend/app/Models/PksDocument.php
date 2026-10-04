@@ -22,6 +22,7 @@ class PksDocument extends Model
         'status_persetujuan',
         'status_pks',
         'catatan_revisi',
+        'locked_by',
     ];
 
     public function mitra()
@@ -37,5 +38,10 @@ class PksDocument extends Model
     public function riwayat_persetujuan()
     {
         return $this->hasMany(PksApproval::class, 'pks_id', 'pksId')->orderBy('created_at', 'asc');
+    }
+
+    public function lockedBy()
+    {
+        return $this->belongsTo(Pengguna::class, 'locked_by', 'penggunaId');
     }
 }

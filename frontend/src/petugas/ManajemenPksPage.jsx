@@ -484,9 +484,10 @@ export const ManajemenPksPage = () => {
                                 const isPetugas = ['petugas', 'petugas_jr'].includes(role);
                                 const isPengelolaOrAdmin = ['pengelola_pks', 'admin_utama', 'admin', 'pengelola'].includes(role);
                                 
-                                // Petugas hanya bisa edit draf miliknya
-                                // Pengelola/Admin bisa edit kecuali saat statusnya "Menunggu Penyerahan" atau "Draft"
-                                const canEdit = (isPetugas && isCreator && isDraft) || (isPengelolaOrAdmin && !isMenunggu && !isDraft);
+                                // Petugas hanya bisa edit draf miliknya atau saat Revisi
+                                // Pengelola/Admin hanya bisa edit setelah PKS Disetujui (Final)
+                                const isDisetujui = statusPers === 'disetujui';
+                                const canEdit = (isPetugas && isCreator && (isDraft || statusPers.includes('revisi'))) || (isPengelolaOrAdmin && isDisetujui);
 
                                 if (!canEdit) return null;
                                 return (

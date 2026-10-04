@@ -39,6 +39,47 @@ class PksDocumentController extends Controller
         return response()->json($doc, 201);
     }
 
+    public function update(Request $request, $id)
+    {
+        $doc = PksDocument::with('mitra')->find($id);
+        if (!$doc) return response()->json(['message' => 'PKS not found'], 404);
+
+        $validated = $request->validate([
+            'bidang' => 'sometimes|string',
+            'jenis_pks' => 'sometimes|string',
+            'ringkasan_pks' => 'sometimes|string',
+            'tanggal_mulai' => 'sometimes|date',
+            'tanggal_berakhir' => 'sometimes|date',
+            'mitra' => 'sometimes|array',
+            'mitra.nama_perusahaan' => 'sometimes|string|nullable',
+            'mitra.alamat' => 'sometimes|string|nullable',
+            'mitra.penanggung_jawab' => 'sometimes|string|nullable',
+            'mitra.jabatan' => 'sometimes|string|nullable',
+            'mitra.telepon' => 'sometimes|string|nullable',
+            'mitra.email' => 'sometimes|string|nullable',
+        ]);
+
+        // Update PKS fields
+        $pksData = collect($validated)->except('mitra')->toArray();
+        if (!empty($pksData)) {
+            $doc->update($pksData);
+        }
+
+        // Update Mitra fields if provided
+        if (isset($validated['mitra']) && $doc->mitra) {
+            $doc->mitra->update([
+                'nama_mitra' => $validated['mitra']['nama_perusahaan'] ?? $doc->mitra->nama_mitra,
+                'alamat_mitra' => $validated['mitra']['alamat'] ?? $doc->mitra->alamat_mitra,
+                'nama_pengelola' => $validated['mitra']['penanggung_jawab'] ?? $doc->mitra->nama_pengelola,
+                'jabatan_pengelola' => $validated['mitra']['jabatan'] ?? $doc->mitra->jabatan_pengelola,
+                'kontak_pengelola' => $validated['mitra']['telepon'] ?? $doc->mitra->kontak_pengelola,
+                'email_pengelola' => $validated['mitra']['email'] ?? $doc->mitra->email_pengelola,
+            ]);
+        }
+
+        return response()->json($doc, 200);
+    }
+
     public function generateDocx($id)
     {
         $doc = PksDocument::with('mitra')->findOrFail($id);

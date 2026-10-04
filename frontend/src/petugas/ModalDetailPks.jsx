@@ -14,6 +14,12 @@ import { useAuth } from '../context/AuthContext';
 
 export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
   const { user } = useAuth();
+  
+  const isPetugas = ['petugas', 'petugas_jr'].includes(user?.role);
+  const isPengelolaOrAdmin = ['pengelola_pks', 'admin_utama', 'admin', 'pengelola'].includes(user?.role);
+  const isKabag = user?.role === 'kabag';
+  const isPimpinan = user?.role === 'pimpinan';
+
   const [loading, setLoading] = useState(false);
   const [pks, setPks] = useState(null);
   const [adendumList, setAdendumList] = useState([]);
@@ -27,38 +33,68 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
   // Custom Professional Dialog State
   const [dialog, setDialog] = useState({
     isOpen: false,
-    type: 'info', // 'info' | 'confirm'
+    type: 'info', // 'info' | 'confirm' | 'prompt'
     title: '',
     message: '',
     onConfirm: null,
   });
+  const [promptValue, setPromptValue] = useState('');
 
   const showDialog = (type, title, message, onConfirm = null) => {
     setDialog({ isOpen: true, type, title, message, onConfirm });
   };
   const closeDialog = () => setDialog({ ...dialog, isOpen: false });
 
-  const handleTandaiSiap = async () => {
-    showDialog(
-      'confirm',
-      'Konfirmasi Penyerahan',
-      'Apakah Anda yakin dokumen fisik sudah siap diserahkan? Status PKS akan diubah menjadi "Menunggu Penyerahan".',
-      async () => {
-        try {
-          setLoading(true);
-          await pksService.addApproval({
-            pks_id: pksId,
-            user_id: user?.penggunaId || user?.id || null,
-            status_aksi: 'Menunggu Penyerahan',
-            catatan: 'Dokumen fisik siap diserahkan oleh Petugas'
-          });
-          window.location.reload();
-        } catch (error) {
-          showDialog('info', 'Gagal', 'Terjadi kesalahan saat mengupdate status.');
-        } finally {
-          setLoading(false);
-        }
+  const roleSuffix = isPengelolaOrAdmin ? 'Pengelola' : isKabag ? 'Kabag' : isPimpinan ? 'Pimpinan' : '';
+
+  const processApprovalAction = async (statusAksi, catatan = null) => {
+    try {
+      setLoading(true);
+      await pksService.addApproval({
+        pks_id: pksId,
+        user_id: user?.penggunaId || user?.id || null,
+        status_aksi: statusAksi,
+        catatan: catatan
+      });
+      window.location.reload();
+    } catch (error) {
+      showDialog('info', 'Gagal', 'Terjadi kesalahan saat memproses permintaan.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTandaiSiap = () => {
+    showDialog('confirm', 'Konfirmasi Penyerahan', 'Apakah Anda yakin dokumen fisik sudah siap diserahkan?', 
+      () => processApprovalAction('Tandai Siap Diserahkan')
+    );
+  };
+
+  const handleSudahDiterima = () => {
+    showDialog('confirm', 'Terima Berkas', 'Apakah Anda yakin ingin mengambil alih pemeriksaan dokumen ini?', 
+      () => processApprovalAction('Sudah Diterima')
+    );
+  };
+
+  const handleSetuju = () => {
+    showDialog('confirm', 'Konfirmasi Persetujuan', 'Apakah Anda yakin ingin menyetujui PKS ini?', 
+      () => processApprovalAction(`Disetujui ${roleSuffix}`)
+    );
+  };
+
+  const handleRevisi = () => {
+    setPromptValue('');
+    showDialog('prompt', 'Catatan Revisi', 'Masukkan catatan perbaikan dokumen:', 
+      (catatan) => {
+        if (!catatan || catatan.trim() === '') return;
+        processApprovalAction(`Revisi ${roleSuffix}`, catatan);
       }
+    );
+  };
+
+  const handleDrafDisetujui = () => {
+    showDialog('confirm', 'Selesai Persetujuan', 'Tandai dokumen ini sebagai Draf PKS Disetujui final?', 
+      () => processApprovalAction('Draf PKS Disetujui')
     );
   };
 
@@ -104,14 +140,32 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
   const isPemeriksaanPengelola = ['pemeriksaan pengelola', 'menunggu penyerahan'].includes((data.status_persetujuan || data.statusPersetujuan || '').toLowerCase());
   const isDisetujui = ['disetujui', 'aktif'].includes((data.status_pks || data.statusPks || '').toLowerCase());
   const isDraftPersetujuan = ['draft', 'draf'].includes((data.status_persetujuan || data.statusPersetujuan || 'Draf').toLowerCase());
-
-  const isPetugas = ['petugas', 'petugas_jr'].includes(user?.role);
-  const isPengelolaOrAdmin = ['pengelola_pks', 'admin_utama', 'admin', 'pengelola'].includes(user?.role);
-  const isKabagOrPimpinan = ['kabag', 'pimpinan'].includes(user?.role);
-
-  const canShowSiapDiserahkan = isPetugas && isCreator && isDraftPersetujuan;
+  
+  const statusPers = data.status_persetujuan || data.statusPersetujuan || 'Draf';
+  
+  // 1. Petugas Actions
+  const canShowSiapDiserahkan = isPetugas && isCreator && (isDraftPersetujuan || statusPers.includes('Revisi'));
   const canShowTambahAdendum = isPetugas && isCreator;
-  const canShowApprovalPengelola = isPengelolaOrAdmin && isPemeriksaanPengelola;
+  
+  // 2. Accept Document Action (Sudah Diterima)
+  const isUnlocked = !data.locked_by;
+  const isMyTurnToAccept = isUnlocked && (
+    (isPengelolaOrAdmin && statusPers === 'Menunggu Penyerahan') ||
+    (isKabag && statusPers === 'Disetujui Pengelola') ||
+    (isPimpinan && statusPers === 'Disetujui Kabag')
+  );
+
+  // 3. Decide Action (Setuju / Revisi)
+  const isLockedByMe = data.locked_by === user?.penggunaId;
+  const isMyTurnToDecide = isLockedByMe && (
+    (isPengelolaOrAdmin && statusPers === 'Pemeriksaan Pengelola') ||
+    (isKabag && statusPers === 'Pemeriksaan Kabag') ||
+    (isPimpinan && statusPers === 'Pemeriksaan Pimpinan')
+  );
+
+  // 4. Final Action
+  const canShowDrafDisetujui = isPengelolaOrAdmin && statusPers === 'Disetujui Pimpinan';
+
   const canShowUploadFinal = isPengelolaOrAdmin && isDisetujui;
 
   return (
@@ -188,25 +242,48 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
               </button>
             )}
 
-            {/* Action untuk Pengelola / Admin Utama (Pemeriksaan) */}
-            {canShowApprovalPengelola && (
+            {/* Action untuk Pengelola/Kabag/Pimpinan: Menerima Berkas */}
+            {isMyTurnToAccept && (
+              <button
+                type="button"
+                onClick={handleSudahDiterima}
+                className="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center cursor-pointer"
+              >
+                Sudah Diterima
+              </button>
+            )}
+
+            {/* Action untuk Pengelola/Kabag/Pimpinan: Memutuskan */}
+            {isMyTurnToDecide && (
               <>
                 <button
                   type="button"
-                  onClick={() => showDialog('info', 'Info', 'Menolak/Revisi PKS. (API Integrasi Menyusul)')}
+                  onClick={handleRevisi}
                   className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center cursor-pointer"
                 >
                   Revisi
                 </button>
                 <button
                   type="button"
-                  onClick={() => showDialog('info', 'Info', 'Menyetujui PKS. (API Integrasi Menyusul)')}
+                  onClick={handleSetuju}
                   className="px-4 py-2 bg-[#00529C] hover:bg-[#003E75] text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center cursor-pointer"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
                   Setujui
                 </button>
               </>
+            )}
+
+            {/* Action Final untuk Pengelola */}
+            {canShowDrafDisetujui && (
+              <button
+                type="button"
+                onClick={handleDrafDisetujui}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center cursor-pointer"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
+                Draf PKS Disetujui
+              </button>
             )}
             <button
               type="button"
@@ -482,13 +559,24 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
                     </div>
                   </div>
 
-                  {/* Inner Light Blue Callout Box for Catatan Internal */}
-                  <div className="p-3.5 rounded-xl bg-[#EEF4FF] border border-blue-100/80 text-xs space-y-1">
-                    <p className="text-[10px] font-bold text-slate-500">Catatan Internal:</p>
-                    <p className="text-slate-800 font-medium italic">
-                      "{data.catatan_internal || data.catatanInternal || 'Tidak ada catatan'}"
-                    </p>
-                  </div>
+                  {/* Inner Callout Box for Catatan Internal / Revisi */}
+                  {(data.catatan_revisi || data.catatan_internal || data.catatanInternal) ? (
+                    <div className={`p-3.5 rounded-xl border text-xs space-y-1 ${data.catatan_revisi ? 'bg-rose-50 border-rose-200' : 'bg-[#EEF4FF] border-blue-100/80'}`}>
+                      <p className={`text-[10px] font-bold ${data.catatan_revisi ? 'text-rose-600' : 'text-slate-500'}`}>
+                        {data.catatan_revisi ? 'Catatan Revisi:' : 'Catatan Internal:'}
+                      </p>
+                      <p className={`font-medium italic ${data.catatan_revisi ? 'text-rose-800' : 'text-slate-800'}`}>
+                        "{data.catatan_revisi || data.catatan_internal || data.catatanInternal}"
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="p-3.5 rounded-xl bg-[#EEF4FF] border border-blue-100/80 text-xs space-y-1">
+                      <p className="text-[10px] font-bold text-slate-500">Catatan Internal:</p>
+                      <p className="text-slate-800 font-medium italic">
+                        "Tidak ada catatan"
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -611,12 +699,22 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
               <h3 className="text-center text-base font-extrabold text-slate-900 mb-2">
                 {dialog.title}
               </h3>
-              <p className="text-center text-sm text-slate-600 font-medium leading-relaxed">
+              <p className="text-center text-sm text-slate-600 font-medium leading-relaxed mb-4">
                 {dialog.message}
               </p>
+              
+              {dialog.type === 'prompt' && (
+                <textarea
+                  autoFocus
+                  className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#00529C] focus:border-transparent transition-all shadow-xs min-h-[100px]"
+                  placeholder="Ketik catatan di sini..."
+                  value={promptValue}
+                  onChange={(e) => setPromptValue(e.target.value)}
+                />
+              )}
             </div>
             <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end space-x-3">
-              {dialog.type === 'confirm' && (
+              {(dialog.type === 'confirm' || dialog.type === 'prompt') && (
                 <button
                   type="button"
                   onClick={closeDialog}
@@ -629,16 +727,21 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
                 type="button"
                 onClick={() => {
                   if (dialog.onConfirm) {
-                    dialog.onConfirm();
+                    if (dialog.type === 'prompt' && (!promptValue || promptValue.trim() === '')) {
+                      // Jangan lanjut jika kosong
+                      return;
+                    }
+                    dialog.onConfirm(promptValue);
                   } else {
                     closeDialog();
                   }
                 }}
-                className={`px-5 py-2 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer ${
-                  dialog.type === 'confirm' ? 'bg-[#00529C] hover:bg-[#003E75]' : 'bg-[#00529C] hover:bg-[#003E75] w-full'
+                disabled={dialog.type === 'prompt' && (!promptValue || promptValue.trim() === '')}
+                className={`px-5 py-2 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer disabled:opacity-50 ${
+                  (dialog.type === 'confirm' || dialog.type === 'prompt') ? 'bg-[#00529C] hover:bg-[#003E75]' : 'bg-[#00529C] hover:bg-[#003E75] w-full'
                 }`}
               >
-                {dialog.type === 'confirm' ? 'Ya, Lanjutkan' : 'Mengerti'}
+                {(dialog.type === 'confirm' || dialog.type === 'prompt') ? 'Ya, Lanjutkan' : 'Mengerti'}
               </button>
             </div>
           </div>

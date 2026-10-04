@@ -150,6 +150,14 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
         ringkasan_pks: judulPKS || pksData?.ringkasan_pks,
         tanggal_mulai: tanggalMulai,
         tanggal_berakhir: tanggalBerakhir,
+        mitra: {
+          nama_perusahaan: namaPerusahaan,
+          alamat: alamat,
+          penanggung_jawab: penanggungJawab,
+          jabatan: jabatan,
+          telepon: telepon,
+          email: email
+        }
       };
 
       const res = await pksService.updatePks(pksId, payload);
@@ -326,13 +334,11 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
                     <label className="block text-xs font-semibold text-slate-700 mb-1">Tanggal Mulai</label>
                     <div className="relative">
                       <input
-                        type="text"
-                        placeholder="Misal: 2026-10-03"
+                        type="date"
                         value={tanggalMulai || ''}
                         onChange={(e) => setTanggalMulai(e.target.value)}
                         className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
                       />
-                      <Calendar className="w-4 h-4 text-slate-400 absolute right-3.5 top-3" />
                     </div>
                   </div>
                 </div>
@@ -353,13 +359,11 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
                     <label className="block text-xs font-semibold text-slate-700 mb-1">Tanggal Berakhir</label>
                     <div className="relative">
                       <input
-                        type="text"
-                        placeholder="Misal: 2026-10-31"
+                        type="date"
                         value={tanggalBerakhir || ''}
                         onChange={(e) => setTanggalBerakhir(e.target.value)}
                         className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
                       />
-                      <Calendar className="w-4 h-4 text-slate-400 absolute right-3.5 top-3" />
                     </div>
                   </div>
                 </div>
