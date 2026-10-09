@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { pksService } from '../../services/pksService';
 import {
   Bell, Mail, Clock, Calendar, CheckCheck, Trash2, UserCheck,
   AlertTriangle, XCircle, CheckCircle2, Upload, ChevronLeft, ChevronRight
@@ -10,6 +12,8 @@ import { ModalClearReadNotifications } from './ModalClearReadNotifications';
 export const NotificationPage = () => {
   const navigate = useNavigate();
 
+  const { user } = useAuth();
+  
   // State Stats
   const [unreadCount, setUnreadCount] = useState(0);
   const [totalNotifications, setTotalNotifications] = useState(0);
@@ -25,6 +29,146 @@ export const NotificationPage = () => {
   const [isClearReadModalOpen, setIsClearReadModalOpen] = useState(false);
 
   const [notificationList, setNotificationList] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDataAndGenerateNotifications();
+  }, [user]);
+
+  const fetchDataAndGenerateNotifications = async () => {
+    setLoading(true);
+    try {
+      const res = await pksService.getPksList({ per_page: 500 });
+      if (res.success && Array.isArray(res.data)) {
+        generateNotifications(res.data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateNotifications = (pksList) => {
+    const notifs = [];
+    let idCounter = 1;
+    const now = new Date();
+    
+    let uCount = 0;
+    let sCount = 0;
+    let bCount = 0;
+
+    pksList.forEach(pks => {
+      const status = pks.statusPersetujuan || '';
+      const tglBerakhir = pks.tanggalBerakhir || pks.tanggal_berakhir;
+      
+      // 1. Approval Notifications
+      if (
+         (status === 'Menunggu Pemeriksaan Pengelola' && (user?.role === 'pengelola_pks' || user?.role === 'pengelola')) ||
+         (status === 'Menunggu Persetujuan Kabag' && user?.role === 'kabag') ||
+         (status === 'Menunggu Persetujuan Pimpinan' && user?.role === 'pimpinan') ||
+         (status.includes('Menunggu') && user?.role === 'admin_utama')
+      ) {
+        notifs.push({
+          id: idCounter++,
+          pksId: pks.pksId || pks.id,
+          title: `Persetujuan Dibutuhkan: ${pks.nomorPKS || pks.nomor_pks}`,
+          description: `PKS dengan mitra ${pks.perusahaan || pks.mitra?.nama_mitra} sedang ${status}. Harap segera ditinjau.`,
+          type: 'Persetujuan',
+          timestamp: new Date().toLocaleDateString('id-ID'),
+          statusBaca: 'Belum Dibaca',
+          color: 'blue',
+          icon: Clock,
+          actionText: 'Tinjau Persetujuan',
+          actionType: 'solid'
+        });
+        uCount++;
+      }
+
+      // 2. Petugas JR Notifications
+      if (user?.role === 'petugas_jr' || user?.role === 'admin_utama') {
+        if (status === 'Disetujui') {
+          notifs.push({
+            id: idCounter++,
+            pksId: pks.pksId || pks.id,
+            title: `PKS Disetujui: ${pks.nomorPKS || pks.nomor_pks}`,
+            description: `Dokumen PKS Anda telah disetujui sepenuhnya oleh Pimpinan.`,
+            type: 'Disetujui',
+            timestamp: new Date().toLocaleDateString('id-ID'),
+            statusBaca: 'Sudah Dibaca', 
+            color: 'emerald',
+            icon: CheckCircle2,
+            actionText: 'Lihat Detail PKS',
+            actionType: 'outline'
+          });
+        }
+        if (status.includes('Ditolak') || status.includes('Revisi')) {
+          notifs.push({
+            id: idCounter++,
+            pksId: pks.pksId || pks.id,
+            title: `PKS Dikembalikan: ${pks.nomorPKS || pks.nomor_pks}`,
+            description: `PKS Anda memerlukan revisi.`,
+            reasonText: pks.catatan_revisi || 'Ada perbaikan yang harus dilakukan.',
+            type: 'Ditolak',
+            timestamp: new Date().toLocaleDateString('id-ID'),
+            statusBaca: 'Belum Dibaca', 
+            color: 'rose',
+            icon: AlertTriangle,
+            actionText: 'Revisi PKS',
+            actionType: 'solid'
+          });
+          uCount++;
+        }
+      }
+
+      // 3. Masa Berlaku
+      if (tglBerakhir && pks.statusPks === 'Aktif') {
+        const endDate = new Date(tglBerakhir);
+        const diffTime = endDate - now;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays <= 30 && diffDays > 0) {
+          sCount++;
+          notifs.push({
+            id: idCounter++,
+            pksId: pks.pksId || pks.id,
+            title: `PKS Segera Berakhir: ${pks.nomorPKS || pks.nomor_pks}`,
+            description: `Masa berlaku PKS tinggal ${diffDays} hari lagi (Batas: ${endDate.toLocaleDateString('id-ID')}).`,
+            type: 'Masa Berlaku',
+            timestamp: new Date().toLocaleDateString('id-ID'),
+            statusBaca: 'Belum Dibaca',
+            color: 'amber',
+            icon: AlertTriangle,
+            actionText: 'Buat Adendum',
+            actionType: 'solid'
+          });
+          uCount++;
+        } else if (diffDays <= 0) {
+          bCount++;
+          notifs.push({
+            id: idCounter++,
+            pksId: pks.pksId || pks.id,
+            title: `PKS Telah Berakhir: ${pks.nomorPKS || pks.nomor_pks}`,
+            description: `Masa berlaku PKS ini sudah habis sejak ${Math.abs(diffDays)} hari yang lalu.`,
+            type: 'Masa Berlaku',
+            timestamp: new Date().toLocaleDateString('id-ID'),
+            statusBaca: 'Belum Dibaca',
+            color: 'rose',
+            icon: XCircle,
+            actionText: 'Evaluasi PKS',
+            actionType: 'outline'
+          });
+          uCount++;
+        }
+      }
+    });
+    
+    setNotificationList(notifs.sort((a, b) => b.id - a.id));
+    setUnreadCount(uCount);
+    setTotalNotifications(notifs.length);
+    setSegeraBerakhirCount(sCount);
+    setBerakhirCount(bCount);
+  };
 
   const handleMarkAllRead = () => {
     setNotificationList(prev => prev.map(item => ({ ...item, statusBaca: 'Sudah Dibaca' })));
@@ -191,10 +335,15 @@ export const NotificationPage = () => {
 
       </div>
 
-      {/* 4. Daftar Kartu Notifikasi (Matching Image 3) */}
+      {/* 4. Daftar Kartu Notifikasi */}
       <div className="space-y-4">
-        {filteredList.map((n) => {
-          const IconComp = n.icon;
+        {loading ? (
+          <div className="p-12 text-center text-xs text-slate-500">Menghitung notifikasi cerdas...</div>
+        ) : filteredList.length === 0 ? (
+          <div className="p-12 text-center text-xs text-slate-500">Tidak ada notifikasi untuk kategori ini.</div>
+        ) : (
+          filteredList.map((n) => {
+            const IconComp = n.icon || Bell;
 
           return (
             <div
@@ -278,7 +427,8 @@ export const NotificationPage = () => {
 
             </div>
           );
-        })}
+          })
+        )}
       </div>
 
       {/* 5. Pagination Footer */}
