@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class PksDocument extends Model
 {
+    use \App\Traits\LogsSystemActivity;
+
     protected $table = 'pks_documents';
     protected $primaryKey = 'pksId';
 

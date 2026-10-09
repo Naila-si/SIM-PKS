@@ -73,18 +73,28 @@ export const PersetujuanPksPage = () => {
     setUrutan('Terbaru');
   };
 
-  const handleStatusUpdated = (newStatus, alasan) => {
-    if (selectedPksItem) {
-      setPksList((prev) =>
-        prev.map((item) =>
-          item.pksId === selectedPksItem.pksId
-            ? {
-                ...item,
-                statusPersetujuan: newStatus === 'Disetujui' ? 'Disetujui' : 'Ditolak',
-              }
-            : item
-        )
-      );
+  const handleStatusUpdated = async (action, alasan) => {
+    if (!selectedPksItem) return;
+    const id = selectedPksItem.pksId;
+    const status = selectedPksItem.statusPersetujuan;
+    
+    try {
+      setLoading(true);
+      if (action === 'Disetujui') {
+        if (status.includes('Pengelola')) await pksService.setujuiPengelola(id);
+        else if (status.includes('Kabag')) await pksService.setujuiKabag(id);
+        else if (status.includes('Pimpinan')) await pksService.setujuiPimpinan(id);
+      } else {
+        if (status.includes('Pengelola')) await pksService.tolakPengelola(id, alasan);
+        else if (status.includes('Kabag')) await pksService.tolakKabag(id, alasan);
+        else if (status.includes('Pimpinan')) await pksService.tolakPimpinan(id, alasan);
+      }
+      
+      await fetchApprovalData();
+      setSelectedPksItem(null);
+    } catch (err) {
+      alert('Gagal memproses persetujuan. Silakan coba lagi.');
+      setLoading(false);
     }
   };
 

@@ -145,9 +145,13 @@ export const authService = {
   // 6. Tambah Pengguna Langsung oleh Admin Utama
   addUserByAdmin: async (formData) => {
     try {
+      let token = localStorage.getItem('pks_token');
       const response = await fetch(`${API_BASE_URL}/pengguna/tambah`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           nama: formData.nama || formData.namaLengkap,
           email: formData.email,
@@ -180,9 +184,13 @@ export const authService = {
   // 7. Persetujuan Akun: Setujui
   approveUser: async (penggunaId) => {
     try {
+      let token = localStorage.getItem('pks_token');
       const response = await fetch(`${API_BASE_URL}/pengguna/${penggunaId}/setujui`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
       });
 
       const resData = await response.json();
@@ -200,9 +208,13 @@ export const authService = {
   // 8. Persetujuan Akun: Tolak
   rejectUser: async (penggunaId) => {
     try {
+      let token = localStorage.getItem('pks_token');
       const response = await fetch(`${API_BASE_URL}/pengguna/${penggunaId}/tolak`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
       });
 
       const resData = await response.json();
@@ -220,9 +232,13 @@ export const authService = {
   // 9. Ubah Status Pengguna (Aktif / Nonaktif)
   toggleUserStatus: async (penggunaId) => {
     try {
+      let token = localStorage.getItem('pks_token');
       const response = await fetch(`${API_BASE_URL}/pengguna/${penggunaId}/ubah-status`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
       });
 
       const resData = await response.json();
@@ -240,9 +256,13 @@ export const authService = {
   // 10. Edit / Perbarui Data Pengguna
   updateUser: async (penggunaId, updatedFields) => {
     try {
+      let token = localStorage.getItem('pks_token');
       const response = await fetch(`${API_BASE_URL}/pengguna/${penggunaId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(updatedFields),
       });
 
@@ -261,9 +281,13 @@ export const authService = {
   // 11. Reset Password Pengguna
   resetPassword: async (penggunaId, newPassword) => {
     try {
+      let token = localStorage.getItem('pks_token');
       const response = await fetch(`${API_BASE_URL}/pengguna/${penggunaId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ password: newPassword || 'password123' }),
       });
 
@@ -282,9 +306,13 @@ export const authService = {
   // 12. Hapus Pengguna dari Database
   deleteUser: async (penggunaId) => {
     try {
+      let token = localStorage.getItem('pks_token');
       const response = await fetch(`${API_BASE_URL}/pengguna/${penggunaId}`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
       });
 
       const resData = await response.json();

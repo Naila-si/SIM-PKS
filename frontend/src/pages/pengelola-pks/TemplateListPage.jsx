@@ -59,8 +59,10 @@ export const TemplateListPage = () => {
     if (user?.penggunaId) form.append('penggunaId', user.penggunaId);
 
     try {
+      let token = localStorage.getItem('pks_token');
       const res = await fetch('http://localhost:8000/api/pks-templates', {
         method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
         body: form
       });
       if (res.ok) {
@@ -86,8 +88,10 @@ export const TemplateListPage = () => {
       form.append('_method', 'PUT');
       form.append('status_template', newStatus);
 
+      let token = localStorage.getItem('pks_token');
       const res = await fetch(`http://localhost:8000/api/pks-templates/${template.templateId}`, {
         method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
         body: form
       });
       if (res.ok) {

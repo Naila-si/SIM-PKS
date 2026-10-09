@@ -12,7 +12,7 @@ use Illuminate\Notifications\Notifiable;
  */
 class Pengguna extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, \App\Traits\LogsSystemActivity;
 
     // Nama tabel khusus di database
     protected $table = 'pengguna';

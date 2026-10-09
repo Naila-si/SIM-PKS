@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class PksTemplate extends Model
 {
+    use \App\Traits\LogsSystemActivity;
+
     protected $table = 'pks_templates';
     protected $primaryKey = 'templateId';
 

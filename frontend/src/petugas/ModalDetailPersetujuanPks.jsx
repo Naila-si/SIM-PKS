@@ -5,15 +5,30 @@ import {
 } from 'lucide-react';
 import { ModalTolakPks } from './ModalTolakPks';
 import { ModalSetujuiPks } from './ModalSetujuiPks';
+import { useAuth } from '../context/AuthContext';
+import { pksService } from '../services/pksService';
 
 export const ModalDetailPersetujuanPks = ({ isOpen, pksData, onClose, onStatusUpdated }) => {
+  const { user } = useAuth();
   const [catatan, setCatatan] = useState('');
   const [isTolakOpen, setIsTolakOpen] = useState(false);
   const [isSetujuiOpen, setIsSetujuiOpen] = useState(false);
+  const [riwayat, setRiwayat] = useState([]);
+  const [loadingRiwayat, setLoadingRiwayat] = useState(true);
 
   if (!isOpen) return null;
 
   const data = pksData || {};
+
+  React.useEffect(() => {
+    if (data?.pksId) {
+      setLoadingRiwayat(true);
+      pksService.getPksRiwayat(data.pksId).then(res => {
+        if (res.success) setRiwayat(res.data);
+        setLoadingRiwayat(false);
+      });
+    }
+  }, [data?.pksId]);
 
   const handleTolakSuccess = (alasan) => {
     if (onStatusUpdated) onStatusUpdated('Ditolak', alasan);
@@ -24,6 +39,15 @@ export const ModalDetailPersetujuanPks = ({ isOpen, pksData, onClose, onStatusUp
     if (onStatusUpdated) onStatusUpdated('Disetujui');
     onClose();
   };
+
+  const statusPersetujuan = data.status_persetujuan || data.statusPersetujuan || '';
+  const userRole = user?.role || '';
+  
+  let canApprove = false;
+  if (userRole === 'admin_utama') canApprove = true;
+  else if (statusPersetujuan.includes('Pengelola') && (userRole === 'pengelola_pks' || userRole === 'pengelola')) canApprove = true;
+  else if (statusPersetujuan.includes('Kabag') && userRole === 'kabag') canApprove = true;
+  else if (statusPersetujuan.includes('Pimpinan') && userRole === 'pimpinan') canApprove = true;
 
   return createPortal(
     <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 font-sans">
@@ -219,29 +243,28 @@ export const ModalDetailPersetujuanPks = ({ isOpen, pksData, onClose, onStatusUp
                 {/* Vertical Timeline Matching Image 5 */}
                 <div className="relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
                   
-                  {/* Timeline Item 1 */}
-                  <div className="relative">
-                    <span className="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-white border-2 border-blue-600 flex items-center justify-center">
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
-                    </span>
-                    <p className="text-[10px] font-bold text-slate-400">05 Agustus 2026</p>
-                    <p className="font-extrabold text-slate-900 text-xs mt-0.5">Disetujui oleh Pengelola PKS</p>
-                    <p className="text-[11px] text-slate-500 italic mt-0.5">"Data sudah sesuai dengan lampiran fisik."</p>
-                  </div>
-
-                  {/* Timeline Item 2 */}
-                  <div className="relative">
-                    <span className="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-white border-2 border-slate-300" />
-                    <p className="text-[10px] font-bold text-slate-400">04 Agustus 2026</p>
-                    <p className="font-bold text-slate-600 text-xs mt-0.5">Menunggu Pemeriksaan Pengelola PKS</p>
-                  </div>
-
-                  {/* Timeline Item 3 */}
-                  <div className="relative">
-                    <span className="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-white border-2 border-slate-300" />
-                    <p className="text-[10px] font-bold text-slate-400">03 Agustus 2026</p>
-                    <p className="font-bold text-slate-600 text-xs mt-0.5">PKS berhasil dibuat</p>
-                  </div>
+                  {loadingRiwayat ? (
+                    <p className="text-xs text-slate-400">Memuat riwayat...</p>
+                  ) : riwayat.length === 0 ? (
+                    <p className="text-xs text-slate-400">Belum ada riwayat persetujuan.</p>
+                  ) : (
+                    riwayat.map((item, idx) => (
+                      <div key={idx} className="relative">
+                        <span className={`absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-white border-2 flex items-center justify-center ${idx === 0 ? 'border-blue-600' : 'border-slate-300'}`}>
+                          {idx === 0 && <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />}
+                        </span>
+                        <p className="text-[10px] font-bold text-slate-400">
+                          {new Date(item.tanggal || item.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}
+                        </p>
+                        <p className={`text-xs mt-0.5 ${idx === 0 ? 'font-extrabold text-slate-900' : 'font-bold text-slate-600'}`}>
+                          {item.aksi} oleh {item.namaAktor || item.user?.nama || '-'}
+                        </p>
+                        {item.catatan && (
+                          <p className="text-[11px] text-slate-500 italic mt-0.5">"{item.catatan}"</p>
+                        )}
+                      </div>
+                    ))
+                  )}
 
                 </div>
               </div>
@@ -262,25 +285,32 @@ export const ModalDetailPersetujuanPks = ({ isOpen, pksData, onClose, onStatusUp
             Tutup
           </button>
 
-          <div className="flex items-center space-x-3">
-            <button
-              type="button"
-              onClick={() => setIsTolakOpen(true)}
-              className="px-5 py-2.5 bg-[#C92A2A] hover:bg-red-700 text-white text-xs font-bold rounded-xl shadow-xs flex items-center transition-all cursor-pointer"
-            >
-              <Ban className="w-4 h-4 mr-1.5 stroke-[2.5]" />
-              Tolak
-            </button>
+          {canApprove ? (
+            <div className="flex items-center space-x-3">
+              <button
+                type="button"
+                onClick={() => setIsTolakOpen(true)}
+                className="px-5 py-2.5 bg-[#C92A2A] hover:bg-red-700 text-white text-xs font-bold rounded-xl shadow-xs flex items-center transition-all cursor-pointer"
+              >
+                <Ban className="w-4 h-4 mr-1.5 stroke-[2.5]" />
+                Tolak
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setIsSetujuiOpen(true)}
-              className="px-5 py-2.5 bg-[#00529C] hover:bg-[#003E75] text-white text-xs font-bold rounded-xl shadow-xs flex items-center transition-all cursor-pointer"
-            >
-              <CheckCircle2 className="w-4 h-4 mr-1.5" />
-              Setujui
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => setIsSetujuiOpen(true)}
+                className="px-5 py-2.5 bg-[#00529C] hover:bg-[#003E75] text-white text-xs font-bold rounded-xl shadow-xs flex items-center transition-all cursor-pointer"
+              >
+                <CheckCircle2 className="w-4 h-4 mr-1.5" />
+                Setujui
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center text-[10px] font-bold text-slate-500 uppercase tracking-wide bg-blue-50/50 px-4 py-2 rounded-xl border border-blue-100">
+              <Info className="w-3.5 h-3.5 mr-1.5 text-blue-500" />
+              Anda tidak memiliki akses di tahap ini
+            </div>
+          )}
         </div>
 
       </div>

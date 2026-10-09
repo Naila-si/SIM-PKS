@@ -78,7 +78,10 @@ export const mitraService = {
   getMitraList: async () => {
     localStorage.removeItem('mock_mitra_list');
     try {
-      const res = await fetch('http://localhost:8000/api/mitra');
+      let token = localStorage.getItem('pks_token');
+      const res = await fetch('http://localhost:8000/api/mitra', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       const data = await res.json();
       return { success: true, data: data };
     } catch (err) {
@@ -94,11 +97,13 @@ export const mitraService = {
 
   createMitra: async (data) => {
     try {
+      let token = localStorage.getItem('pks_token');
       const res = await fetch('http://localhost:8000/api/mitra', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(data)
       });
@@ -111,11 +116,13 @@ export const mitraService = {
 
   updateMitra: async (id, data) => {
     try {
+      let token = localStorage.getItem('pks_token');
       const res = await fetch(`http://localhost:8000/api/mitra/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(data)
       });

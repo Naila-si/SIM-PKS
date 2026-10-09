@@ -35,8 +35,10 @@ export const ModalPerbaruiTemplate = ({ isOpen, templateData, onClose, onSuccess
         form.append('penggunaId', user.penggunaId);
       }
       
+      let token = localStorage.getItem('pks_token');
       const res = await fetch(`http://localhost:8000/api/pks-templates/${data.templateId}`, {
         method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
         body: form
       });
       

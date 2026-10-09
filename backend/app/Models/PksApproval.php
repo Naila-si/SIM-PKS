@@ -7,6 +7,8 @@ use App\Models\Pengguna;
 
 class PksApproval extends Model
 {
+    use \App\Traits\LogsSystemActivity;
+
     protected $table = 'pks_approvals';
 
     protected $fillable = [

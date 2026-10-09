@@ -91,7 +91,10 @@ export const pksService = {
   getPksList: async () => {
     localStorage.removeItem('mock_pks_list');
     try {
-      const res = await fetch('http://localhost:8000/api/pks-documents');
+      let token = localStorage.getItem('pks_token');
+      const res = await fetch('http://localhost:8000/api/pks-documents', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       const data = await res.json();
       return { success: true, data: data };
     } catch (err) {
@@ -111,9 +114,13 @@ export const pksService = {
 
   createPks: async (data) => {
     try {
+      let token = localStorage.getItem('pks_token');
       const res = await fetch('http://localhost:8000/api/pks-documents', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(data)
       });
       const newPks = await res.json();
@@ -125,9 +132,13 @@ export const pksService = {
 
   updatePks: async (id, data) => {
     try {
+      let token = localStorage.getItem('pks_token');
       const res = await fetch(`http://localhost:8000/api/pks-documents/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(data)
       });
       const updatedItem = await res.json();
@@ -139,8 +150,10 @@ export const pksService = {
 
   deletePks: async (id) => {
     try {
+      let token = localStorage.getItem('pks_token');
       const res = await fetch(`http://localhost:8000/api/pks-documents/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       return { success: true };
     } catch (err) {
@@ -150,15 +163,35 @@ export const pksService = {
 
   addApproval: async (payload) => {
     try {
+      let token = localStorage.getItem('pks_token');
       const res = await fetch('http://localhost:8000/api/pks-approvals', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(payload)
       });
       const data = await res.json();
       return { success: true, data: data };
     } catch (err) {
       return { success: false, message: 'Gagal' };
+    }
+  },
+
+  getSystemLogs: async (params = {}) => {
+    try {
+      let token = localStorage.getItem('pks_token');
+      const q = new URLSearchParams(params).toString();
+      const res = await fetch(`http://localhost:8000/api/system-logs?${q}`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      return { success: true, data: data.data || [] };
+    } catch (err) {
+      return { success: false, data: [] };
     }
   },
 

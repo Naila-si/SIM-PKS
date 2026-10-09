@@ -60,3 +60,6 @@ Route::apiResource('pks-documents', \App\Http\Controllers\PksDocumentController:
 // ================= RUTE RIWAYAT PERSETUJUAN =================
 Route::post('pks-approvals', [\App\Http\Controllers\PksApprovalController::class, 'store']);
 
+// ================= RUTE LOG SISTEM (CCTV) =================
+Route::get('system-logs', [\App\Http\Controllers\SystemLogController::class, 'index']);
+

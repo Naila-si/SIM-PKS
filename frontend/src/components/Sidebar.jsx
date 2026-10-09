@@ -262,28 +262,30 @@ export const Sidebar = () => {
               )}
             </Link>
 
-            {/* 7. Riwayat */}
-            <Link
-              to="/riwayat"
-              title="Riwayat"
-              className={`group relative flex items-center rounded-xl text-xs font-semibold transition-all ${
-                isCollapsed ? 'justify-center p-3' : 'space-x-3 px-3.5 py-2.5'
-              } ${
-                isActive('/riwayat')
-                  ? 'bg-[#2563EB] text-white shadow-xs'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-              }`}
-            >
-              <History className="w-4 h-4 shrink-0" />
-              {!isCollapsed && <span className="truncate">Riwayat</span>}
+            {/* 7. Log Aktivitas (Administrator Utama Only) */}
+            {isAdminUtama && (
+              <Link
+                to="/riwayat"
+                title="Log Aktivitas"
+                className={`group relative flex items-center rounded-xl text-xs font-semibold transition-all ${
+                  isCollapsed ? 'justify-center p-3' : 'space-x-3 px-3.5 py-2.5'
+                } ${
+                  isActive('/riwayat')
+                    ? 'bg-[#2563EB] text-white shadow-xs'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                }`}
+              >
+                <History className="w-4 h-4 shrink-0" />
+                {!isCollapsed && <span className="truncate">Log Aktivitas</span>}
 
-              {/* Floating Tooltip in Collapsed Mode */}
-              {isCollapsed && (
-                <div className="fixed left-20 ml-2 px-3 py-1.5 bg-[#0F2238] text-white text-xs font-bold rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[100]">
-                  Riwayat
-                </div>
-              )}
-            </Link>
+                {/* Floating Tooltip in Collapsed Mode */}
+                {isCollapsed && (
+                  <div className="fixed left-20 ml-2 px-3 py-1.5 bg-[#0F2238] text-white text-xs font-bold rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[100]">
+                    Log Aktivitas
+                  </div>
+                )}
+              </Link>
+            )}
 
             {/* 8. Manajemen Pengguna (Administrator Utama) */}
             {isAdminUtama && (

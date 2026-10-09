@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Mitra extends Model
 {
+    use \App\Traits\LogsSystemActivity;
+
     protected $table = 'mitra';
     protected $primaryKey = 'mitraId';
 
