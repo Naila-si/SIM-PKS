@@ -1,53 +1,85 @@
-// Standalone Mock Adendum Service (Pure Frontend Focus)
+// Adendum Service connecting to Laravel Backend
+
+const BASE_URL = 'http://localhost:8000/api';
+
+const getHeaders = () => {
+  const token = localStorage.getItem('pks_token');
+  return {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+  };
+};
 
 export const adendumService = {
   getAdendumListByPks: async (pksId) => {
-    return {
-      success: true,
-      data: [],
-    };
+    try {
+      const res = await fetch(`${BASE_URL}/pks/${pksId}/adendums`, { headers: getHeaders() });
+      return await res.json();
+    } catch (err) {
+      console.error(err);
+      return { success: false, message: 'Gagal mengambil data' };
+    }
   },
 
   getAdendumById: async (id) => {
-    return {
-      success: true,
-      data: null,
-    };
+    try {
+      const res = await fetch(`${BASE_URL}/adendums/${id}`, { headers: getHeaders() });
+      return await res.json();
+    } catch (err) {
+      console.error(err);
+      return { success: false, message: 'Gagal mengambil data' };
+    }
   },
 
   createAdendum: async (pksId, data) => {
-    return {
-      success: true,
-      data: {
-        adendumId: Date.now(),
-        nomorAdendum: `ADD/${new Date().getFullYear()}/${String(Math.floor(Math.random() * 900) + 100)}`,
-        ...data,
-        createdAt: new Date().toISOString(),
-      },
-    };
+    try {
+      const res = await fetch(`${BASE_URL}/pks/${pksId}/adendums`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(data),
+      });
+      return await res.json();
+    } catch (err) {
+      console.error(err);
+      return { success: false, message: 'Gagal menyimpan data' };
+    }
   },
 
   updateAdendum: async (id, data) => {
-    return {
-      success: true,
-      data: {
-        adendumId: id,
-        ...data,
-        updatedAt: new Date().toISOString(),
-      },
-    };
+    try {
+      const res = await fetch(`${BASE_URL}/adendums/${id}`, {
+        method: 'PUT',
+        headers: getHeaders(),
+        body: JSON.stringify(data),
+      });
+      return await res.json();
+    } catch (err) {
+      console.error(err);
+      return { success: false, message: 'Gagal update data' };
+    }
   },
 
   deleteAdendum: async (id) => {
-    return { success: true };
+    try {
+      const res = await fetch(`${BASE_URL}/adendums/${id}`, {
+        method: 'DELETE',
+        headers: getHeaders(),
+      });
+      return await res.json();
+    } catch (err) {
+      console.error(err);
+      return { success: false, message: 'Gagal hapus data' };
+    }
   },
 
-  downloadDraft: async () => {
+  downloadDraft: async (id) => {
+    // For now, mockup blob
     const blob = new Blob(['Mock Draft Adendum Document Content'], { type: 'application/pdf' });
-    return { data: blob };
+    return { success: true, data: blob };
   },
 
-  konfirmasiPenyerahan: async () => {
-    return { success: true };
+  konfirmasiPenyerahan: async (id) => {
+    return await adendumService.updateAdendum(id, { statusPersetujuan: 'Selesai' });
   },
 };

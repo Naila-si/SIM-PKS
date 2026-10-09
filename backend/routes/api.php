@@ -63,3 +63,14 @@ Route::post('pks-approvals', [\App\Http\Controllers\PksApprovalController::class
 // ================= RUTE LOG SISTEM (CCTV) =================
 Route::get('system-logs', [\App\Http\Controllers\SystemLogController::class, 'index']);
 
+// ================= RUTE ADENDUM PKS =================
+Route::prefix('pks')->group(function () {
+    Route::get('{pksId}/adendums', [\App\Http\Controllers\AdendumController::class, 'index']);
+    Route::post('{pksId}/adendums', [\App\Http\Controllers\AdendumController::class, 'store']);
+});
+
+Route::prefix('adendums')->group(function () {
+    Route::get('{id}', [\App\Http\Controllers\AdendumController::class, 'show']);
+    Route::put('{id}', [\App\Http\Controllers\AdendumController::class, 'update']);
+    Route::delete('{id}', [\App\Http\Controllers\AdendumController::class, 'destroy']);
+});
