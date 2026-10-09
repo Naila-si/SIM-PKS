@@ -7,6 +7,11 @@ import {
   CheckCircle2, AlertTriangle, XCircle, Building2, Calendar, ArrowRight,
   Eye, MoreVertical, FileText, CheckSquare, Clock, Users, Ban
 } from 'lucide-react';
+import { pksService } from '../services/pksService';
+import { 
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
+  PieChart, Pie, Cell, Legend 
+} from 'recharts';
 
 export const DashboardPage = () => {
   const { user } = useAuth();
@@ -28,18 +33,89 @@ export const DashboardPage = () => {
     total_pks_selesai: 0,
   });
 
+  const [chartData, setChartData] = useState({
+    bidangData: [],
+    statusData: []
+  });
+
   useEffect(() => {
-    const fetchSummary = async () => {
+    const fetchDashboardData = async () => {
       try {
-        const res = await dashboardService.getSummary();
-        if (res.status === 'success' && res.data) {
-          setSummary(prev => ({ ...prev, ...res.data }));
+        const res = await pksService.getPksList({ per_page: 1000 });
+        if (res.success && res.data) {
+          const list = res.data;
+          
+          let aktif = 0;
+          let segera = 0;
+          let berakhir = 0;
+          let menunggu = 0;
+          let disetujui = 0;
+          let ditolak = 0;
+          let bulanIni = 0;
+          
+          const bidangMap = { IW: 0, SW: 0, Pelayanan: 0 };
+          const now = new Date();
+          const thisMonth = now.getMonth();
+
+          list.forEach(pks => {
+            const end = pks.tanggalBerakhir ? new Date(pks.tanggalBerakhir) : null;
+            const statusPers = pks.statusPersetujuan || '';
+            
+            // Approval Stats
+            if (statusPers.includes('Menunggu')) menunggu++;
+            if (statusPers === 'Disetujui') disetujui++;
+            if (statusPers.includes('Ditolak')) ditolak++;
+            
+            // Persetujuan Bulan Ini (Approximated based on created_at for now)
+            if (new Date(pks.created_at).getMonth() === thisMonth) bulanIni++;
+
+            // PKS Status
+            if (pks.statusPks === 'Aktif' && end) {
+              const diffDays = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
+              if (diffDays <= 0) berakhir++;
+              else if (diffDays <= 30) segera++;
+              else aktif++;
+            }
+
+            // Bidang Stats
+            if (pks.bidang && bidangMap[pks.bidang] !== undefined) {
+              bidangMap[pks.bidang]++;
+            }
+          });
+
+          setSummary(prev => ({
+            ...prev,
+            pks_aktif: aktif,
+            pks_segera_berakhir: segera,
+            pks_berakhir: berakhir,
+            menunggu_persetujuan: menunggu,
+            pks_disetujui: disetujui,
+            pks_ditolak: ditolak,
+            persetujuan_bulan_ini: bulanIni,
+            total_pks_bulan_ini: aktif + segera + berakhir,
+          }));
+
+          setChartData({
+            bidangData: [
+              { name: 'Sumbangan Wajib', value: bidangMap['SW'], fill: '#F59E0B' },
+              { name: 'Iuran Wajib', value: bidangMap['IW'], fill: '#0F2238' },
+              { name: 'Pelayanan', value: bidangMap['Pelayanan'], fill: '#3B82F6' },
+            ],
+            statusData: [
+              { name: 'Aktif', value: aktif || 1, color: '#0F2238' }, // OR 1 for visual when empty
+              { name: 'Segera Berakhir', value: segera, color: '#F59E0B' },
+              { name: 'Berakhir', value: berakhir, color: '#E11D48' },
+            ]
+          });
         }
+        
+        // Also fetch mitra for total_mitra
+        // Using summary endpoint just to get total mitra if needed, but we can fake it or use real data
       } catch (err) {
-        // fallback
+        console.error(err);
       }
     };
-    fetchSummary();
+    fetchDashboardData();
   }, []);
 
   if (user?.role === 'petugas_jr') {
@@ -60,7 +136,7 @@ export const DashboardPage = () => {
         </div>
         <div className="inline-flex items-center space-x-2 bg-white px-3.5 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold text-blue-700 shadow-2xs">
           <Calendar className="w-3.5 h-3.5 text-blue-600" />
-          <span>Senin, 3 Agustus 2026</span>
+          <span>{new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
         </div>
       </div>
 
@@ -166,84 +242,65 @@ export const DashboardPage = () => {
         </div>
       </div>
 
-      {/* 4. Middle Charts Row (Image 1 Mockup) */}
+      {/* 4. Middle Charts Row (Recharts) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Line Chart: Jumlah PKS Aktif per Bidang */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-4">
-          <h2 className="text-sm font-extrabold text-slate-900">Jumlah PKS Aktif per Bidang</h2>
-          <div className="h-48 flex items-end justify-between px-4 pt-6 pb-2 relative border-b border-slate-100">
-            {/* SVG Wave Graphic matching screenshot */}
-            <svg className="absolute inset-0 w-full h-full text-[#0F2238] pointer-events-none" viewBox="0 0 300 120" preserveAspectRatio="none">
-              <path
-                d="M 20 100 Q 80 40 140 70 T 280 25"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3.5"
-                strokeLinecap="round"
-              />
-            </svg>
-            <div className="text-center font-bold text-xs text-slate-600 z-10">SW</div>
-            <div className="text-center font-bold text-xs text-slate-600 z-10">IW</div>
-            <div className="text-center font-bold text-xs text-slate-600 z-10">Pelayanan</div>
+        
+        {/* Bar Chart: Jumlah PKS per Bidang */}
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs flex flex-col">
+          <h2 className="text-sm font-extrabold text-slate-900 mb-6">Distribusi PKS per Bidang</h2>
+          <div className="flex-1 w-full min-h-[220px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData.bidangData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#64748B' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: '#64748B' }} axisLine={false} tickLine={false} />
+                <Tooltip cursor={{ fill: '#F1F5F9' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                  {chartData.bidangData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Donut Chart: Status PKS Bulan Ini */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-4">
-          <h2 className="text-sm font-extrabold text-slate-900">Status PKS Bulan Ini</h2>
-          <div className="flex items-center justify-around h-48">
-            {/* Donut Graphic */}
-            <div className="relative w-32 h-32 flex items-center justify-center">
-              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                <path
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  fill="none"
-                  stroke="#0F172A"
-                  strokeWidth="4.5"
-                  strokeDasharray="80, 100"
-                />
-                <path
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  fill="none"
-                  stroke="#F59E0B"
-                  strokeWidth="4.5"
-                  strokeDasharray="14, 100"
-                  strokeDashoffset="-80"
-                />
-                <path
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  fill="none"
-                  stroke="#EF4444"
-                  strokeWidth="4.5"
-                  strokeDasharray="6, 100"
-                  strokeDashoffset="-94"
-                />
-              </svg>
-              <div className="absolute text-center">
-                <span className="text-lg font-extrabold text-slate-900">
-                  {summary.total_pks_bulan_ini || '0'}
-                </span>
-                <p className="text-[9px] font-bold text-slate-400">TOTAL</p>
-              </div>
+        {/* Pie Chart: Status PKS */}
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs flex flex-col">
+          <h2 className="text-sm font-extrabold text-slate-900 mb-2">Status Portofolio PKS</h2>
+          <div className="flex-1 w-full flex items-center justify-between min-h-[220px]">
+            <div className="w-1/2 h-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={chartData.statusData}
+                    innerRadius={55}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                    {chartData.statusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
 
-            {/* Donut Legend */}
-            <div className="space-y-3 text-xs font-semibold">
-              <div className="flex items-center space-x-3">
-                <span className="w-3 h-3 rounded-full bg-slate-900" />
-                <span className="text-slate-600">Aktif</span>
-                <span className="font-extrabold text-slate-900 ml-4">{summary.pks_aktif || '0'}</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <span className="w-3 h-3 rounded-full bg-amber-500" />
-                <span className="text-slate-600">Segera Berakhir</span>
-                <span className="font-extrabold text-slate-900 ml-4">{summary.pks_segera_berakhir || '0'}</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <span className="w-3 h-3 rounded-full bg-rose-600" />
-                <span className="text-slate-600">Berakhir</span>
-                <span className="font-extrabold text-slate-900 ml-4">{summary.pks_berakhir || '0'}</span>
-              </div>
+            {/* Custom Legend */}
+            <div className="w-1/2 space-y-4 text-xs font-semibold pl-4">
+              {chartData.statusData.map((item, idx) => (
+                <div key={idx} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2.5">
+                    <span className="w-3.5 h-3.5 rounded-md" style={{ backgroundColor: item.color }} />
+                    <span className="text-slate-600">{item.name}</span>
+                  </div>
+                  <span className="font-extrabold text-slate-900 bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-100">
+                    {item.name === 'Aktif' && item.value === 1 && summary.pks_aktif === 0 ? 0 : item.value}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
