@@ -589,7 +589,7 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
                   </h3>
                 </div>
 
-                <div className="space-y-3.5 text-xs">
+                <div className="space-y-3.5 text-xs max-h-[280px] overflow-y-auto pr-2">
                   <div className="flex items-start space-x-3">
                     <div className="w-6 h-6 rounded-full bg-[#00529C] text-white flex items-center justify-center shrink-0 mt-0.5">
                       <CheckCircle2 className="w-4 h-4" />

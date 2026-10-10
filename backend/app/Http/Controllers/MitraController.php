@@ -9,7 +9,7 @@ class MitraController extends Controller
 {
     public function index()
     {
-        return response()->json(Mitra::all());
+        return response()->json(Mitra::withCount('pksDocuments')->get());
     }
 
     public function show($id)

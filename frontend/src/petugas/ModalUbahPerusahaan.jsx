@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { mitraService } from '../services/mitraService';
-import { X, Lock, Info, User, Briefcase, Phone, Mail, Globe, MapPin, Save, AlertCircle } from 'lucide-react';
+import { X, Lock, Info, User, Briefcase, Phone, Mail, Globe, MapPin, Save, AlertCircle, FileText, Building2 } from 'lucide-react';
 
 export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) => {
   const [submitting, setSubmitting] = useState(false);
@@ -9,6 +9,7 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
   const [emailError, setEmailError] = useState('');
 
   // Form State
+  const [namaPerusahaan, setNamaPerusahaan] = useState('');
   const [penanggungJawab, setPenanggungJawab] = useState('');
   const [kontak, setKontak] = useState('');
   const [email, setEmail] = useState('');
@@ -16,6 +17,7 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
 
   useEffect(() => {
     if (mitraData) {
+      setNamaPerusahaan(mitraData.nama_mitra || mitraData.namaPerusahaan || '');
       setPenanggungJawab(mitraData.nama_pengelola || mitraData.penanggungJawab || '');
       setKontak(mitraData.no_hp_pengelola || mitraData.kontak || '');
       setEmail(mitraData.email_pengelola || mitraData.email || '');
@@ -25,7 +27,8 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
 
   if (!isOpen || !mitraData) return null;
 
-  const isDraft = !mitraData.totalPks || mitraData.totalPks === 0;
+  // Jika perusahaan sudah memiliki dokumen PKS, Nama dan Alamat dikunci.
+  const hasPks = (mitraData.pks_documents_count || mitraData.totalPks || 0) > 0;
 
   const validateEmail = (val) => {
     setEmail(val);
@@ -53,6 +56,7 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
     setSubmitting(true);
     try {
       const payload = {
+        nama_mitra: namaPerusahaan,
         nama_pengelola: penanggungJawab,
         no_hp_pengelola: kontak,
         email_pengelola: email,
@@ -120,26 +124,28 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Nama Perusahaan / Instansi</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Nama Perusahaan / Instansi *</label>
                   <div className="relative">
-                    <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
+                    <Building2 className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
                     <input
                       type="text"
-                      disabled
-                      value={mitraData.nama_mitra || mitraData.namaPerusahaan || '-'}
-                      className="w-full pl-9 pr-3 py-2 bg-[#EEF4FF] border border-blue-100 rounded-xl text-slate-700 font-medium outline-none cursor-not-allowed"
+                      required
+                      value={namaPerusahaan}
+                      onChange={(e) => setNamaPerusahaan(e.target.value)}
+                      disabled={false}
+                      className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Jumlah PKS Aktif</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Jumlah PKS Terikat</label>
                   <div className="relative">
-                    <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
+                    <FileText className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
                     <input
                       type="text"
                       disabled
-                      value={`${mitraData.totalPks || 0} Dokumen`}
+                      value={`${mitraData.pks_documents_count || mitraData.totalPks || 0} Dokumen`}
                       className="w-full pl-9 pr-3 py-2 bg-[#EEF4FF] border border-blue-100 rounded-xl text-slate-700 font-medium outline-none cursor-not-allowed"
                     />
                   </div>
@@ -160,15 +166,14 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
                 <div>
                   <label className="block text-slate-700 font-semibold mb-1">Nama Penanggung Jawab *</label>
                   <div className="relative">
-                    {isDraft ? <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" /> : <User className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />}
+                    <User className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
                     <input
                       type="text"
                       required
-                      disabled={isDraft}
                       placeholder="Masukkan nama penanggung jawab..."
                       value={penanggungJawab}
                       onChange={(e) => setPenanggungJawab(e.target.value)}
-                      className={`w-full pl-9 pr-3 py-2 border rounded-xl outline-none font-medium text-slate-800 ${isDraft ? 'bg-[#EEF4FF] border-blue-100 cursor-not-allowed' : 'bg-white border-slate-200 focus:ring-2 focus:ring-blue-500/20'}`}
+                      className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl outline-none font-medium text-slate-800 focus:ring-2 focus:ring-blue-500/20"
                     />
                   </div>
                 </div>
@@ -176,15 +181,14 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
                 <div>
                   <label className="block text-slate-700 font-semibold mb-1">Nomor Telepon *</label>
                   <div className="relative">
-                    {isDraft ? <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" /> : <Phone className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />}
+                    <Phone className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
                     <input
                       type="text"
                       required
-                      disabled={isDraft}
                       placeholder="081234567890"
                       value={kontak}
                       onChange={(e) => setKontak(e.target.value)}
-                      className={`w-full pl-9 pr-3 py-2 border rounded-xl outline-none font-medium text-slate-800 ${isDraft ? 'bg-[#EEF4FF] border-blue-100 cursor-not-allowed' : 'bg-white border-slate-200 focus:ring-2 focus:ring-blue-500/20'}`}
+                      className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl outline-none font-medium text-slate-800 focus:ring-2 focus:ring-blue-500/20"
                     />
                   </div>
                 </div>
@@ -214,15 +218,15 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
                 <div className="md:col-span-2">
                   <label className="block text-slate-700 font-semibold mb-1">Alamat Perusahaan *</label>
                   <div className="relative">
-                    {isDraft ? <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" /> : <MapPin className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />}
+                    <MapPin className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
                     <textarea
                       rows="2"
                       required
-                      disabled={isDraft}
+                      disabled={false}
                       placeholder="Jl. Sudirman No. 123, Blok M, Jakarta Selatan, 12160"
                       value={alamat}
                       onChange={(e) => setAlamat(e.target.value)}
-                      className={`w-full pl-9 pr-3 py-2 border rounded-xl outline-none font-medium text-slate-800 ${isDraft ? 'bg-[#EEF4FF] border-blue-100 cursor-not-allowed' : 'bg-white border-slate-200 focus:ring-2 focus:ring-blue-500/20'}`}
+                      className="w-full pl-9 pr-3 py-2 border rounded-xl outline-none font-medium text-slate-800 bg-white border-slate-200 focus:ring-2 focus:ring-blue-500/20"
                     />
                   </div>
                 </div>

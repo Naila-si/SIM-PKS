@@ -71,9 +71,13 @@ class PksApprovalController extends Controller
                 ]);
                 $approval->update(['status_aksi' => 'Menunggu Penyerahan']);
             } elseif ($statusAksi === 'Draf PKS Disetujui') {
+                // Generate Nomor PKS if it doesn't have one yet
+                $nomorPks = $pks->nomor_pks ?: 'PKS/JR/' . strtoupper($pks->bidang ?? 'UMUM') . '/' . date('m') . '/' . rand(100, 999) . '/' . date('Y');
+                
                 $pks->update([
                     'status_persetujuan' => 'Disetujui',
                     'status_pks' => 'Aktif',
+                    'nomor_pks' => $nomorPks,
                     'locked_by' => null
                 ]);
             } else {
