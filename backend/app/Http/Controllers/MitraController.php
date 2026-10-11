@@ -9,12 +9,31 @@ class MitraController extends Controller
 {
     public function index()
     {
-        return response()->json(Mitra::withCount('pksDocuments')->get());
+        $mitras = Mitra::withCount([
+            'pksDocuments as totalPks',
+            'pksDocuments as pksAktif' => function ($query) {
+                $query->where('status_pks', 'Aktif');
+            },
+            'pksDocuments as pksBerakhir' => function ($query) {
+                $query->where('status_pks', 'Berakhir');
+            }
+        ])->get();
+
+        return response()->json($mitras);
     }
 
     public function show($id)
     {
-        $mitra = Mitra::find($id);
+        $mitra = Mitra::withCount([
+            'pksDocuments as totalPks',
+            'pksDocuments as pksAktif' => function ($query) {
+                $query->where('status_pks', 'Aktif');
+            },
+            'pksDocuments as pksBerakhir' => function ($query) {
+                $query->where('status_pks', 'Berakhir');
+            }
+        ])->find($id);
+
         if (!$mitra) return response()->json(['message' => 'Mitra tidak ditemukan'], 404);
         return response()->json($mitra);
     }

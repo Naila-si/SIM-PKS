@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
+import { pksService } from '../services/pksService';
 import {
   LayoutDashboard, FileText, Building2, Layers, CheckSquare,
   Bell, History, Users, LogOut, AlertTriangle, X
@@ -39,9 +41,29 @@ export const Sidebar = () => {
   const isPetugas = role === 'petugas_jr';
 
   // Badge counters config
-  const unreadNotifCount = 0;
-  const approvalPendingCount = 0;
-  const revisionCount = 0;
+  const { unreadCount: unreadNotifCount } = useNotifications();
+  const [approvalPendingCount, setApprovalPendingCount] = useState(0);
+  const [revisionCount, setRevisionCount] = useState(0);
+
+  useEffect(() => {
+    const fetchCounters = () => {
+      const uId = user?.penggunaId || user?.id;
+      if (uId) {
+        pksService.getApprovalPendingCount(uId)
+          .then(res => {
+            if (res?.success) {
+              setApprovalPendingCount(res.totalCount || 0);
+              setRevisionCount(res.revisiCount || 0);
+            }
+          })
+          .catch(() => {});
+      }
+    };
+
+    fetchCounters();
+    const interval = setInterval(fetchCounters, 15000); // Polling every 15s
+    return () => clearInterval(interval);
+  }, [user]);
 
   return (
     <>

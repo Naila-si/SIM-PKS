@@ -474,8 +474,7 @@ export const ModalTambahPks = ({ isOpen, onClose, onSuccess }) => {
               disabled={isSubmitting}
               className="px-5 py-2.5 bg-[#00529C] hover:bg-[#003E75] text-white text-xs font-semibold rounded-xl shadow-md flex items-center transition-all cursor-pointer disabled:opacity-50"
             >
-              <FileText className="w-4 h-4 mr-1.5" />
-              {isSubmitting ? 'Memproses...' : 'Simpan & Generate Draft'}
+              {isSubmitting ? 'Memproses...' : 'Simpan'}
             </button>
           </div>
         </form>

@@ -212,9 +212,22 @@ export const pksService = {
     return { success: true };
   },
 
-  downloadDraft: async () => {
-    const blob = new Blob(['Mock Draft PKS Document Content'], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-    return { data: blob };
+  downloadDraft: async (id) => {
+    try {
+      let token = localStorage.getItem('pks_token');
+      const res = await fetch(`http://localhost:8000/api/pks-documents/${id}/generate-docx`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || 'Gagal generate document');
+      }
+      const blob = await res.blob();
+      return { data: blob };
+    } catch (err) {
+      throw err;
+    }
   },
 
   konfirmasiPenyerahan: async (id) => {
@@ -262,5 +275,21 @@ export const pksService = {
         { riwayatId: 2, aksi: 'Persetujuan Pengelola', namaAktor: 'Pengelola PKS', tanggal: new Date().toISOString(), catatan: 'Memenuhi syarat.' },
       ],
     };
+  },
+
+  getApprovalPendingCount: async (userId) => {
+    try {
+      const token = localStorage.getItem('pks_token');
+      const res = await fetch(`http://localhost:8000/api/approvals/count?user_id=${userId || ''}`, {
+        headers: {
+          'Accept': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+      return await res.json();
+    } catch (err) {
+      console.error(err);
+      return { success: false, totalCount: 0 };
+    }
   },
 };

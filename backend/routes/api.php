@@ -69,8 +69,16 @@ Route::prefix('pks')->group(function () {
     Route::post('{pksId}/adendums', [\App\Http\Controllers\AdendumController::class, 'store']);
 });
 
+Route::get('approvals/count', [\App\Http\Controllers\PksApprovalController::class, 'getPendingCount']);
+Route::get('adendums', [\App\Http\Controllers\AdendumController::class, 'getAll']);
+
 Route::prefix('adendums')->group(function () {
+    Route::get('{id}/generate-docx', [\App\Http\Controllers\AdendumController::class, 'generateDocx']);
+    Route::get('{id}/download-final', [\App\Http\Controllers\AdendumController::class, 'downloadFinal']);
+    Route::post('{id}/upload-final', [\App\Http\Controllers\AdendumController::class, 'uploadFinal']);
     Route::get('{id}', [\App\Http\Controllers\AdendumController::class, 'show']);
     Route::put('{id}', [\App\Http\Controllers\AdendumController::class, 'update']);
     Route::delete('{id}', [\App\Http\Controllers\AdendumController::class, 'destroy']);
 });
+
+Route::post('adendum-approvals', [\App\Http\Controllers\AdendumApprovalController::class, 'store']);

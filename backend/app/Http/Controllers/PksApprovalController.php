@@ -71,8 +71,8 @@ class PksApprovalController extends Controller
                 ]);
                 $approval->update(['status_aksi' => 'Menunggu Penyerahan']);
             } elseif ($statusAksi === 'Draf PKS Disetujui') {
-                // Generate Nomor PKS if it doesn't have one yet
-                $nomorPks = $pks->nomor_pks ?: 'PKS/JR/' . strtoupper($pks->bidang ?? 'UMUM') . '/' . date('m') . '/' . rand(100, 999) . '/' . date('Y');
+                // Generate Nomor PKS P/{nomor urut}/SP/{tahun} if it doesn't have one yet
+                $nomorPks = $pks->nomor_pks ?: \App\Services\NomorDokumenService::generateNextNomor();
                 
                 $pks->update([
                     'status_persetujuan' => 'Disetujui',
@@ -95,5 +95,58 @@ class PksApprovalController extends Controller
             'message' => 'Riwayat persetujuan berhasil dicatat.',
             'data' => $approval
         ], 201);
+    }
+
+    public function getPendingCount(Request $request)
+    {
+        $userId = $request->query('user_id') ?? $request->attributes->get('user_id');
+        $userRole = null;
+
+        if ($userId) {
+            $user = \App\Models\Pengguna::find($userId);
+            if ($user) {
+                $userRole = strtolower($user->role);
+            }
+        }
+
+        $pksCount = 0;
+        $adendumCount = 0;
+        $revisiCount = 0;
+
+        if ($userRole === 'petugas_jr') {
+            $pksCount = \App\Models\PksDocument::where('penggunaId', $userId)
+                ->where('status_persetujuan', 'like', '%Revisi%')
+                ->count();
+
+            $adendumCount = \App\Models\Adendum::where('pembuat_id', $userId)
+                ->where('statusPersetujuan', 'like', '%Revisi%')
+                ->count();
+
+            $revisiCount = $pksCount + $adendumCount;
+            $totalCount = $revisiCount;
+        } elseif (in_array($userRole, ['pengelola_pks', 'admin_utama', 'admin', 'pengelola'])) {
+            $pksCount = \App\Models\PksDocument::whereIn('status_persetujuan', ['Menunggu Penyerahan', 'Pemeriksaan Pengelola'])->count();
+            $adendumCount = \App\Models\Adendum::whereIn('statusPersetujuan', ['Menunggu Penyerahan', 'Pemeriksaan Pengelola'])->count();
+            $totalCount = $pksCount + $adendumCount;
+        } elseif ($userRole === 'kabag') {
+            $pksCount = \App\Models\PksDocument::whereIn('status_persetujuan', ['Disetujui Pengelola', 'Pemeriksaan Kabag'])->count();
+            $adendumCount = \App\Models\Adendum::whereIn('statusPersetujuan', ['Disetujui Pengelola', 'Pemeriksaan Kabag'])->count();
+            $totalCount = $pksCount + $adendumCount;
+        } elseif ($userRole === 'pimpinan') {
+            $pksCount = \App\Models\PksDocument::whereIn('status_persetujuan', ['Disetujui Kabag', 'Pemeriksaan Pimpinan'])->count();
+            $adendumCount = \App\Models\Adendum::whereIn('statusPersetujuan', ['Disetujui Kabag', 'Pemeriksaan Pimpinan'])->count();
+            $totalCount = $pksCount + $adendumCount;
+        } else {
+            $totalCount = 0;
+        }
+
+        return response()->json([
+            'success' => true,
+            'role' => $userRole,
+            'pksCount' => $pksCount,
+            'adendumCount' => $adendumCount,
+            'revisiCount' => $revisiCount,
+            'totalCount' => $totalCount,
+        ]);
     }
 }

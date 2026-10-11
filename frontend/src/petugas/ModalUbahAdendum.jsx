@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { adendumService } from '../services/adendumService';
 import { StatusBadge } from '../components/StatusBadge';
-import { X, Info, FileText, Download, Eye, Save } from 'lucide-react';
+import { X, Info, FileText, Download, Save } from 'lucide-react';
 
-export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, onClose, onSuccess }) => {
+export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, pksData, onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -12,43 +12,58 @@ export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, onClose, onSu
 
   // Form states
   const [tanggalAdendum, setTanggalAdendum] = useState('');
-  const [jenisPerubahan, setJenisPerubahan] = useState('Perpanjangan Jangka Waktu');
   const [judulAdendum, setJudulAdendum] = useState('');
   const [isiPerubahan, setIsiPerubahan] = useState('');
   const [tanggalBerlaku, setTanggalBerlaku] = useState('');
-  const [catatanTambahan, setCatatanTambahan] = useState('');
-  const [catatanInternal, setCatatanInternal] = useState('');
+  const [tanggalBerakhir, setTanggalBerakhir] = useState('');
+  const [catatan, setCatatan] = useState('');
+
+  const targetId = adendumId || (typeof adendumData === 'object' ? (adendumData?.adendumId || adendumData?.id) : adendumData);
 
   useEffect(() => {
-    if (isOpen && adendumId && !adendumData) {
-      setLoading(true);
-      adendumService.getAdendumById(adendumId)
+    if (!isOpen) return;
+
+    const initialObj = typeof adendumData === 'object' && adendumData !== null ? adendumData : null;
+
+    if (initialObj) {
+      setAdendum(initialObj);
+      populateForm(initialObj);
+    }
+
+    if (targetId) {
+      setLoading(!initialObj);
+      adendumService.getAdendumById(targetId)
         .then((res) => {
-          if (res.success) {
+          if (res?.success && res?.data) {
             setAdendum(res.data);
             populateForm(res.data);
           }
         })
-        .catch(() => {})
+        .catch((err) => {
+          console.error('Gagal mengambil data adendum:', err);
+        })
         .finally(() => setLoading(false));
-    } else if (adendumData) {
-      setAdendum(adendumData);
-      populateForm(adendumData);
     }
   }, [isOpen, adendumId, adendumData]);
 
   const populateForm = (data) => {
-    if (!data) return;
-    setTanggalAdendum(data.tanggalAdendum ? data.tanggalAdendum.split('T')[0] : (data.createdAt ? data.createdAt.split('T')[0] : ''));
-    setJenisPerubahan(data.jenisPerubahan || data.ruangLingkupPerubahan || 'Perpanjangan Jangka Waktu');
-    setJudulAdendum(data.judulAdendum || data.ruangLingkupPerubahan || '');
-    setIsiPerubahan(data.ruangLingkupPerubahan || data.catatan || '');
-    setTanggalBerlaku(data.tanggalMulai ? data.tanggalMulai.split('T')[0] : '');
-    setCatatanTambahan(data.catatan || '');
-    setCatatanInternal(data.catatanInternal || '');
+    if (!data || typeof data !== 'object') return;
+    setTanggalAdendum(
+      data.tanggalAdendum ? data.tanggalAdendum.split('T')[0] :
+      (data.created_at ? data.created_at.split('T')[0] : 
+      (data.createdAt ? data.createdAt.split('T')[0] : 
+      (data.tanggalMulai ? data.tanggalMulai.split('T')[0] : '')))
+    );
+    setJudulAdendum(data.judulAdendum || data.ruangLingkupPerubahan || 'Adendum PKS');
+    setIsiPerubahan(data.ruangLingkupPerubahan || data.isiPerubahan || data.catatan || '');
+    setTanggalBerlaku(data.tanggalMulai ? data.tanggalMulai.split('T')[0] : (data.tanggal_mulai ? data.tanggal_mulai.split('T')[0] : ''));
+    setTanggalBerakhir(data.tanggalBerakhir ? data.tanggalBerakhir.split('T')[0] : (data.tanggal_berakhir ? data.tanggal_berakhir.split('T')[0] : ''));
+    setCatatan(data.catatanRevisi || data.catatan || data.catatanInternal || '');
   };
 
   if (!isOpen) return null;
+
+  const activePks = adendum?.pksDocument || adendum?.pks || pksData || {};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,18 +73,16 @@ export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, onClose, onSu
     try {
       const payload = {
         tanggalAdendum,
-        jenisPerubahan,
         judulAdendum,
         ruangLingkupPerubahan: isiPerubahan,
         tanggalMulai: tanggalBerlaku,
-        catatan: catatanTambahan,
-        catatanInternal,
+        tanggalBerakhir,
       };
 
-      const targetId = adendum?.adendumId || adendumId;
-      const res = await adendumService.updateAdendum(targetId, payload);
-      if (res.success || true) {
-        onSuccess && onSuccess(res.data || { ...adendum, ...payload });
+      const idToUpdate = targetId || adendum?.adendumId;
+      const res = await adendumService.updateAdendum(idToUpdate, payload);
+      if (res?.success || true) {
+        onSuccess && onSuccess(res?.data || { ...adendum, ...payload });
         onClose();
       }
     } catch (err) {
@@ -88,8 +101,7 @@ export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, onClose, onSu
           <div>
             <div className="flex items-center space-x-3">
               <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">Ubah Adendum</h2>
-              <StatusBadge status="Draft" />
-              <StatusBadge status={adendum?.statusPersetujuan || 'Menunggu Pemeriksaan Pengelola PKS'} />
+              <StatusBadge status={adendum?.statusPersetujuan || 'Draft'} />
             </div>
             <p className="text-xs text-slate-500 mt-0.5">Perbarui informasi adendum PKS.</p>
           </div>
@@ -130,7 +142,7 @@ export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, onClose, onSu
                     <input
                       type="text"
                       disabled
-                      value={adendum?.pks?.nomorPKS || adendum?.nomorPKS || 'PKS/2023/X/142'}
+                      value={activePks?.nomor_pks || activePks?.nomorPKS || '-'}
                       className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl font-bold text-slate-700 cursor-not-allowed"
                     />
                   </div>
@@ -140,7 +152,7 @@ export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, onClose, onSu
                     <input
                       type="text"
                       disabled
-                      value={adendum?.pks?.bidang || 'Hukum & Kerjasama'}
+                      value={activePks?.bidang || '-'}
                       className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl font-medium text-slate-700 cursor-not-allowed"
                     />
                   </div>
@@ -150,7 +162,7 @@ export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, onClose, onSu
                     <input
                       type="text"
                       disabled
-                      value={adendum?.pks?.jenisPKS || 'Nota Kesepahaman (MoU)'}
+                      value={activePks?.jenis_pks || activePks?.jenisPKS || '-'}
                       className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl font-medium text-slate-700 cursor-not-allowed"
                     />
                   </div>
@@ -160,7 +172,7 @@ export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, onClose, onSu
                     <input
                       type="text"
                       disabled
-                      value={adendum?.pks?.mitra?.namaPerusahaan || adendum?.namaMitra || 'PT Bank Mandiri (Persero) Tbk.'}
+                      value={activePks?.mitra?.nama_mitra || activePks?.mitra?.namaPerusahaan || activePks?.mitra?.nama || activePks?.namaMitra || '-'}
                       className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl font-bold text-slate-800 cursor-not-allowed"
                     />
                   </div>
@@ -170,7 +182,7 @@ export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, onClose, onSu
                     <input
                       type="text"
                       disabled
-                      value="01 Jan 2023"
+                      value={activePks?.tanggal_mulai ? new Date(activePks.tanggal_mulai).toLocaleDateString('id-ID', { dateStyle: 'long' }) : (activePks?.tanggalMulai ? new Date(activePks.tanggalMulai).toLocaleDateString('id-ID', { dateStyle: 'long' }) : '-')}
                       className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl font-medium text-slate-700 cursor-not-allowed"
                     />
                   </div>
@@ -180,7 +192,7 @@ export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, onClose, onSu
                     <input
                       type="text"
                       disabled
-                      value="31 Des 2025"
+                      value={activePks?.tanggal_berakhir ? new Date(activePks.tanggal_berakhir).toLocaleDateString('id-ID', { dateStyle: 'long' }) : (activePks?.tanggalBerakhir ? new Date(activePks.tanggalBerakhir).toLocaleDateString('id-ID', { dateStyle: 'long' }) : '-')}
                       className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl font-medium text-slate-700 cursor-not-allowed"
                     />
                   </div>
@@ -194,13 +206,13 @@ export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, onClose, onSu
                   <span>SECTION 2: INFORMASI ADENDUM</span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block font-semibold text-slate-700 mb-1">Nomor Adendum</label>
                     <input
                       type="text"
                       disabled
-                      value={adendum?.nomorAdendum || 'ADD/PKS-142/II/2024'}
+                      value={(adendum?.statusPersetujuan === 'Draft' || adendum?.statusPersetujuan === 'Draf' || !adendum?.nomorAdendum) ? '-' : adendum?.nomorAdendum}
                       className="w-full px-3 py-2 bg-blue-50/60 border border-blue-200 rounded-xl font-bold text-[#00529C] cursor-not-allowed"
                     />
                   </div>
@@ -214,21 +226,6 @@ export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, onClose, onSu
                       onChange={(e) => setTanggalAdendum(e.target.value)}
                       className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none font-medium"
                     />
-                  </div>
-
-                  <div>
-                    <label className="block font-semibold text-slate-700 mb-1">Jenis Perubahan *</label>
-                    <select
-                      value={jenisPerubahan}
-                      onChange={(e) => setJenisPerubahan(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none font-medium text-slate-800"
-                    >
-                      <option value="Perpanjangan Jangka Waktu">Perpanjangan Jangka Waktu</option>
-                      <option value="Perubahan Masa Berlaku">Perubahan Masa Berlaku</option>
-                      <option value="Penyesuaian Tarif Klaim">Penyesuaian Tarif Klaim</option>
-                      <option value="Perubahan PIC Operasional">Perubahan PIC Operasional</option>
-                      <option value="Perubahan Ruang Lingkup">Perubahan Ruang Lingkup</option>
-                    </select>
                   </div>
                 </div>
               </div>
@@ -260,7 +257,7 @@ export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, onClose, onSu
                   <div>
                     <label className="block font-semibold text-slate-700 mb-1">Isi Perubahan *</label>
                     <textarea
-                      rows="3"
+                      rows="4"
                       required
                       value={isiPerubahan}
                       onChange={(e) => setIsiPerubahan(e.target.value)}
@@ -268,9 +265,9 @@ export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, onClose, onSu
                     />
                   </div>
 
-                  <div className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block font-semibold text-slate-700 mb-1">Tanggal Berlaku Adendum *</label>
+                      <label className="block font-semibold text-slate-700 mb-1">Tanggal Mulai Berlaku *</label>
                       <input
                         type="date"
                         required
@@ -279,14 +276,13 @@ export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, onClose, onSu
                         className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none font-medium"
                       />
                     </div>
-
                     <div>
-                      <label className="block font-semibold text-slate-700 mb-1">Catatan Tambahan</label>
+                      <label className="block font-semibold text-slate-700 mb-1">Tanggal Berakhir *</label>
                       <input
-                        type="text"
-                        placeholder="Opsional..."
-                        value={catatanTambahan}
-                        onChange={(e) => setCatatanTambahan(e.target.value)}
+                        type="date"
+                        required
+                        value={tanggalBerakhir}
+                        onChange={(e) => setTanggalBerakhir(e.target.value)}
                         className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none font-medium"
                       />
                     </div>
@@ -303,23 +299,22 @@ export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, onClose, onSu
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-semibold text-slate-700 mb-1">Pengelola PKS</label>
+                    <label className="block font-semibold text-slate-700 mb-1">Pengelola / Pembuat</label>
                     <input
                       type="text"
                       disabled
-                      value="Budi Santoso (Admin Hukum)"
+                      value={activePks?.pengguna?.nama || activePks?.pengguna?.nama_pengguna || adendum?.pembuat?.nama || adendum?.pembuat?.nama_pengguna || 'Pengelola PKS'}
                       className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl font-medium text-slate-700 cursor-not-allowed"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-slate-700 mb-1">Catatan Internal</label>
+                    <label className="block font-semibold text-slate-700 mb-1">Catatan Revisi</label>
                     <input
                       type="text"
-                      placeholder="Masukkan catatan internal sistem..."
-                      value={catatanInternal}
-                      onChange={(e) => setCatatanInternal(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none font-medium"
+                      disabled
+                      value={catatan || 'Tidak ada catatan revisi'}
+                      className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl font-medium text-slate-700 cursor-not-allowed"
                     />
                   </div>
                 </div>
@@ -334,29 +329,27 @@ export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, onClose, onSu
 
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
                   <div className="flex items-center space-x-3">
-                    <div className="w-9 h-9 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center font-bold shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-blue-100 text-[#00529C] flex items-center justify-center font-bold shrink-0">
                       <FileText className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="font-bold text-slate-900">Draft_Adendum_V1.docx</p>
-                      <p className="text-[10px] text-slate-400">Versi: 1 • Tanggal Generate: 12 Okt 2024</p>
+                      <p className="font-bold text-slate-900">Draft_Adendum.docx</p>
+                      <p className="text-[10px] text-slate-400">Dokumen sistem adendum</p>
                     </div>
                   </div>
 
                   <div className="flex items-center space-x-2">
                     <button
                       type="button"
-                      onClick={() => alert('Membuka pratinjau draft...')}
-                      className="px-3 py-1.5 border border-blue-200 text-blue-700 bg-blue-50/50 hover:bg-blue-100 rounded-xl font-semibold flex items-center"
+                      onClick={() => {
+                        const targetDocId = adendum?.adendumId || targetId;
+                        if (targetDocId) {
+                          adendumService.generateWord(targetDocId);
+                        }
+                      }}
+                      className="px-3 py-1.5 border border-blue-200 text-blue-700 bg-white hover:bg-blue-50 rounded-xl font-semibold flex items-center cursor-pointer shadow-xs"
                     >
-                      <Eye className="w-3.5 h-3.5 mr-1" /> Lihat Draft
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => alert('Mengunduh draft...')}
-                      className="px-3 py-1.5 border border-blue-200 text-blue-700 bg-blue-50/50 hover:bg-blue-100 rounded-xl font-semibold flex items-center"
-                    >
-                      <Download className="w-3.5 h-3.5 mr-1" /> Unduh Draft
+                      <Download className="w-3.5 h-3.5 mr-1 text-[#00529C]" /> Unduh Draft (.docx)
                     </button>
                   </div>
                 </div>

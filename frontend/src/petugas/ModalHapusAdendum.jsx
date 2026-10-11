@@ -46,21 +46,21 @@ export const ModalHapusAdendum = ({ isOpen, adendumData, onClose, onSuccess }) =
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Nomor Adendum</p>
               <p className="font-extrabold text-[#00529C] text-xs mt-0.5">
-                {adendumData.nomorAdendum || 'AD/2024/0045/JR/X'}
+                {(adendumData.statusPersetujuan === 'Draft' || adendumData.statusPersetujuan === 'Draf' || !adendumData.nomorAdendum) ? '-' : adendumData.nomorAdendum}
               </p>
             </div>
 
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Nomor PKS</p>
               <p className="font-bold text-slate-800 text-xs mt-0.5">
-                {adendumData.pks?.nomorPKS || adendumData.nomorPKS || 'PKS/2022/JR/1102'}
+                {adendumData.pksDocument?.nomor_pks || adendumData.pks?.nomorPKS || adendumData.nomorPKS || '-'}
               </p>
             </div>
 
-            <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Jenis Perubahan</p>
+            <div className="col-span-2">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ruang Lingkup Perubahan</p>
               <p className="font-semibold text-slate-800 text-xs mt-0.5">
-                {adendumData.jenisPerubahan || adendumData.ruangLingkupPerubahan || 'Perpanjangan Jangka Waktu'}
+                {adendumData.ruangLingkupPerubahan || '-'}
               </p>
             </div>
 

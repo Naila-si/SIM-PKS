@@ -181,17 +181,17 @@ export const DrawerDetailPerusahaan = ({ isOpen, mitraData, onClose }) => {
 
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-white border border-slate-200 rounded-2xl p-4 text-center shadow-2xs">
-                <p className="text-xl font-extrabold text-slate-900">{mitraData.totalPks || 0}</p>
+                <p className="text-xl font-extrabold text-slate-900">{mitraData.totalPks ?? mitraData.pks_documents_count ?? 0}</p>
                 <p className="text-[10px] font-semibold text-slate-400 mt-0.5">Total PKS</p>
               </div>
 
               <div className="bg-white border border-slate-200 rounded-2xl p-4 text-center shadow-2xs">
-                <p className="text-xl font-extrabold text-emerald-600">{mitraData.pksAktif || 0}</p>
+                <p className="text-xl font-extrabold text-emerald-600">{mitraData.pksAktif ?? 0}</p>
                 <p className="text-[10px] font-semibold text-slate-400 mt-0.5">Aktif</p>
               </div>
 
               <div className="bg-white border border-slate-200 rounded-2xl p-4 text-center shadow-2xs">
-                <p className="text-xl font-extrabold text-rose-600">{mitraData.pksBerakhir || 0}</p>
+                <p className="text-xl font-extrabold text-rose-600">{mitraData.pksBerakhir ?? 0}</p>
                 <p className="text-[10px] font-semibold text-slate-400 mt-0.5">Berakhir</p>
               </div>
             </div>

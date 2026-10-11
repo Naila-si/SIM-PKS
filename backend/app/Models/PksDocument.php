@@ -46,4 +46,9 @@ class PksDocument extends Model
     {
         return $this->belongsTo(Pengguna::class, 'locked_by', 'penggunaId');
     }
+
+    public function adendums()
+    {
+        return $this->hasMany(Adendum::class, 'pks_document_id', 'pksId');
+    }
 }

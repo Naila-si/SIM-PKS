@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
-  X, FileText, Folder, Eye, Download, Clock, Ban, CheckCircle2, Info
+  X, FileText, Folder, Eye, Download, Clock, Ban, CheckCircle2, Info, Edit3, Send
 } from 'lucide-react';
 import { ModalTolakPks } from './ModalTolakPks';
 import { ModalSetujuiPks } from './ModalSetujuiPks';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { pksService } from '../services/pksService';
 
-export const ModalDetailPersetujuanPks = ({ isOpen, pksData, onClose, onStatusUpdated }) => {
+export const ModalDetailPersetujuanPks = ({ isOpen, pksData, onClose, onStatusUpdated, onEditClick }) => {
   const { user } = useAuth();
+  const { showDialog, showToast } = useToast();
+  const [submittingAction, setSubmittingAction] = useState(false);
   const [catatan, setCatatan] = useState('');
   const [isTolakOpen, setIsTolakOpen] = useState(false);
   const [isSetujuiOpen, setIsSetujuiOpen] = useState(false);
@@ -48,6 +51,42 @@ export const ModalDetailPersetujuanPks = ({ isOpen, pksData, onClose, onStatusUp
   else if (statusPersetujuan.includes('Pengelola') && (userRole === 'pengelola_pks' || userRole === 'pengelola')) canApprove = true;
   else if (statusPersetujuan.includes('Kabag') && userRole === 'kabag') canApprove = true;
   else if (statusPersetujuan.includes('Pimpinan') && userRole === 'pimpinan') canApprove = true;
+
+  const isPetugas = ['petugas_jr', 'petugas', 'admin_utama'].includes(userRole);
+  const isRevisi = statusPersetujuan.includes('Revisi');
+  const isDraft = statusPersetujuan === 'Draft' || statusPersetujuan === 'Draf';
+  const canEdit = isPetugas && (isDraft || isRevisi);
+  const canTandaiSiap = isPetugas && (isDraft || isRevisi);
+
+  const handleTandaiSiap = () => {
+    showDialog(
+      'confirm',
+      'Tandai Siap Diserahkan',
+      'Apakah dokumen fisik PKS sudah selesai diperbaiki dan siap diserahkan ke meja Pengelola PKS?',
+      async () => {
+        try {
+          setSubmittingAction(true);
+          const uId = user?.penggunaId || user?.id;
+          const res = await pksService.addApproval({
+            pks_id: data.pksId,
+            user_id: uId,
+            status_aksi: 'Tandai Siap Diserahkan'
+          });
+          if (res.success) {
+            showToast('success', 'Dokumen berhasil ditandai siap diserahkan ke Pengelola PKS.');
+            if (onStatusUpdated) onStatusUpdated('Menunggu Penyerahan');
+            onClose();
+          } else {
+            showToast('error', res.message || 'Gagal menandai penyerahan berkas.');
+          }
+        } catch (err) {
+          showToast('error', 'Terjadi kesalahan sistem.');
+        } finally {
+          setSubmittingAction(false);
+        }
+      }
+    );
+  };
 
   return createPortal(
     <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 font-sans">
@@ -304,6 +343,34 @@ export const ModalDetailPersetujuanPks = ({ isOpen, pksData, onClose, onStatusUp
                 <CheckCircle2 className="w-4 h-4 mr-1.5" />
                 Setujui
               </button>
+            </div>
+          ) : (canEdit || canTandaiSiap) ? (
+            <div className="flex items-center space-x-3">
+              {canEdit && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    if (onEditClick) onEditClick(data);
+                  }}
+                  className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow-xs flex items-center transition-all cursor-pointer"
+                >
+                  <Edit3 className="w-4 h-4 mr-1.5" />
+                  Ubah Data PKS
+                </button>
+              )}
+
+              {canTandaiSiap && (
+                <button
+                  type="button"
+                  disabled={submittingAction}
+                  onClick={handleTandaiSiap}
+                  className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs flex items-center transition-all cursor-pointer disabled:opacity-50"
+                >
+                  <Send className="w-4 h-4 mr-1.5" />
+                  {submittingAction ? 'Memproses...' : 'Tandai Siap Diserahkan'}
+                </button>
+              )}
             </div>
           ) : (
             <div className="flex items-center text-[10px] font-bold text-slate-500 uppercase tracking-wide bg-blue-50/50 px-4 py-2 rounded-xl border border-blue-100">

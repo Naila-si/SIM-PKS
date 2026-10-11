@@ -33,4 +33,9 @@ class Adendum extends Model
     {
         return $this->belongsTo(Pengguna::class, 'pembuat_id', 'penggunaId');
     }
+
+    public function riwayat_persetujuan()
+    {
+        return $this->hasMany(AdendumApproval::class, 'adendumId', 'adendumId')->orderBy('created_at', 'asc');
+    }
 }

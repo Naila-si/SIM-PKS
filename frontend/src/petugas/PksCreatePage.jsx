@@ -1,12 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Save, ArrowLeft, Download, FileText, Plus, X } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
+import { CustomDialog } from '../components/CustomDialog';
+import { Save, ArrowLeft, Download, FileText, Plus, X, AlertCircle } from 'lucide-react';
 
 export const PksCreatePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [mitras, setMitras] = useState([]);
+
+  // Professional Dialog State
+  const [dialogState, setDialogState] = useState({
+    isOpen: false,
+    type: 'info',
+    title: '',
+    message: '',
+    onConfirm: null,
+    confirmText: '',
+  });
+
+  const showDialog = (type, title, message, onConfirm = null, confirmText = '') => {
+    setDialogState({ isOpen: true, type, title, message, onConfirm, confirmText });
+  };
   
   const [formData, setFormData] = useState({
     mitraId: '',
@@ -59,12 +76,13 @@ export const PksCreatePage = () => {
         setFormData({ ...formData, mitraId: saved.mitraId });
         setShowMitraModal(false);
         setNewMitra({ nama_mitra: '', nama_pengelola: '', no_hp_pengelola: '', email_pengelola: '', alamat_mitra: '' });
+        showToast('success', 'Perusahaan mitra baru berhasil disimpan dan dipilih.');
       } else {
-        alert('Gagal menyimpan mitra. Pastikan semua data terisi dengan benar.');
+        showDialog('error', 'Gagal Menyimpan Mitra', 'Pastikan semua kolom mitra telah diisi dengan benar.');
       }
     } catch (err) {
       console.error(err);
-      alert('Terjadi kesalahan jaringan saat menyimpan mitra.');
+      showDialog('error', 'Gangguan Jaringan', 'Terjadi kesalahan saat menyimpan data mitra.');
     } finally {
       setSavingMitra(false);
     }
@@ -85,8 +103,14 @@ export const PksCreatePage = () => {
     });
   };
 
-  const handleSaveAndGenerate = async (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
+
+    if (formData.tanggal_mulai && formData.tanggal_berakhir && new Date(formData.tanggal_berakhir) <= new Date(formData.tanggal_mulai)) {
+      showDialog('error', 'Validasi Periode Tanggal', 'Tanggal Berakhir harus lebih besar dari Tanggal Mulai.');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -104,32 +128,22 @@ export const PksCreatePage = () => {
       const pks = await res.json();
       
       if (!res.ok) {
-        alert('Gagal menyimpan draf PKS: ' + (pks.message || 'Error'));
+        showDialog('error', 'Gagal Menyimpan Draf PKS', pks.message || 'Pastikan semua formulir terisi dengan lengkap.');
         setLoading(false);
         return;
       }
 
-      const dlRes = await fetch(`http://localhost:8000/api/pks-documents/${pks.pksId}/generate-docx`);
-      if (dlRes.ok) {
-        const blob = await dlRes.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Draft_PKS_${pks.pksId}.docx`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        
-        alert('Berhasil! Draf PKS telah disimpan dan file .docx sedang di-download.');
-        navigate('/pks');
-      } else {
-        const err = await dlRes.json();
-        alert('Data PKS tersimpan, tapi gagal generate .docx: ' + (err.message || 'Template tidak ditemukan'));
-        navigate('/pks');
-      }
+      showDialog(
+        'success',
+        'Draf PKS Berhasil Disimpan!',
+        'Dokumen draf PKS telah berhasil dibuat dan disimpan ke dalam sistem.',
+        () => navigate('/pks'),
+        'Lihat Daftar PKS'
+      );
+      
     } catch (err) {
       console.error(err);
-      alert('Terjadi kesalahan jaringan');
+      showDialog('error', 'Gangguan Jaringan', 'Terjadi kesalahan saat menyimpan draf PKS.');
     } finally {
       setLoading(false);
     }
@@ -148,7 +162,7 @@ export const PksCreatePage = () => {
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <form onSubmit={handleSaveAndGenerate} className="p-6 space-y-6">
+        <form onSubmit={handleSave} className="p-6 space-y-6">
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -198,9 +212,23 @@ export const PksCreatePage = () => {
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-2">Tanggal Berakhir Berlaku <span className="text-red-500">*</span></label>
-              <input required type="date" value={formData.tanggal_berakhir} onChange={e => setFormData({...formData, tanggal_berakhir: e.target.value})} className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00529C]" />
+              <input 
+                required 
+                type="date" 
+                min={formData.tanggal_mulai || undefined}
+                value={formData.tanggal_berakhir} 
+                onChange={e => setFormData({...formData, tanggal_berakhir: e.target.value})} 
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00529C]" 
+              />
             </div>
           </div>
+
+          {formData.tanggal_mulai && formData.tanggal_berakhir && new Date(formData.tanggal_berakhir) <= new Date(formData.tanggal_mulai) && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-xs flex items-center space-x-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
+              <span className="font-medium">Tanggal Berakhir harus lebih besar dari Tanggal Mulai.</span>
+            </div>
+          )}
 
           <div className="pt-6 border-t border-slate-100 flex items-center justify-end">
             <button 
@@ -212,8 +240,8 @@ export const PksCreatePage = () => {
                 <>Tunggu Sebentar...</>
               ) : (
                 <>
-                  <Download className="w-4 h-4 mr-2" />
-                  Simpan Draf & Generate .docx
+                  <Save className="w-4 h-4 mr-2" />
+                  Simpan Draf
                 </>
               )}
             </button>
@@ -262,6 +290,20 @@ export const PksCreatePage = () => {
           </div>
         </div>
       )}
+
+      {/* Professional Alert / Confirmation Dialog */}
+      <CustomDialog
+        isOpen={dialogState.isOpen}
+        type={dialogState.type}
+        title={dialogState.title}
+        message={dialogState.message}
+        onConfirm={() => {
+          if (dialogState.onConfirm) dialogState.onConfirm();
+          setDialogState(prev => ({ ...prev, isOpen: false }));
+        }}
+        onClose={() => setDialogState(prev => ({ ...prev, isOpen: false }))}
+        confirmText={dialogState.confirmText}
+      />
     </div>
   );
 };

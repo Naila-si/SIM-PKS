@@ -1,17 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import { Search, Bell, FileText, Building2, CheckCheck, ArrowRight, X, Clock, UserCheck, AlertTriangle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 export const Header = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
 
   // Search & Dropdown States
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
 
   const searchRef = useRef(null);
   const notifRef = useRef(null);
@@ -43,9 +44,6 @@ export const Header = () => {
 
   const mockMitraData = [];
 
-  // Sample Notifications List for Quick Popover
-  const [notifications, setNotifications] = useState([]);
-
   // Filter Search Items
   const filteredPks = searchQuery.trim()
     ? mockPksData.filter(
@@ -69,8 +67,7 @@ export const Header = () => {
   };
 
   const handleMarkAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
-    setUnreadCount(0);
+    markAllAsRead();
   };
 
   return (
@@ -249,32 +246,47 @@ export const Header = () => {
 
               {/* List Notifications */}
               <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto">
-                {notifications.map((n) => (
-                  <div
-                    key={n.id}
-                    onClick={() => {
-                      setIsNotifOpen(false);
-                      navigate('/notifications');
-                    }}
-                    className={`p-3.5 hover:bg-blue-50/50 cursor-pointer transition-colors flex items-start space-x-3 ${
-                      n.unread ? 'bg-blue-50/20' : ''
-                    }`}
-                  >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0 mt-0.5 ${n.color}`}>
-                      <Bell className="w-4 h-4" />
-                    </div>
-
-                    <div className="flex-1 space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-extrabold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md uppercase tracking-wider">
-                          {n.type}
-                        </span>
-                        <span className="text-[10px] text-slate-400 font-medium">{n.time}</span>
-                      </div>
-                      <p className="font-bold text-slate-900 text-xs leading-snug">{n.title}</p>
-                    </div>
+                {notifications.length === 0 ? (
+                  <div className="p-8 text-center text-slate-400 text-xs">
+                    Tidak ada notifikasi baru
                   </div>
-                ))}
+                ) : (
+                  notifications.slice(0, 5).map((n) => (
+                    <div
+                      key={n.id}
+                      onClick={() => {
+                        markAsRead(n.id);
+                        setIsNotifOpen(false);
+                        navigate(n.actionUrl || '/notifications');
+                      }}
+                      className="p-3.5 hover:bg-blue-50/50 cursor-pointer transition-colors flex items-start space-x-3"
+                    >
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0 mt-0.5 ${
+                        n.color === 'rose'
+                          ? 'bg-rose-100 text-rose-600'
+                          : n.color === 'amber'
+                          ? 'bg-amber-100 text-amber-600'
+                          : n.color === 'emerald'
+                          ? 'bg-emerald-100 text-emerald-600'
+                          : 'bg-blue-100 text-blue-600'
+                      }`}>
+                        <Bell className="w-4 h-4" />
+                      </div>
+
+                      <div className="flex-1 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-extrabold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                            {n.type}
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-medium">
+                            {new Date(n.timestamp).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                          </span>
+                        </div>
+                        <p className="font-bold text-slate-900 text-xs leading-snug line-clamp-2">{n.title}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
 
               {/* Footer View All Notifications Link */}

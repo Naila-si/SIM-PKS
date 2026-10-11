@@ -234,8 +234,7 @@ export const ModalTambahAdendum = ({ isOpen, pksId, pksInitialData, onClose, onS
             disabled={submitting}
             className="px-5 py-2.5 bg-[#00529C] hover:bg-[#003E75] text-white text-xs font-semibold rounded-xl shadow-md flex items-center transition-all cursor-pointer disabled:opacity-50"
           >
-            <Save className="w-4 h-4 mr-1.5" />
-            {submitting ? 'Memproses...' : 'Simpan & Generate Draft'}
+            {submitting ? 'Memproses...' : 'Simpan'}
           </button>
         </div>
 

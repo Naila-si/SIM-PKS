@@ -7,12 +7,12 @@ import { ModalHapusAdendum } from './ModalHapusAdendum';
 import { ModalUbahAdendum } from './ModalUbahAdendum';
 import {
   X, FileText, Building2, Calendar, Clock, User, CheckCircle2,
-  AlertTriangle, Plus, ShieldCheck, Info
+  AlertTriangle, Plus, ShieldCheck, Info, Download, Edit3
 } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
 
-export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
+export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick, onSuccess }) => {
   const { user } = useAuth();
   
   const isPetugas = ['petugas', 'petugas_jr'].includes(user?.role);
@@ -56,7 +56,11 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
         status_aksi: statusAksi,
         catatan: catatan
       });
-      window.location.reload();
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        window.location.reload();
+      }
     } catch (error) {
       showDialog('info', 'Gagal', 'Terjadi kesalahan saat memproses permintaan.');
     } finally {
@@ -96,6 +100,24 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
     showDialog('confirm', 'Selesai Persetujuan', 'Tandai dokumen ini sebagai Draf PKS Disetujui final?', 
       () => processApprovalAction('Draf PKS Disetujui')
     );
+  };
+
+  const handleDownloadDraft = async () => {
+    setLoading(true);
+    try {
+      const res = await pksService.downloadDraft(pksId);
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Draft_PKS_${pksId}.docx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      showDialog('info', 'Gagal', 'Gagal mengunduh dokumen draft.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -144,8 +166,8 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
   const statusPers = data.status_persetujuan || data.statusPersetujuan || 'Draf';
   
   // 1. Petugas Actions
-  const canShowSiapDiserahkan = isPetugas && isCreator && (isDraftPersetujuan || statusPers.includes('Revisi'));
-  const canShowTambahAdendum = isPetugas && isCreator;
+  const canShowSiapDiserahkan = (isPetugas || isPengelolaOrAdmin) && (isDraftPersetujuan || statusPers.includes('Revisi'));
+  const canShowTambahAdendum = isPetugas && (isCreator || isPengelolaOrAdmin);
   
   // 2. Accept Document Action (Sudah Diterima)
   const isUnlocked = !data.locked_by;
@@ -229,6 +251,21 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
           </div>
 
           <div className="flex items-center space-x-3">
+            {/* Action Edit untuk Petugas jika Revisi atau Draft */}
+            {(isDraftPersetujuan || statusPers.includes('Revisi')) && onEditClick && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onEditClick(data);
+                }}
+                className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center cursor-pointer"
+              >
+                <Edit3 className="w-3.5 h-3.5 mr-1.5" />
+                Ubah Data PKS
+              </button>
+            )}
+
             {/* Action untuk Petugas Pembuat */}
             {canShowSiapDiserahkan && (
               <button
@@ -393,8 +430,34 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
                 </div>
               </div>
 
-              {/* 3. DOKUMEN PKS FINAL */}
-              <div className="grid grid-cols-1 gap-4">
+              {/* 3. DOKUMEN DRAFT & FINAL */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                {/* Left Card: Dokumen Draft */}
+                <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 space-y-4">
+                  <div className="flex items-center space-x-2 border-b border-slate-200 pb-2">
+                    <FileText className="w-4 h-4 text-[#00529C]" />
+                    <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Dokumen Draft</h4>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-9 h-9 rounded-xl bg-blue-100 text-[#00529C] flex items-center justify-center font-bold shrink-0">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-slate-900 text-xs truncate">Draft_PKS.docx</p>
+                      <p className="text-[10px] text-slate-400">Dokumen sistem</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={loading}
+                    onClick={handleDownloadDraft}
+                    className="w-full px-3 py-1.5 border border-blue-200 text-blue-700 font-bold rounded-xl hover:bg-blue-50 text-xs flex items-center justify-center cursor-pointer transition-colors disabled:opacity-50"
+                  >
+                    <Download className="w-3.5 h-3.5 mr-1" /> Unduh Draft (.docx)
+                  </button>
+                </div>
+
                 {/* Right Card: Dokumen PKS Final Warning Box (Matching Image 4) */}
                 <div className="bg-[#FFF9EE] rounded-2xl border border-[#FDE68A] p-5 flex flex-col items-center justify-center text-center space-y-2">
                   <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center font-bold">
@@ -402,7 +465,7 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
                   </div>
                   <h4 className="text-xs font-bold text-amber-900">Dokumen PKS Final</h4>
                   <p className="text-[11px] text-amber-700 font-medium max-w-xs leading-snug">
-                    Dokumen PKS final yang ditandatangani belum diunggah ke sistem.
+                    Dokumen PKS final yang ditandatangani belum diunggah.
                   </p>
                   {canShowUploadFinal ? (
                     <button
@@ -463,40 +526,59 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
                       <tr>
                         <th className="px-3 py-2.5">NOMOR</th>
                         <th className="px-3 py-2.5">TANGGAL</th>
-                        <th className="px-3 py-2.5">JENIS PERUBAHAN</th>
+                        <th className="px-3 py-2.5">RUANG LINGKUP PERUBAHAN</th>
                         <th className="px-3 py-2.5">STATUS</th>
                         <th className="px-3 py-2.5 text-center">AKSI</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                       {displayAdendum && displayAdendum.length > 0 ? (
-                        displayAdendum.map((ad, idx) => (
-                          <tr key={ad.adendumId || ad.id || idx} className="hover:bg-slate-50/70 font-medium">
-                            <td className="px-3 py-3 font-bold text-slate-900">
-                              {ad.nomor_adendum || ad.nomorAdendum || ad.nomor || '-'}
-                            </td>
-                            <td className="px-3 py-3 text-[11px] whitespace-nowrap text-slate-600">
-                              {(ad.tanggal_mulai || ad.tanggalMulai) ? new Date(ad.tanggal_mulai || ad.tanggalMulai).toLocaleDateString('id-ID') : '-'}
-                            </td>
-                            <td className="px-3 py-3 max-w-xs text-slate-800 font-semibold">
-                              {ad.ruang_lingkup || ad.ruangLingkupPerubahan || ad.jenis || '-'}
-                            </td>
-                            <td className="px-3 py-3 whitespace-nowrap">
-                              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                Selesai
-                              </span>
-                            </td>
-                            <td className="px-3 py-3 text-center whitespace-nowrap">
-                              <button
-                                type="button"
-                                onClick={() => setViewingAdendum(ad)}
-                                className="text-xs font-bold text-blue-600 hover:underline cursor-pointer"
-                              >
-                                Detail
-                              </button>
-                            </td>
-                          </tr>
-                        ))
+                        displayAdendum.map((ad, idx) => {
+                          const statusP = (ad.statusPersetujuan || '').toLowerCase();
+                          const statusA = (ad.status || '').toLowerCase();
+                          const isApprovedOrActive = (statusP.includes('disetujui') || statusA === 'aktif') && !statusP.includes('draft') && !statusP.includes('draf');
+                          const displayNomor = isApprovedOrActive && ad.nomorAdendum ? ad.nomorAdendum : '-';
+
+                          return (
+                            <tr key={ad.adendumId || ad.id || idx} className="hover:bg-slate-50/70 font-medium">
+                              <td className="px-3 py-3 font-bold text-slate-900">
+                                {displayNomor}
+                              </td>
+                              <td className="px-3 py-3 text-[11px] whitespace-nowrap text-slate-600 font-semibold">
+                                {(ad.tanggal_mulai || ad.tanggalMulai) ? new Date(ad.tanggal_mulai || ad.tanggalMulai).toLocaleDateString('id-ID') : '-'}
+                              </td>
+                              <td className="px-3 py-3 max-w-xs text-slate-800 font-semibold">
+                                {ad.ruang_lingkup || ad.ruangLingkupPerubahan || '-'}
+                              </td>
+                              <td className="px-3 py-3 whitespace-nowrap">
+                                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                                  (ad.statusPersetujuan || ad.status || 'Draft') === 'Selesai'
+                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                    : ((ad.statusPersetujuan || ad.status || '').includes('Disetujui'))
+                                    ? 'bg-teal-50 text-teal-700 border-teal-200'
+                                    : ((ad.statusPersetujuan || ad.status || '').includes('Revisi'))
+                                    ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                    : ((ad.statusPersetujuan || ad.status || '').includes('Pemeriksaan'))
+                                    ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                    : ((ad.statusPersetujuan || ad.status || '') === 'Menunggu Penyerahan')
+                                    ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                    : 'bg-slate-50 text-slate-700 border-slate-200'
+                                }`}>
+                                  {ad.statusPersetujuan || ad.status || 'Draft'}
+                                </span>
+                              </td>
+                              <td className="px-3 py-3 text-center whitespace-nowrap">
+                                <button
+                                  type="button"
+                                  onClick={() => setViewingAdendum(ad)}
+                                  className="text-xs font-bold text-blue-600 hover:underline cursor-pointer"
+                                >
+                                  Detail
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })
                       ) : (
                         <tr>
                           <td colSpan="5" className="px-3 py-6 text-center text-slate-400 font-medium">
@@ -589,33 +671,36 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
                   </h3>
                 </div>
 
-                <div className="space-y-3.5 text-xs max-h-[280px] overflow-y-auto pr-2">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-6 h-6 rounded-full bg-[#00529C] text-white flex items-center justify-center shrink-0 mt-0.5">
-                      <CheckCircle2 className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="font-extrabold text-slate-900">Draft Dibuat</p>
-                      <p className="text-[11px] text-slate-500 font-medium">{creatorName}</p>
-                      <p className="text-[10px] text-slate-400">
+                <div className="relative border-l-2 border-slate-200 ml-3.5 space-y-5 py-1 text-xs max-h-[280px] overflow-y-auto pr-2">
+                  {/* 1. Draft Dibuat */}
+                  <div className="ml-5 relative bg-white p-3.5 rounded-xl border border-slate-200">
+                    <span className="absolute -left-[27px] top-4 w-3.5 h-3.5 rounded-full bg-[#00529C] ring-4 ring-blue-100" />
+                    <div className="flex items-center justify-between">
+                      <p className="font-bold text-slate-900">Draft Dibuat</p>
+                      <span className="text-[10px] text-slate-400 font-medium">
                         {data.created_at ? new Date(data.created_at).toLocaleString('id-ID', {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit'}) : '-'}
-                      </p>
+                      </span>
                     </div>
+                    <p className="text-[11px] text-slate-600 mt-0.5">Oleh: {creatorName}</p>
                   </div>
-                  
+
+                  {/* 2. Dynamic Riwayat */}
                   {data.riwayat_persetujuan && data.riwayat_persetujuan.length > 0 && (
                     data.riwayat_persetujuan.map((riwayat, idx) => (
-                      <div key={idx} className="flex items-start space-x-3">
-                        <div className="w-6 h-6 rounded-full bg-[#00529C] text-white flex items-center justify-center shrink-0 mt-0.5">
-                          <CheckCircle2 className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <p className="font-extrabold text-slate-900">{riwayat.status_aksi || riwayat.judul || '-'}</p>
-                          <p className="text-[11px] text-slate-500 font-medium">{riwayat.user?.nama || riwayat.aktor || '-'}</p>
-                          <p className="text-[10px] text-slate-400">
+                      <div key={idx} className="ml-5 relative bg-white p-3.5 rounded-xl border border-slate-200">
+                        <span className={`absolute -left-[27px] top-4 w-3.5 h-3.5 rounded-full ring-4 ${
+                          (riwayat.status_aksi || '').includes('Revisi') ? 'bg-rose-500 ring-rose-100' : 'bg-[#00529C] ring-blue-100'
+                        }`} />
+                        <div className="flex items-center justify-between">
+                          <p className="font-bold text-slate-900">{riwayat.status_aksi || riwayat.judul || '-'}</p>
+                          <span className="text-[10px] text-slate-400 font-medium">
                             {riwayat.created_at ? new Date(riwayat.created_at).toLocaleString('id-ID', {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit'}) : (riwayat.tanggal || '-')}
-                          </p>
+                          </span>
                         </div>
+                        <p className="text-[11px] text-slate-600 mt-0.5">Oleh: {riwayat.user?.nama || riwayat.aktor || '-'}</p>
+                        {riwayat.catatan && (
+                          <p className="text-[11px] text-slate-500 italic mt-1 font-mono">"{riwayat.catatan}"</p>
+                        )}
                       </div>
                     ))
                   )}
@@ -656,17 +741,24 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick }) => {
             onClose={() => setViewingAdendum(null)}
             onEditClick={(adData) => setEditingAdendum(adData)}
             onDeleteClick={(adData) => setDeletingAdendum(adData)}
+            onSuccess={(updatedAd) => {
+              setAdendumList((prev) =>
+                prev.map((a) => ((a.adendumId === updatedAd.adendumId || a.id === updatedAd.adendumId) ? { ...a, ...updatedAd } : a))
+              );
+            }}
           />
         )}
 
         {editingAdendum && (
           <ModalUbahAdendum
             isOpen={!!editingAdendum}
-            adendumData={editingAdendum}
+            adendumId={typeof editingAdendum === 'object' ? (editingAdendum.adendumId || editingAdendum.id) : editingAdendum}
+            adendumData={typeof editingAdendum === 'object' ? editingAdendum : null}
+            pksData={data}
             onClose={() => setEditingAdendum(null)}
             onSuccess={(updatedAd) => {
               setAdendumList((prev) =>
-                prev.map((a) => (a.adendumId === updatedAd.adendumId ? { ...a, ...updatedAd } : a))
+                prev.map((a) => ((a.adendumId === updatedAd.adendumId || a.id === updatedAd.adendumId) ? { ...a, ...updatedAd } : a))
               );
             }}
           />

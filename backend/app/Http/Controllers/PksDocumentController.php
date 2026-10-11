@@ -11,12 +11,12 @@ class PksDocumentController extends Controller
 {
     public function index()
     {
-        return response()->json(PksDocument::with('mitra', 'pengguna', 'riwayat_persetujuan.user')->get());
+        return response()->json(PksDocument::with('mitra', 'pengguna', 'riwayat_persetujuan.user', 'adendums')->get());
     }
 
     public function show($id)
     {
-        $doc = PksDocument::with('mitra', 'pengguna', 'riwayat_persetujuan.user')->find($id);
+        $doc = PksDocument::with('mitra', 'pengguna', 'riwayat_persetujuan.user', 'adendums')->find($id);
         if (!$doc) return response()->json(['message' => 'Not found'], 404);
         return response()->json($doc);
     }
@@ -30,7 +30,9 @@ class PksDocumentController extends Controller
             'jenis_pks' => 'required|string',
             'ringkasan_pks' => 'required|string',
             'tanggal_mulai' => 'required|date',
-            'tanggal_berakhir' => 'required|date',
+            'tanggal_berakhir' => 'required|date|after:tanggal_mulai',
+        ], [
+            'tanggal_berakhir.after' => 'Tanggal Berakhir harus lebih besar dari Tanggal Mulai.'
         ]);
 
         $validated['status_persetujuan'] = 'Draf';
@@ -43,6 +45,18 @@ class PksDocumentController extends Controller
     {
         $doc = PksDocument::with('mitra')->find($id);
         if (!$doc) return response()->json(['message' => 'PKS not found'], 404);
+
+        // Cek apakah PKS memiliki adendum yang masih dalam proses persetujuan
+        $hasPendingAdendum = $doc->adendums()
+            ->whereNotIn('statusPersetujuan', ['Disetujui', 'Selesai', 'Draf Adendum Disetujui'])
+            ->exists();
+
+        if ($hasPendingAdendum) {
+            return response()->json([
+                'success' => false,
+                'message' => 'PKS tidak dapat diedit karena masih memiliki Adendum yang dalam proses persetujuan.'
+            ], 422);
+        }
 
         $validated = $request->validate([
             'bidang' => 'sometimes|string',
