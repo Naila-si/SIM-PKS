@@ -8,6 +8,10 @@ import {
 } from 'lucide-react';
 import { ModalMarkAllNotificationsRead } from './ModalMarkAllNotificationsRead';
 import { ModalClearReadNotifications } from './ModalClearReadNotifications';
+import { ModalDetailPks } from '../../petugas/ModalDetailPks';
+import { ModalDetailAdendum } from '../../petugas/ModalDetailAdendum';
+import { ModalUbahPks } from '../../petugas/ModalUbahPks';
+import { ModalUbahAdendum } from '../../petugas/ModalUbahAdendum';
 
 export const NotificationPage = () => {
   const navigate = useNavigate();
@@ -21,7 +25,8 @@ export const NotificationPage = () => {
     loading,
     markAsRead,
     markAllAsRead,
-    clearRead
+    clearRead,
+    refreshNotifications
   } = useNotifications();
 
   // Filters State
@@ -32,28 +37,43 @@ export const NotificationPage = () => {
   const [isMarkAllModalOpen, setIsMarkAllModalOpen] = useState(false);
   const [isClearReadModalOpen, setIsClearReadModalOpen] = useState(false);
 
+  // Document Detail Modal States (Modal Detail PKS & Adendum)
+  const [selectedPksId, setSelectedPksId] = useState(null);
+  const [selectedAdendumId, setSelectedAdendumId] = useState(null);
+  const [editingPksId, setEditingPksId] = useState(null);
+  const [editingAdendum, setEditingAdendum] = useState(null);
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
   const handleActionClick = (n) => {
     markAsRead(n.id);
-    if (n.actionUrl) {
-      navigate(n.actionUrl);
-    } else if (n.type === 'Persetujuan') {
+    if (n.type === 'Persetujuan' || n.type === 'Ditolak') {
       navigate('/approval');
     } else {
-      navigate(`/pks/${n.targetId}`);
+      // Tombol "Lihat Berkas" -> Membuka Modal Detail langsung tanpa pindah halaman
+      if (n.tipeDokumen === 'Adendum') {
+        setSelectedAdendumId(n.targetId);
+      } else {
+        setSelectedPksId(n.targetId);
+      }
     }
   };
 
-  // Filter Data
+  // Filter Data (Opsi A: Fokus Masa Berlaku)
   const filteredList = notifications.filter(item => {
     const isRead = readNotifIds.includes(item.id);
     if (statusFilter === 'Belum Dibaca' && isRead) return false;
     if (statusFilter === 'Sudah Dibaca' && !isRead) return false;
 
-    if (kategoriFilter !== 'Semua' && item.type !== kategoriFilter) return false;
+    if (kategoriFilter === 'Segera Berakhir') {
+      const isSegeraBerakhir = item.type === 'Masa Berlaku' && item.status?.includes('hari');
+      if (!isSegeraBerakhir) return false;
+    } else if (kategoriFilter === 'Telah Berakhir') {
+      const isTelahBerakhir = item.type === 'Masa Berlaku' && item.status === 'Telah Berakhir';
+      if (!isTelahBerakhir) return false;
+    }
 
     return true;
   });
@@ -72,11 +92,21 @@ export const NotificationPage = () => {
         </p>
       </div>
 
-      {/* 2. 4 Stat Cards */}
+      {/* 2. 4 Stat Cards (Dapat Diklik sebagai Shortcut Filter) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
         {/* Card 1: Belum Dibaca */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs flex items-center justify-between">
+        <div 
+          onClick={() => {
+            setStatusFilter('Belum Dibaca');
+            setKategoriFilter('Semua');
+            setCurrentPage(1);
+          }}
+          className={`bg-white rounded-2xl p-4 border shadow-2xs flex items-center justify-between cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md ${
+            statusFilter === 'Belum Dibaca' ? 'border-blue-500 ring-2 ring-blue-100' : 'border-slate-200'
+          }`}
+          title="Klik untuk filter notifikasi Belum Dibaca"
+        >
           <div>
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Belum Dibaca</p>
             <p className="text-2xl font-extrabold text-slate-900 mt-0.5">{unreadCount}</p>
@@ -87,7 +117,17 @@ export const NotificationPage = () => {
         </div>
 
         {/* Card 2: Total Notifikasi */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs flex items-center justify-between">
+        <div 
+          onClick={() => {
+            setStatusFilter('Semua');
+            setKategoriFilter('Semua');
+            setCurrentPage(1);
+          }}
+          className={`bg-white rounded-2xl p-4 border shadow-2xs flex items-center justify-between cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md ${
+            statusFilter === 'Semua' && kategoriFilter === 'Semua' ? 'border-[#00529C] ring-2 ring-blue-100' : 'border-slate-200'
+          }`}
+          title="Klik untuk menampilkan Semua Notifikasi"
+        >
           <div>
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Notifikasi</p>
             <p className="text-2xl font-extrabold text-slate-900 mt-0.5">{notifications.length}</p>
@@ -98,7 +138,17 @@ export const NotificationPage = () => {
         </div>
 
         {/* Card 3: PKS Segera Berakhir */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs flex items-center justify-between">
+        <div 
+          onClick={() => {
+            setKategoriFilter('Segera Berakhir');
+            setStatusFilter('Semua');
+            setCurrentPage(1);
+          }}
+          className={`bg-white rounded-2xl p-4 border shadow-2xs flex items-center justify-between cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md ${
+            kategoriFilter === 'Segera Berakhir' ? 'border-amber-500 ring-2 ring-amber-100' : 'border-slate-200'
+          }`}
+          title="Klik untuk filter PKS Segera Berakhir"
+        >
           <div>
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">PKS Segera Berakhir</p>
             <p className="text-2xl font-extrabold text-slate-900 mt-0.5">{segeraBerakhirCount}</p>
@@ -109,7 +159,17 @@ export const NotificationPage = () => {
         </div>
 
         {/* Card 4: PKS Berakhir */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs flex items-center justify-between">
+        <div 
+          onClick={() => {
+            setKategoriFilter('Telah Berakhir');
+            setStatusFilter('Semua');
+            setCurrentPage(1);
+          }}
+          className={`bg-white rounded-2xl p-4 border shadow-2xs flex items-center justify-between cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md ${
+            kategoriFilter === 'Telah Berakhir' ? 'border-rose-500 ring-2 ring-rose-100' : 'border-slate-200'
+          }`}
+          title="Klik untuk filter PKS Telah Berakhir"
+        >
           <div>
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">PKS Berakhir</p>
             <p className="text-2xl font-extrabold text-slate-900 mt-0.5">{berakhirCount}</p>
@@ -169,11 +229,11 @@ export const NotificationPage = () => {
             </div>
           </div>
 
-          {/* Kategori Filter */}
+          {/* Kategori Filter (Opsi A: Fokus Masa Berlaku) */}
           <div className="flex items-center space-x-2 overflow-x-auto pb-1 md:pb-0">
             <span className="font-semibold text-slate-500 shrink-0">Kategori:</span>
-            <div className="flex items-center space-x-1">
-              {['Semua', 'Persetujuan', 'Masa Berlaku', 'Disetujui', 'Ditolak'].map(kat => (
+            <div className="flex items-center space-x-1.5">
+              {['Semua', 'Segera Berakhir', 'Telah Berakhir'].map(kat => (
                 <button
                   key={kat}
                   onClick={() => {
@@ -258,7 +318,7 @@ export const NotificationPage = () => {
                           ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                           : 'bg-purple-50 text-purple-700 border border-purple-200'
                       }`}>
-                        {n.type}
+                        {n.type === 'Masa Berlaku' ? (n.status === 'Telah Berakhir' ? 'Telah Berakhir' : 'Segera Berakhir') : n.type}
                       </span>
                       <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
                         {n.tipeDokumen}
@@ -271,7 +331,20 @@ export const NotificationPage = () => {
                       )}
                     </div>
 
-                    <h3 className="text-sm font-extrabold text-slate-900">{n.title}</h3>
+                    <h3
+                      onClick={() => {
+                        markAsRead(n.id);
+                        if (n.tipeDokumen === 'Adendum') {
+                          setSelectedAdendumId(n.targetId);
+                        } else {
+                          setSelectedPksId(n.targetId);
+                        }
+                      }}
+                      className="text-sm font-extrabold text-slate-900 hover:text-[#00529C] transition-colors cursor-pointer"
+                      title="Klik untuk membuka detail berkas"
+                    >
+                      {n.title}
+                    </h3>
                     {n.description && (
                       <p className="text-xs text-slate-600 leading-relaxed max-w-2xl">{n.description}</p>
                     )}
@@ -287,7 +360,7 @@ export const NotificationPage = () => {
                 </div>
 
                 {/* Right Action Button */}
-                <div className="shrink-0 pt-2 md:pt-0 flex items-center space-x-2">
+                <div className="shrink-0 pt-2 md:pt-0">
                   <button
                     onClick={() => handleActionClick(n)}
                     className="px-4 py-2 bg-[#00529C] hover:bg-[#003E75] text-white text-xs font-bold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center"
@@ -344,6 +417,68 @@ export const NotificationPage = () => {
         onClose={() => setIsClearReadModalOpen(false)}
         onConfirm={clearRead}
       />
+
+      {/* Modal Detail PKS (Muncul langsung saat klik Lihat Berkas) */}
+      {selectedPksId && (
+        <ModalDetailPks
+          isOpen={!!selectedPksId}
+          pksId={selectedPksId}
+          onClose={() => setSelectedPksId(null)}
+          onEditClick={(pks) => {
+            setSelectedPksId(null);
+            setEditingPksId(pks.pksId || pks.id || selectedPksId);
+          }}
+          onSuccess={() => {
+            refreshNotifications();
+            setSelectedPksId(null);
+          }}
+        />
+      )}
+
+      {/* Modal Detail Adendum (Muncul langsung saat klik Lihat Berkas Adendum) */}
+      {selectedAdendumId && (
+        <ModalDetailAdendum
+          isOpen={!!selectedAdendumId}
+          adendumId={selectedAdendumId}
+          onClose={() => setSelectedAdendumId(null)}
+          onEditClick={(adData) => {
+            setSelectedAdendumId(null);
+            setEditingAdendum(adData);
+          }}
+          onSuccess={() => {
+            refreshNotifications();
+            setSelectedAdendumId(null);
+          }}
+        />
+      )}
+
+      {/* Modal Ubah PKS (jika Petugas memilih ubah data dari modal detail) */}
+      {editingPksId && (
+        <ModalUbahPks
+          isOpen={!!editingPksId}
+          pksId={editingPksId}
+          onClose={() => setEditingPksId(null)}
+          onSuccess={() => {
+            setEditingPksId(null);
+            refreshNotifications();
+          }}
+        />
+      )}
+
+      {/* Modal Ubah Adendum (jika Petugas memilih ubah adendum) */}
+      {editingAdendum && (
+        <ModalUbahAdendum
+          isOpen={!!editingAdendum}
+          adendumId={editingAdendum?.adendumId || editingAdendum?.id}
+          adendumData={editingAdendum}
+          pksData={editingAdendum?.pksDocument}
+          onClose={() => setEditingAdendum(null)}
+          onSuccess={() => {
+            setEditingAdendum(null);
+            refreshNotifications();
+          }}
+        />
+      )}
     </div>
   );
 };
