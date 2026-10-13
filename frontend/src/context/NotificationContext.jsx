@@ -2,9 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { useAuth } from './AuthContext';
 import { pksService } from '../services/pksService';
 import { adendumService } from '../services/adendumService';
-import {
-  Clock, CheckCircle2, AlertTriangle, XCircle, FileText, Send
-} from 'lucide-react';
+import { Clock, AlertTriangle, XCircle, FileText } from 'lucide-react';
 
 const NotificationContext = createContext(null);
 
@@ -46,117 +44,26 @@ export const NotificationProvider = ({ children }) => {
       const notifs = [];
       const now = new Date();
       const userRole = user?.role || '';
-      const userId = user?.penggunaId || user?.id;
       const userBidang = user?.bidang || '';
 
-      const isPengelola = ['pengelola_pks', 'pengelola', 'admin_utama'].includes(userRole);
-      const isKabag = ['kabag', 'admin_utama'].includes(userRole);
-      const isPimpinan = ['pimpinan', 'admin_utama'].includes(userRole);
-      const isPetugas = ['petugas_jr', 'petugas', 'admin_utama'].includes(userRole);
-
-      // 1. Process PKS Documents
+      // 1. Process PKS Documents: Fokus 100% pada Status Masa Berlaku (Segera Berakhir H-30 & Telah Berakhir)
       pksList.forEach(pks => {
         const id = pks.pksId || pks.id;
         const nomor = pks.nomorPKS || pks.nomor_pks || 'Draf PKS';
-        const mitraNama = pks.perusahaan || pks.mitra?.nama_perusahaan || pks.mitra?.nama_mitra || 'Mitra';
+        const mitraNama = pks.perusahaan || pks.mitra?.nama_perusahaan || pks.mitra?.nama_mitra || 'Mitra Rekanan';
         const bidang = pks.bidang || '';
-        const status = pks.statusPersetujuan || pks.status_persetujuan || 'Draf';
-        const statusPks = pks.statusPks || pks.status_pks || 'Draft';
+        const status = pks.statusPersetujuan || pks.status_persetujuan || '';
+        const statusPks = pks.statusPks || pks.status_pks || '';
         const tglBerakhir = pks.tanggalBerakhir || pks.tanggal_berakhir;
-        const pksCreatorId = pks.penggunaId || pks.pengguna_id;
-        const isMyPks = Number(pksCreatorId) === Number(userId);
 
-        // Filter bidang for Pengelola (if user has specific bidang, e.g. Pelayanan or SW or IW)
-        const matchBidang = !userBidang || userRole === 'admin_utama' || userBidang === bidang;
+        // Filter bidang untuk Pengelola (jika memiliki bidang khusus). Admin, Pimpinan, Kabag melihat semua.
+        const matchBidang = !userBidang || userRole === 'admin_utama' || userRole === 'kabag' || userRole === 'pimpinan' || userBidang === bidang;
+        if (!matchBidang) return;
 
-        // A. PKS Butuh Verifikasi Pengelola (Menunggu Penyerahan / Pemeriksaan Pengelola)
-        if (isPengelola && matchBidang && (status === 'Menunggu Penyerahan' || status === 'Pemeriksaan Pengelola')) {
-          notifs.push({
-            id: `pks-pengelola-${id}`,
-            targetId: id,
-            tipeDokumen: 'PKS',
-            title: `PKS Memerlukan Pemeriksaan Pengelola: ${nomor}`,
-            description: `Draf PKS ${mitraNama} (${bidang}) sedang dalam tahap ${status}. Harap segera diverifikasi.`,
-            type: 'Persetujuan',
-            status: status,
-            timestamp: pks.updatedAt || pks.updated_at || new Date().toISOString(),
-            color: 'blue',
-            icon: Clock,
-            actionUrl: '/approval'
-          });
-        }
+        // Hanya dokumen yang aktif atau disetujui yang diperiksa masa berlakunya
+        const isDocActive = status === 'Disetujui' || statusPks === 'Aktif' || statusPks === 'Segera Berakhir' || statusPks === 'Telah Berakhir' || statusPks === 'Berakhir';
 
-        // B. PKS Butuh Persetujuan Kabag
-        if (isKabag && (status === 'Disetujui Pengelola' || status === 'Pemeriksaan Kabag')) {
-          notifs.push({
-            id: `pks-kabag-${id}`,
-            targetId: id,
-            tipeDokumen: 'PKS',
-            title: `PKS Menunggu Persetujuan Kabag: ${nomor}`,
-            description: `Draf PKS ${mitraNama} (${bidang}) telah disetujui Pengelola dan siap ditinjau oleh Kabag.`,
-            type: 'Persetujuan',
-            status: status,
-            timestamp: pks.updatedAt || pks.updated_at || new Date().toISOString(),
-            color: 'blue',
-            icon: Clock,
-            actionUrl: '/approval'
-          });
-        }
-
-        // C. PKS Butuh Persetujuan Pimpinan
-        if (isPimpinan && (status === 'Disetujui Kabag' || status === 'Pemeriksaan Pimpinan')) {
-          notifs.push({
-            id: `pks-pimpinan-${id}`,
-            targetId: id,
-            tipeDokumen: 'PKS',
-            title: `PKS Menunggu Persetujuan Pimpinan: ${nomor}`,
-            description: `Draf PKS ${mitraNama} (${bidang}) telah disetujui Kabag dan menunggu persetujuan akhir Pimpinan.`,
-            type: 'Persetujuan',
-            status: status,
-            timestamp: pks.updatedAt || pks.updated_at || new Date().toISOString(),
-            color: 'blue',
-            icon: Clock,
-            actionUrl: '/approval'
-          });
-        }
-
-        // D. PKS Revisi (Untuk Petugas Pembuat)
-        if (isPetugas && (isMyPks || userRole === 'admin_utama') && status.includes('Revisi')) {
-          notifs.push({
-            id: `pks-revisi-${id}`,
-            targetId: id,
-            tipeDokumen: 'PKS',
-            title: `PKS Perlu Revisi: ${nomor}`,
-            description: `Draf PKS ${mitraNama} dikembalikan untuk diperbaiki (${status}).`,
-            reasonText: pks.catatan_revisi || pks.catatanRevisi || 'Silakan cek catatan revisi untuk rincian perbaikan.',
-            type: 'Ditolak',
-            status: status,
-            timestamp: pks.updatedAt || pks.updated_at || new Date().toISOString(),
-            color: 'rose',
-            icon: AlertTriangle,
-            actionUrl: '/approval'
-          });
-        }
-
-        // E. PKS Disetujui Pimpinan / Disetujui Resmi
-        if (isPetugas && (isMyPks || userRole === 'admin_utama') && (status === 'Disetujui' || status === 'Draf PKS Disetujui')) {
-          notifs.push({
-            id: `pks-setuju-${id}`,
-            targetId: id,
-            tipeDokumen: 'PKS',
-            title: `PKS Disetujui: ${nomor}`,
-            description: `Draf PKS dengan mitra ${mitraNama} telah disetujui resmi oleh Pimpinan.`,
-            type: 'Disetujui',
-            status: status,
-            timestamp: pks.updatedAt || pks.updated_at || new Date().toISOString(),
-            color: 'emerald',
-            icon: CheckCircle2,
-            actionUrl: `/pks/${id}`
-          });
-        }
-
-        // F. Pengingat Masa Berlaku (PKS Aktif)
-        if (tglBerakhir && (statusPks === 'Aktif' || status === 'Disetujui')) {
+        if (tglBerakhir && isDocActive) {
           const endDate = new Date(tglBerakhir);
           const diffDays = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
 
@@ -166,13 +73,14 @@ export const NotificationProvider = ({ children }) => {
               targetId: id,
               tipeDokumen: 'PKS',
               title: `PKS Segera Berakhir: ${nomor}`,
-              description: `Masa berlaku PKS ${mitraNama} tersisa ${diffDays} hari lagi (hingga ${endDate.toLocaleDateString('id-ID')}).`,
+              description: `Masa berlaku PKS bersama ${mitraNama} tersisa ${diffDays} hari lagi (berakhir pada ${endDate.toLocaleDateString('id-ID')}). Harap persiapkan perpanjangan atau pembuatan Adendum.`,
               type: 'Masa Berlaku',
+              category: 'Segera Berakhir',
               status: `${diffDays} hari lagi`,
-              timestamp: pks.updatedAt || pks.updated_at || new Date().toISOString(),
+              timestamp: pks.updatedAt || pks.updated_at || pks.created_at || new Date().toISOString(),
               color: 'amber',
               icon: AlertTriangle,
-              actionUrl: `/pks/${id}`
+              actionUrl: `/notifications`
             });
           } else if (diffDays <= 0) {
             notifs.push({
@@ -180,111 +88,68 @@ export const NotificationProvider = ({ children }) => {
               targetId: id,
               tipeDokumen: 'PKS',
               title: `PKS Telah Berakhir: ${nomor}`,
-              description: `Masa berlaku PKS ${mitraNama} telah berakhir sejak ${Math.abs(diffDays)} hari yang lalu (${endDate.toLocaleDateString('id-ID')}).`,
+              description: `Masa berlaku PKS bersama ${mitraNama} telah berakhir sejak ${Math.abs(diffDays)} hari yang lalu (${endDate.toLocaleDateString('id-ID')}).`,
               type: 'Masa Berlaku',
+              category: 'Telah Berakhir',
               status: 'Telah Berakhir',
-              timestamp: pks.updatedAt || pks.updated_at || new Date().toISOString(),
+              timestamp: pks.updatedAt || pks.updated_at || pks.created_at || new Date().toISOString(),
               color: 'rose',
               icon: XCircle,
-              actionUrl: `/pks/${id}`
+              actionUrl: `/notifications`
             });
           }
         }
       });
 
-      // 2. Process Adendum Documents
+      // 2. Process Adendum Documents: Fokus 100% pada Status Masa Berlaku
       adendumList.forEach(ad => {
         const id = ad.adendumId || ad.id;
         const nomor = ad.nomorAdendum || ad.nomor_adendum || `Adendum #${id}`;
-        const mitraNama = ad.pksDocument?.mitra?.nama_perusahaan || ad.pks?.mitra?.nama_perusahaan || 'Mitra';
-        const status = ad.statusPersetujuan || ad.status_persetujuan || 'Draf';
-        const adCreatorId = ad.penggunaId || ad.pengguna_id || ad.user_id;
-        const isMyAdendum = Number(adCreatorId) === Number(userId);
+        const mitraNama = ad.pksDocument?.mitra?.nama_perusahaan || ad.pks?.mitra?.nama_perusahaan || ad.pksDocument?.mitra?.nama_mitra || 'Mitra Rekanan';
+        const docBidang = ad.pksDocument?.bidang || ad.pks?.bidang || '';
+        const tglBerakhir = ad.tanggal_berakhir_baru || ad.tanggalBerakhirBaru || ad.tanggalBerakhir || ad.tanggal_berakhir;
+        const status = ad.statusPersetujuan || ad.status_persetujuan || '';
 
-        // A. Adendum Butuh Verifikasi Pengelola
-        if (isPengelola && (status === 'Menunggu Penyerahan' || status === 'Pemeriksaan Pengelola')) {
-          notifs.push({
-            id: `ad-pengelola-${id}`,
-            targetId: id,
-            tipeDokumen: 'Adendum',
-            title: `Adendum Memerlukan Pemeriksaan Pengelola: ${nomor}`,
-            description: `Draf Adendum untuk PKS ${mitraNama} sedang dalam tahap ${status}. Harap segera diverifikasi.`,
-            type: 'Persetujuan',
-            status: status,
-            timestamp: ad.updatedAt || ad.updated_at || new Date().toISOString(),
-            color: 'blue',
-            icon: Clock,
-            actionUrl: '/approval'
-          });
-        }
+        const matchBidang = !userBidang || userRole === 'admin_utama' || userRole === 'kabag' || userRole === 'pimpinan' || userBidang === docBidang;
+        if (!matchBidang) return;
 
-        // B. Adendum Butuh Persetujuan Kabag
-        if (isKabag && (status === 'Disetujui Pengelola' || status === 'Pemeriksaan Kabag')) {
-          notifs.push({
-            id: `ad-kabag-${id}`,
-            targetId: id,
-            tipeDokumen: 'Adendum',
-            title: `Adendum Menunggu Persetujuan Kabag: ${nomor}`,
-            description: `Draf Adendum untuk PKS ${mitraNama} siap ditinjau oleh Kabag.`,
-            type: 'Persetujuan',
-            status: status,
-            timestamp: ad.updatedAt || ad.updated_at || new Date().toISOString(),
-            color: 'blue',
-            icon: Clock,
-            actionUrl: '/approval'
-          });
-        }
+        const isApproved = status === 'Disetujui' || status === 'Selesai' || status === 'Draf Adendum Disetujui';
 
-        // C. Adendum Butuh Persetujuan Pimpinan
-        if (isPimpinan && (status === 'Disetujui Kabag' || status === 'Pemeriksaan Pimpinan')) {
-          notifs.push({
-            id: `ad-pimpinan-${id}`,
-            targetId: id,
-            tipeDokumen: 'Adendum',
-            title: `Adendum Menunggu Persetujuan Pimpinan: ${nomor}`,
-            description: `Draf Adendum untuk PKS ${mitraNama} menunggu persetujuan akhir Pimpinan.`,
-            type: 'Persetujuan',
-            status: status,
-            timestamp: ad.updatedAt || ad.updated_at || new Date().toISOString(),
-            color: 'blue',
-            icon: Clock,
-            actionUrl: '/approval'
-          });
-        }
+        if (tglBerakhir && isApproved) {
+          const endDate = new Date(tglBerakhir);
+          const diffDays = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
 
-        // D. Adendum Revisi (Untuk Petugas Pembuat)
-        if (isPetugas && (isMyAdendum || userRole === 'admin_utama') && status.includes('Revisi')) {
-          notifs.push({
-            id: `ad-revisi-${id}`,
-            targetId: id,
-            tipeDokumen: 'Adendum',
-            title: `Adendum Perlu Revisi: ${nomor}`,
-            description: `Draf Adendum dikembalikan untuk diperbaiki (${status}).`,
-            reasonText: ad.catatan_revisi || ad.catatanRevisi || 'Silakan cek catatan revisi untuk rincian perbaikan.',
-            type: 'Ditolak',
-            status: status,
-            timestamp: ad.updatedAt || ad.updated_at || new Date().toISOString(),
-            color: 'rose',
-            icon: AlertTriangle,
-            actionUrl: '/approval'
-          });
-        }
-
-        // E. Adendum Disetujui
-        if (isPetugas && (isMyAdendum || userRole === 'admin_utama') && (status === 'Disetujui' || status === 'Draf Adendum Disetujui')) {
-          notifs.push({
-            id: `ad-setuju-${id}`,
-            targetId: id,
-            tipeDokumen: 'Adendum',
-            title: `Adendum Disetujui: ${nomor}`,
-            description: `Dokumen Adendum untuk ${mitraNama} telah disetujui resmi oleh Pimpinan.`,
-            type: 'Disetujui',
-            status: status,
-            timestamp: ad.updatedAt || ad.updated_at || new Date().toISOString(),
-            color: 'emerald',
-            icon: CheckCircle2,
-            actionUrl: '/approval'
-          });
+          if (diffDays <= 30 && diffDays > 0) {
+            notifs.push({
+              id: `ad-expiring-${id}`,
+              targetId: id,
+              tipeDokumen: 'Adendum',
+              title: `Adendum Segera Berakhir: ${nomor}`,
+              description: `Masa berlaku Adendum untuk ${mitraNama} tersisa ${diffDays} hari lagi (hingga ${endDate.toLocaleDateString('id-ID')}).`,
+              type: 'Masa Berlaku',
+              category: 'Segera Berakhir',
+              status: `${diffDays} hari lagi`,
+              timestamp: ad.updatedAt || ad.updated_at || ad.created_at || new Date().toISOString(),
+              color: 'amber',
+              icon: AlertTriangle,
+              actionUrl: `/notifications`
+            });
+          } else if (diffDays <= 0) {
+            notifs.push({
+              id: `ad-expired-${id}`,
+              targetId: id,
+              tipeDokumen: 'Adendum',
+              title: `Adendum Telah Berakhir: ${nomor}`,
+              description: `Masa berlaku Adendum untuk ${mitraNama} telah berakhir sejak ${Math.abs(diffDays)} hari yang lalu (${endDate.toLocaleDateString('id-ID')}).`,
+              type: 'Masa Berlaku',
+              category: 'Telah Berakhir',
+              status: 'Telah Berakhir',
+              timestamp: ad.updatedAt || ad.updated_at || ad.created_at || new Date().toISOString(),
+              color: 'rose',
+              icon: XCircle,
+              actionUrl: `/notifications`
+            });
+          }
         }
       });
 
@@ -316,14 +181,13 @@ export const NotificationProvider = ({ children }) => {
   };
 
   const clearRead = () => {
-    // Keep only read markers of notifications that still exist or clear all read
     const unreadNotifications = notifications.filter(n => !readNotifIds.includes(n.id));
     setNotifications(unreadNotifications);
   };
 
   const unreadCount = notifications.filter(n => !readNotifIds.includes(n.id)).length;
-  const segeraBerakhirCount = notifications.filter(n => n.type === 'Masa Berlaku' && n.status.includes('hari')).length;
-  const berakhirCount = notifications.filter(n => n.type === 'Masa Berlaku' && n.status === 'Telah Berakhir').length;
+  const segeraBerakhirCount = notifications.filter(n => n.category === 'Segera Berakhir' || (n.type === 'Masa Berlaku' && n.status?.includes('hari'))).length;
+  const berakhirCount = notifications.filter(n => n.category === 'Telah Berakhir' || (n.type === 'Masa Berlaku' && n.status === 'Telah Berakhir')).length;
 
   return (
     <NotificationContext.Provider

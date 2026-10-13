@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Dashboard } from '../petugas/Dashboard';
+import { DashboardPengelola } from './pengelola-pks/DashboardPengelola';
+import { DashboardPimpinan } from './pimpinan/DashboardPimpinan';
+import { DashboardKabag } from './kabag/DashboardKabag';
+import { DashboardAdmin } from './admin/DashboardAdmin';
 import { dashboardService } from '../services/dashboardService';
 import { Link } from 'react-router-dom';
 import {
@@ -118,8 +122,26 @@ export const DashboardPage = () => {
     fetchDashboardData();
   }, []);
 
-  if (user?.role === 'petugas_jr') {
+  const role = (user?.role || '').toLowerCase();
+
+  if (role === 'petugas_jr' || role === 'petugas') {
     return <Dashboard />;
+  }
+
+  if (role === 'pengelola_pks' || role === 'pengelola') {
+    return <DashboardPengelola />;
+  }
+
+  if (role === 'kabag') {
+    return <DashboardKabag />;
+  }
+
+  if (role === 'pimpinan') {
+    return <DashboardPimpinan />;
+  }
+
+  if (role === 'admin_utama' || role === 'admin') {
+    return <DashboardAdmin />;
   }
 
   const sampleActivities = [];

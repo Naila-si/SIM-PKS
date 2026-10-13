@@ -86,9 +86,9 @@ export const NotificationPage = () => {
       
       {/* 1. Header Halaman */}
       <div>
-        <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Notifikasi PKS</h1>
+        <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Notifikasi Masa Berlaku PKS</h1>
         <p className="text-xs text-slate-500 mt-0.5">
-          Lihat pemberitahuan terkait proses persetujuan, masa berlaku, dan tindak lanjut PKS.
+          Pusat peringatan dini status masa berlaku dokumen PKS & Adendum rekanan (Segera Berakhir dan Telah Berakhir).
         </p>
       </div>
 

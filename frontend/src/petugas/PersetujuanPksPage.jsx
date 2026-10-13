@@ -267,9 +267,9 @@ export const PersetujuanPksPage = () => {
       {/* 1. Header Page */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Persetujuan Dokumen PKS & Adendum</h1>
+          <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Alur Persetujuan PKS & Adendum</h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Lakukan pemeriksaan dan persetujuan terhadap PKS dan Adendum yang sedang menunggu tindakan Anda.
+            Pantau riwayat proses, status berjenjang, dan tindak lanjuti persetujuan dokumen PKS & Adendum.
           </p>
         </div>
 

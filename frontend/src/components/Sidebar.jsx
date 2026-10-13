@@ -188,10 +188,10 @@ export const Sidebar = () => {
               </Link>
             )}
 
-            {/* 5. Persetujuan PKS (Badge Counter) */}
+            {/* 5. Alur Persetujuan (Badge Counter) */}
             <Link
               to="/approval"
-              title="Persetujuan PKS"
+              title="Alur Persetujuan"
               className={`group relative flex items-center justify-between rounded-xl text-xs font-semibold transition-all ${
                 isCollapsed ? 'justify-center p-3' : 'px-3.5 py-2.5'
               } ${
@@ -210,7 +210,7 @@ export const Sidebar = () => {
                     }`} />
                   )}
                 </div>
-                {!isCollapsed && <span className="truncate">Persetujuan PKS</span>}
+                {!isCollapsed && <span className="truncate">Alur Persetujuan</span>}
               </div>
 
               {/* Badge Counter in Expanded Mode */}
@@ -229,7 +229,7 @@ export const Sidebar = () => {
               {/* Floating Tooltip in Collapsed Mode */}
               {isCollapsed && (
                 <div className="fixed left-20 ml-2 px-3 py-1.5 bg-[#0F2238] text-white text-xs font-bold rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[100] flex items-center space-x-2">
-                  <span>Persetujuan PKS</span>
+                  <span>Alur Persetujuan</span>
                   <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
                     isPetugas ? 'bg-amber-500 text-white' : 'bg-[#00529C] text-white'
                   }`}>
