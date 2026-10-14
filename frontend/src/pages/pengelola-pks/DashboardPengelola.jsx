@@ -10,6 +10,7 @@ import {
   Building2, Calendar, ArrowRight, CheckSquare, Layers,
   ChevronRight, Shield, Sparkles, FolderKanban, Download, RefreshCw
 } from 'lucide-react';
+import logoEmblem from '../../assets/logo-jr-emblem.png';
 
 export const DashboardPengelola = () => {
   const { user } = useAuth();
@@ -213,15 +214,16 @@ export const DashboardPengelola = () => {
       
       {/* 1. Dedicated Header Banner for Pengelola Bidang */}
       <div className={`rounded-3xl p-6 sm:p-7 text-white bg-gradient-to-r ${bidangTheme.gradient} shadow-md relative overflow-hidden`}>
-        {/* Decorative Circles */}
+        {/* Decorative Circles and Watermark */}
         <div className="absolute right-0 top-0 translate-x-10 -translate-y-10 w-64 h-64 rounded-full bg-white/5 blur-2xl pointer-events-none" />
         <div className="absolute right-32 bottom-0 translate-y-10 w-48 h-48 rounded-full bg-white/5 blur-xl pointer-events-none" />
+        <img src={logoEmblem} alt="" className="absolute -right-6 -bottom-6 w-52 h-52 object-contain opacity-10 pointer-events-none select-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2.5">
               <span className="px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-white/15 backdrop-blur-md border border-white/20 text-white inline-flex items-center">
-                <Shield className="w-3.5 h-3.5 mr-1.5 text-blue-200" />
+                <img src={logoEmblem} alt="JR" className="w-3.5 h-3.5 mr-1.5 object-contain drop-shadow-xs" />
                 Meja Kerja Pengelola PKS
               </span>
               <span className="px-3 py-1 rounded-full text-[11px] font-extrabold bg-white text-[#00529C] border border-white/20 shadow-xs">

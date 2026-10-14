@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Mail, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react';
+import logoBulat from '../../assets/logo-jr-bulat.png';
+import logoPanjang from '../../assets/logo-jr-panjang.png';
+import logoEmblem from '../../assets/logo-jr-emblem.png';
 
 export const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -62,12 +65,13 @@ export const LoginPage = () => {
           </svg>
         </div>
 
-        {/* Top Brand Badge */}
+        {/* Top Brand Logo */}
         <div className="z-10">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/70 backdrop-blur-md border border-slate-200/60 shadow-2xs text-xs font-extrabold text-[#00529C]">
-            <span className="w-2 h-2 rounded-full bg-[#00529C] animate-pulse" />
-            <span>PT Jasa Raharja</span>
-          </div>
+          <img
+            src={logoPanjang}
+            alt="PT Jasa Raharja"
+            className="h-14 sm:h-16 lg:h-20 max-w-[280px] sm:max-w-xs object-contain drop-shadow-xs"
+          />
         </div>
 
         {/* Middle Hero Main Headline */}
@@ -111,9 +115,23 @@ export const LoginPage = () => {
           
           <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-xl space-y-6">
             
+            {/* Card Brand Header */}
+            <div className="flex items-center space-x-2.5 pb-2.5 border-b border-slate-100">
+              <img
+                src={logoEmblem}
+                alt="Logo Jasa Raharja"
+                className="w-7 h-7 object-contain drop-shadow-xs shrink-0"
+              />
+              <div>
+                <h3 className="text-sm font-bold tracking-tight text-[#001D38]">
+                  SIM-PKS Jasa Raharja
+                </h3>
+              </div>
+            </div>
+
             {/* Card Header Title */}
             <div>
-              <h2 className="text-lg font-extrabold text-[#001D38] tracking-tight">
+              <h2 className="text-xl font-extrabold text-[#001D38] tracking-tight">
                 Masuk ke Sistem
               </h2>
               <p className="text-xs text-slate-500 mt-1">

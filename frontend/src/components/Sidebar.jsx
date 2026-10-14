@@ -7,6 +7,9 @@ import {
   LayoutDashboard, FileText, Building2, Layers, CheckSquare,
   Bell, History, Users, LogOut, AlertTriangle, X
 } from 'lucide-react';
+import logoBulat from '../assets/logo-jr-bulat.png';
+import logoPanjang from '../assets/logo-jr-panjang.png';
+import logoEmblem from '../assets/logo-jr-emblem.png';
 
 export const Sidebar = () => {
   const location = useLocation();
@@ -77,18 +80,26 @@ export const Sidebar = () => {
         <div className={`p-4 space-y-6 ${isCollapsed ? 'px-3' : 'p-5'}`}>
           
           {/* Brand Logo & Title */}
-          <div className="flex items-center space-x-3 border-b border-slate-100 pb-4 overflow-hidden">
-            <div className="w-9 h-9 rounded-xl bg-[#00529C] text-white flex items-center justify-center font-extrabold text-lg shadow-xs shrink-0">
-              JR
-            </div>
-            <div className={`transition-opacity duration-200 ${isCollapsed ? 'opacity-0 w-0 hidden' : 'opacity-100 block'}`}>
-              <h1 className="text-sm font-extrabold text-slate-900 tracking-tight leading-tight whitespace-nowrap">
-                JASA RAHARJA
-              </h1>
-              <p className="text-[10px] text-slate-400 font-semibold tracking-wider uppercase whitespace-nowrap">
-                A Member of IFG
-              </p>
-            </div>
+          <div className={`flex items-center border-b border-slate-100 overflow-hidden ${
+            isCollapsed ? 'justify-center pb-3 min-h-[52px]' : 'pb-3 min-h-[58px]'
+          }`}>
+            {isCollapsed ? (
+              <div className="flex items-center justify-center shrink-0">
+                <img
+                  src={logoEmblem}
+                  alt="Logo Jasa Raharja"
+                  className="w-7 h-7 object-contain drop-shadow-xs transition-transform duration-200 hover:scale-110"
+                />
+              </div>
+            ) : (
+              <div className="flex items-center transition-opacity duration-200 py-0.5">
+                <img
+                  src={logoPanjang}
+                  alt="PT Jasa Raharja"
+                  className="h-11 w-auto max-w-[200px] object-contain drop-shadow-xs transition-transform duration-200 hover:scale-102"
+                />
+              </div>
+            )}
           </div>
 
           {/* Navigation Menu */}

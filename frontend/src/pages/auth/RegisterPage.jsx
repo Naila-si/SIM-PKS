@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import { ShieldCheck, Eye, EyeOff, UserCheck, ArrowLeft, CheckCircle2, AlertCircle, X } from 'lucide-react';
+import logoBulat from '../../assets/logo-jr-bulat.png';
+import logoPanjang from '../../assets/logo-jr-panjang.png';
+import logoEmblem from '../../assets/logo-jr-emblem.png';
 
 export const RegisterPage = () => {
   const navigate = useNavigate();
@@ -150,12 +153,13 @@ export const RegisterPage = () => {
           </svg>
         </div>
 
-        {/* Top Brand Badge */}
+        {/* Top Brand Logo */}
         <div className="z-10">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/70 backdrop-blur-md border border-slate-200/60 shadow-2xs text-xs font-extrabold text-[#00529C]">
-            <span className="w-2 h-2 rounded-full bg-[#00529C] animate-pulse" />
-            <span>PT Jasa Raharja</span>
-          </div>
+          <img
+            src={logoPanjang}
+            alt="PT Jasa Raharja"
+            className="h-14 sm:h-16 lg:h-20 max-w-[280px] sm:max-w-xs object-contain drop-shadow-xs"
+          />
         </div>
 
         {/* Middle Hero Main Headline */}
@@ -197,6 +201,20 @@ export const RegisterPage = () => {
         {/* Center Main Registration Form Content */}
         <div className="w-full max-w-2xl space-y-5 my-auto">
           
+          {/* Brand Header */}
+          <div className="flex items-center space-x-2.5 pb-2.5 border-b border-slate-100">
+            <img
+              src={logoEmblem}
+              alt="Logo Jasa Raharja"
+              className="w-7 h-7 object-contain drop-shadow-xs shrink-0"
+            />
+            <div>
+              <h3 className="text-sm font-bold tracking-tight text-[#001D38]">
+                SIM-PKS Jasa Raharja
+              </h3>
+            </div>
+          </div>
+
           {/* Header Title */}
           <div>
             <h2 className="text-xl font-extrabold text-[#001D38] tracking-tight">

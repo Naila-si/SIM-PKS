@@ -14,6 +14,7 @@ import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip,
   CartesianGrid, Cell, PieChart, Pie, Legend
 } from 'recharts';
+import logoEmblem from '../../assets/logo-jr-emblem.png';
 
 export const DashboardAdmin = () => {
   const { user } = useAuth();
@@ -139,14 +140,15 @@ export const DashboardAdmin = () => {
       
       {/* 1. Admin Command Center Hero Header */}
       <div className="bg-gradient-to-r from-[#001D38] via-[#00386C] to-[#00529C] rounded-2xl p-6 sm:p-8 text-white shadow-md relative overflow-hidden">
-        {/* Subtle decorative glow accents */}
+        {/* Subtle decorative watermark and glow */}
         <div className="absolute -right-10 -top-10 w-72 h-72 bg-white/5 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute right-1/3 -bottom-16 w-56 h-56 bg-sky-400/10 rounded-full blur-3xl pointer-events-none" />
+        <img src={logoEmblem} alt="" className="absolute -right-8 -bottom-8 w-56 h-56 object-contain opacity-10 pointer-events-none select-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-2.5 max-w-2xl">
             <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/15 text-xs font-semibold text-sky-200">
-              <Server className="w-3.5 h-3.5 text-amber-300" />
+              <img src={logoEmblem} alt="JR" className="w-4 h-4 object-contain drop-shadow-xs" />
               <span>Pusat Kendali Administrator Utama</span>
             </div>
             

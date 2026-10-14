@@ -12,6 +12,7 @@ import {
   CartesianGrid, Cell, PieChart, Pie, Legend
 } from 'recharts';
 import { ModalDetailPks } from './ModalDetailPks';
+import logoEmblem from '../assets/logo-jr-emblem.png';
 
 export const Dashboard = () => {
   const { user } = useAuth();
@@ -225,14 +226,15 @@ export const Dashboard = () => {
       
       {/* 1. Motivational Hero Header */}
       <div className="bg-gradient-to-r from-[#001D38] via-[#00386C] to-[#00529C] rounded-2xl p-6 sm:p-8 text-white shadow-md relative overflow-hidden">
-        {/* Subtle decorative glow accents */}
+        {/* Subtle decorative watermark and glow */}
         <div className="absolute -right-10 -top-10 w-64 h-64 bg-white/5 rounded-full blur-2xl pointer-events-none" />
         <div className="absolute right-1/4 -bottom-12 w-48 h-48 bg-sky-400/10 rounded-full blur-3xl pointer-events-none" />
+        <img src={logoEmblem} alt="" className="absolute -right-6 -bottom-6 w-52 h-52 object-contain opacity-10 pointer-events-none select-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-2.5 max-w-2xl">
             <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/15 text-xs font-semibold text-sky-200">
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              <img src={logoEmblem} alt="JR" className="w-4 h-4 object-contain drop-shadow-xs" />
               <span>Ruang Kerja Petugas Jasa Raharja</span>
             </div>
             
