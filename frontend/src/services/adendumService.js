@@ -1,6 +1,6 @@
 // Adendum Service connecting to Laravel Backend
 
-const BASE_URL = 'http://localhost:8000/api';
+const BASE_URL = '/api';
 
 const getHeaders = () => {
   const token = localStorage.getItem('pks_token');

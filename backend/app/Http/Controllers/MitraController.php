@@ -7,19 +7,23 @@ use Illuminate\Http\Request;
 
 class MitraController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $mitras = Mitra::withCount([
+        $query = Mitra::withCount([
             'pksDocuments as totalPks',
-            'pksDocuments as pksAktif' => function ($query) {
-                $query->where('status_pks', 'Aktif');
+            'pksDocuments as pksAktif' => function ($q) {
+                $q->where('status_pks', 'Aktif');
             },
-            'pksDocuments as pksBerakhir' => function ($query) {
-                $query->where('status_pks', 'Berakhir');
+            'pksDocuments as pksBerakhir' => function ($q) {
+                $q->where('status_pks', 'Berakhir');
             }
-        ])->get();
+        ]);
 
-        return response()->json($mitras);
+        if ($request->filled('bidang')) {
+            $query->where('bidang', $request->bidang);
+        }
+
+        return response()->json($query->get());
     }
 
     public function show($id)
@@ -42,7 +46,9 @@ class MitraController extends Controller
     {
         $validated = $request->validate([
             'nama_mitra' => 'required|string|max:255',
+            'bidang' => 'nullable|string|max:100',
             'nama_pengelola' => 'required|string|max:255',
+            'jabatan' => 'nullable|string|max:150',
             'no_hp_pengelola' => 'required|string|max:255',
             'email_pengelola' => 'nullable|email|max:255',
             'alamat_mitra' => 'nullable|string',
@@ -64,7 +70,9 @@ class MitraController extends Controller
 
         $validated = $request->validate([
             'nama_mitra' => 'sometimes|string|max:255',
+            'bidang' => 'nullable|string|max:100',
             'nama_pengelola' => 'sometimes|string|max:255',
+            'jabatan' => 'nullable|string|max:150',
             'no_hp_pengelola' => 'sometimes|string|max:255',
             'email_pengelola' => 'nullable|email|max:255',
             'alamat_mitra' => 'nullable|string',

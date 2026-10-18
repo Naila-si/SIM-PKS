@@ -421,7 +421,7 @@ export const PksDetailPage = () => {
                       </div>
                     </div>
                     <a
-                      href={`http://127.0.0.1:8000/storage/${pks.fileScan}`}
+                      href={`/storage/${pks.fileScan}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-3.5 py-2 bg-emerald-700 text-white text-xs font-bold rounded-lg hover:bg-emerald-800 flex items-center shadow-xs"

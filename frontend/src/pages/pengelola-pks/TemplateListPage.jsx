@@ -20,7 +20,7 @@ export const TemplateListPage = () => {
   const fetchTemplates = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:8000/api/pks-templates');
+      const res = await fetch('/api/pks-templates');
       const data = await res.json();
       
       const userRole = user?.role?.toLowerCase() || '';
@@ -60,7 +60,7 @@ export const TemplateListPage = () => {
 
     try {
       let token = localStorage.getItem('pks_token');
-      const res = await fetch('http://localhost:8000/api/pks-templates', {
+      const res = await fetch('/api/pks-templates', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: form
@@ -89,7 +89,7 @@ export const TemplateListPage = () => {
       form.append('status_template', newStatus);
 
       let token = localStorage.getItem('pks_token');
-      const res = await fetch(`http://localhost:8000/api/pks-templates/${template.templateId}`, {
+      const res = await fetch(`/api/pks-templates/${template.templateId}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: form

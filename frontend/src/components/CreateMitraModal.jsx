@@ -7,6 +7,7 @@ export const CreateMitraModal = ({ isOpen, onClose, onSuccess }) => {
   const [alamat, setAlamat] = useState('');
   const [kontak, setKontak] = useState('');
   const [penanggungJawab, setPenanggungJawab] = useState('');
+  const [jabatan, setJabatan] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -23,6 +24,7 @@ export const CreateMitraModal = ({ isOpen, onClose, onSuccess }) => {
         alamat,
         kontak,
         penanggungJawab,
+        jabatan,
       });
 
       if (res.success) {
@@ -32,6 +34,7 @@ export const CreateMitraModal = ({ isOpen, onClose, onSuccess }) => {
         setAlamat('');
         setKontak('');
         setPenanggungJawab('');
+        setJabatan('');
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Gagal menambahkan mitra.');
@@ -117,9 +120,22 @@ export const CreateMitraModal = ({ isOpen, onClose, onSuccess }) => {
                 value={penanggungJawab}
                 onChange={(e) => setPenanggungJawab(e.target.value)}
                 className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#00529C] focus:outline-none"
-                placeholder="Nama Penanggung Jawab"
+                placeholder="Nama PIC"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Jabatan Penanggung Jawab
+            </label>
+            <input
+              type="text"
+              value={jabatan}
+              onChange={(e) => setJabatan(e.target.value)}
+              className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#00529C] focus:outline-none"
+              placeholder="Contoh: Direktur / Kepala Cabang"
+            />
           </div>
 
           <div className="flex justify-end space-x-2 pt-3">

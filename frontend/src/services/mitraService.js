@@ -79,7 +79,7 @@ export const mitraService = {
     localStorage.removeItem('mock_mitra_list');
     try {
       let token = localStorage.getItem('pks_token');
-      const res = await fetch('http://localhost:8000/api/mitra', {
+      const res = await fetch('/api/mitra', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -98,17 +98,27 @@ export const mitraService = {
   createMitra: async (data) => {
     try {
       let token = localStorage.getItem('pks_token');
-      const res = await fetch('http://localhost:8000/api/mitra', {
+      const payload = {
+        nama_mitra: data.nama_mitra || data.namaPerusahaan,
+        bidang: data.bidang || null,
+        nama_pengelola: data.nama_pengelola || data.penanggungJawab,
+        jabatan: data.jabatan || null,
+        no_hp_pengelola: data.no_hp_pengelola || data.kontak || data.telepon,
+        email_pengelola: data.email_pengelola || data.email || null,
+        alamat_mitra: data.alamat_mitra || data.alamat || null,
+        status_mitra: data.status_mitra || data.status || 'Aktif',
+      };
+      const res = await fetch('/api/mitra', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(payload)
       });
       const newMitra = await res.json();
-      return { success: true, data: newMitra };
+      return { success: res.ok, data: newMitra };
     } catch (err) {
       return { success: false, message: 'Gagal menambah mitra' };
     }
@@ -117,7 +127,7 @@ export const mitraService = {
   updateMitra: async (id, data) => {
     try {
       let token = localStorage.getItem('pks_token');
-      const res = await fetch(`http://localhost:8000/api/mitra/${id}`, {
+      const res = await fetch(`/api/mitra/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

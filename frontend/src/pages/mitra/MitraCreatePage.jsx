@@ -10,6 +10,7 @@ export const MitraCreatePage = () => {
   const [alamat, setAlamat] = useState('');
   const [kontak, setKontak] = useState('');
   const [penanggungJawab, setPenanggungJawab] = useState('');
+  const [jabatan, setJabatan] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -24,6 +25,7 @@ export const MitraCreatePage = () => {
         alamat,
         kontak,
         penanggungJawab,
+        jabatan,
       });
 
       if (res.success) {
@@ -95,6 +97,18 @@ export const MitraCreatePage = () => {
             value={penanggungJawab}
             onChange={(e) => setPenanggungJawab(e.target.value)}
             className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#00529C]"
+            placeholder="Nama Penanggung Jawab"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-slate-700 mb-1">Jabatan Penanggung Jawab</label>
+          <input
+            type="text"
+            value={jabatan}
+            onChange={(e) => setJabatan(e.target.value)}
+            className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#00529C]"
+            placeholder="Contoh: Direktur / Kepala Cabang"
           />
         </div>
 

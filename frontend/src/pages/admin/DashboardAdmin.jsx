@@ -35,7 +35,7 @@ export const DashboardAdmin = () => {
         pksService.getPksList({ per_page: 1000 }).catch(() => ({ success: false, data: [] })),
         adendumService.getAllAdendums().catch(() => ({ success: false, data: [] })),
         mitraService.getMitraList().catch(() => ({ success: false, data: [] })),
-        fetch('http://localhost:8000/api/pks-templates').then(r => r.json()).catch(() => [])
+        fetch('/api/pks-templates').then(r => r.json()).catch(() => [])
       ]);
 
       setUsers(Array.isArray(userRes?.data) ? userRes.data : []);

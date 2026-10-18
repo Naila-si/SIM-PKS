@@ -172,7 +172,7 @@ export const PersetujuanPksPage = () => {
       const uId = user?.penggunaId || user?.id;
 
       if (item.tipe === 'PKS') {
-        const res = await fetch('http://localhost:8000/api/pks-approvals', {
+        const res = await fetch('/api/pks-approvals', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

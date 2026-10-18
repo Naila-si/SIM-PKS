@@ -36,7 +36,7 @@ export const DashboardPengelola = () => {
       const [pksRes, adendumRes, templateRes] = await Promise.all([
         pksService.getPksList({ per_page: 500 }),
         adendumService.getAllAdendums(),
-        fetch('http://localhost:8000/api/pks-templates').then(r => r.json()).catch(() => [])
+        fetch('/api/pks-templates').then(r => r.json()).catch(() => [])
       ]);
 
       const allPks = (pksRes?.success && Array.isArray(pksRes.data)) ? pksRes.data : [];

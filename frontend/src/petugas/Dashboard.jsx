@@ -43,7 +43,17 @@ export const Dashboard = () => {
     try {
       const res = await pksService.getPksList({ per_page: 500 });
       if (res.success && res.data) {
-        const list = Array.isArray(res.data) ? res.data : (Array.isArray(res.data?.data) ? res.data.data : []);
+        const rawList = Array.isArray(res.data) ? res.data : (Array.isArray(res.data?.data) ? res.data.data : []);
+        
+        // Filter dokumen khusus yang dibuat oleh Petugas yang sedang login
+        const currentUserId = user?.penggunaId || user?.id;
+        const list = currentUserId
+          ? rawList.filter(pks => {
+              const creatorId = pks.penggunaId || pks.pengguna_id || pks.pengguna?.penggunaId || pks.pengguna?.id;
+              return String(creatorId) === String(currentUserId);
+            })
+          : rawList;
+
         setPksList(list);
 
         let tahunIniCount = 0;

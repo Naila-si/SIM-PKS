@@ -5,7 +5,7 @@ if (typeof window !== 'undefined') {
   localStorage.removeItem('pks_app_users');
 }
 
-export const API_BASE_URL = 'http://localhost:8000/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 export const authService = {
   // 1. Login Verification (Connected to Laravel Backend API)

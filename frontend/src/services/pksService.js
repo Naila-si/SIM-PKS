@@ -92,7 +92,7 @@ export const pksService = {
     localStorage.removeItem('mock_pks_list');
     try {
       let token = localStorage.getItem('pks_token');
-      const res = await fetch('http://localhost:8000/api/pks-documents', {
+      const res = await fetch('/api/pks-documents', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -104,7 +104,7 @@ export const pksService = {
 
   getPksById: async (id) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/pks-documents/${id}`);
+      const res = await fetch(`/api/pks-documents/${id}`);
       const data = await res.json();
       return { success: true, data: data };
     } catch (err) {
@@ -115,7 +115,7 @@ export const pksService = {
   createPks: async (data) => {
     try {
       let token = localStorage.getItem('pks_token');
-      const res = await fetch('http://localhost:8000/api/pks-documents', {
+      const res = await fetch('/api/pks-documents', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -133,7 +133,7 @@ export const pksService = {
   updatePks: async (id, data) => {
     try {
       let token = localStorage.getItem('pks_token');
-      const res = await fetch(`http://localhost:8000/api/pks-documents/${id}`, {
+      const res = await fetch(`/api/pks-documents/${id}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -151,7 +151,7 @@ export const pksService = {
   deletePks: async (id) => {
     try {
       let token = localStorage.getItem('pks_token');
-      const res = await fetch(`http://localhost:8000/api/pks-documents/${id}`, {
+      const res = await fetch(`/api/pks-documents/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -164,7 +164,7 @@ export const pksService = {
   addApproval: async (payload) => {
     try {
       let token = localStorage.getItem('pks_token');
-      const res = await fetch('http://localhost:8000/api/pks-approvals', {
+      const res = await fetch('/api/pks-approvals', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -183,7 +183,7 @@ export const pksService = {
     try {
       let token = localStorage.getItem('pks_token');
       const q = new URLSearchParams(params).toString();
-      const res = await fetch(`http://localhost:8000/api/system-logs?${q}`, {
+      const res = await fetch(`/api/system-logs?${q}`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -215,7 +215,7 @@ export const pksService = {
   downloadDraft: async (id) => {
     try {
       let token = localStorage.getItem('pks_token');
-      const res = await fetch(`http://localhost:8000/api/pks-documents/${id}/generate-docx`, {
+      const res = await fetch(`/api/pks-documents/${id}/generate-docx`, {
         method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -280,7 +280,7 @@ export const pksService = {
   getApprovalPendingCount: async (userId) => {
     try {
       const token = localStorage.getItem('pks_token');
-      const res = await fetch(`http://localhost:8000/api/approvals/count?user_id=${userId || ''}`, {
+      const res = await fetch(`/api/approvals/count?user_id=${userId || ''}`, {
         headers: {
           'Accept': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})

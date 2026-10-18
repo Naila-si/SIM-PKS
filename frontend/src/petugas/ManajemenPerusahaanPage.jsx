@@ -35,6 +35,7 @@ export const ManajemenPerusahaanPage = () => {
 
   // Filter States
   const [statusMitraFilter, setStatusMitraFilter] = useState('Semua');
+  const [bidangFilter, setBidangFilter] = useState('Semua');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Pagination State
@@ -46,6 +47,42 @@ export const ManajemenPerusahaanPage = () => {
   const [viewingMitra, setViewingMitra] = useState(null);
   const [editingMitra, setEditingMitra] = useState(null);
 
+  const getBidangBadge = (bidang) => {
+    if (!bidang) {
+      return (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold text-slate-400 bg-slate-50 border border-slate-200">
+          -
+        </span>
+      );
+    }
+    const b = String(bidang).toUpperCase();
+    if (b.includes('PELAYANAN')) {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200" title="Bidang Pelayanan">
+          Pelayanan
+        </span>
+      );
+    }
+    if (b === 'SW' || b.includes('SUMBANGAN')) {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200" title="Sumbangan Wajib (SW)">
+          SW
+        </span>
+      );
+    }
+    if (b === 'IW' || b.includes('IURAN')) {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200" title="Iuran Wajib (IW)">
+          IW
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+        {bidang}
+      </span>
+    );
+  };
 
   const fetchMitraData = async () => {
     setLoading(true);
@@ -74,7 +111,9 @@ export const ManajemenPerusahaanPage = () => {
 
   const handleResetFilter = () => {
     setStatusMitraFilter('Semua');
+    setBidangFilter('Semua');
     setSearchQuery('');
+    setCurrentPage(1);
   };
 
   const handleExportExcel = async () => {
@@ -96,10 +135,18 @@ export const ManajemenPerusahaanPage = () => {
   const filteredData = mitraList.filter((item) => {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      const nama = (item.namaPerusahaan || item.nama || '').toLowerCase();
-      const idStr = (item.mitraId || '').toLowerCase();
-      const pj = (item.penanggungJawab || '').toLowerCase();
-      if (!nama.includes(query) && !idStr.includes(query) && !pj.includes(query)) return false;
+      const nama = (item.namaPerusahaan || item.nama_mitra || item.nama || '').toLowerCase();
+      const idStr = String(item.mitraId || '').toLowerCase();
+      const pj = (item.penanggungJawab || item.nama_pengelola || '').toLowerCase();
+      const bidangStr = (item.bidang || '').toLowerCase();
+      if (!nama.includes(query) && !idStr.includes(query) && !pj.includes(query) && !bidangStr.includes(query)) return false;
+    }
+
+    if (bidangFilter !== 'Semua') {
+      const b = String(item.bidang || '').toUpperCase();
+      if (bidangFilter === 'Pelayanan' && !b.includes('PELAYANAN')) return false;
+      if (bidangFilter === 'SW' && !b.includes('SW') && !b.includes('SUMBANGAN')) return false;
+      if (bidangFilter === 'IW' && !b.includes('IW') && !b.includes('IURAN')) return false;
     }
 
     if (statusMitraFilter !== 'Semua') {
@@ -148,14 +195,34 @@ export const ManajemenPerusahaanPage = () => {
                 type="text"
                 placeholder="Cari perusahaan..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
                 className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none"
               />
             </div>
 
             <select
+              value={bidangFilter}
+              onChange={(e) => {
+                setBidangFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer"
+            >
+              <option value="Semua">Semua Bidang</option>
+              <option value="Pelayanan">Bidang Pelayanan</option>
+              <option value="SW">Bidang SW</option>
+              <option value="IW">Bidang IW</option>
+            </select>
+
+            <select
               value={statusMitraFilter}
-              onChange={(e) => setStatusMitraFilter(e.target.value)}
+              onChange={(e) => {
+                setStatusMitraFilter(e.target.value);
+                setCurrentPage(1);
+              }}
               className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer"
             >
               <option value="Semua">Semua Status</option>
@@ -181,6 +248,15 @@ export const ManajemenPerusahaanPage = () => {
             <Building2 className="w-10 h-10 text-slate-300 mx-auto" />
             <p className="text-sm font-semibold text-slate-700">Tidak Ada Data Perusahaan Mitra</p>
             <p className="text-xs text-slate-400">Silakan atur ulang kriteria pencarian atau filter Anda.</p>
+            {(searchQuery || bidangFilter !== 'Semua' || statusMitraFilter !== 'Semua') && (
+              <button
+                onClick={handleResetFilter}
+                className="mt-2 text-xs font-semibold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer inline-flex items-center"
+              >
+                <RotateCcw className="w-3 h-3 mr-1" />
+                Reset Filter
+              </button>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -188,6 +264,7 @@ export const ManajemenPerusahaanPage = () => {
               <thead className="bg-slate-50/80 border-b border-slate-100 text-slate-500 uppercase font-extrabold text-[10px] tracking-wider">
                 <tr>
                   <th className="px-5 py-3.5">Nama Perusahaan / Instansi</th>
+                  <th className="px-4 py-3.5">Bidang</th>
                   <th className="px-4 py-3.5">Penanggung Jawab</th>
                   <th className="px-4 py-3.5">Kontak</th>
                   <th className="px-4 py-3.5">Status Mitra</th>
@@ -208,11 +285,17 @@ export const ManajemenPerusahaanPage = () => {
                         </p>
                       </td>
 
-
+                      {/* Bidang */}
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        {getBidangBadge(item.bidang)}
+                      </td>
 
                       {/* Penanggung Jawab */}
-                      <td className="px-4 py-4 font-semibold text-slate-800">
-                        {item.penanggungJawab || item.nama_pengelola || '-'}
+                      <td className="px-4 py-4 text-xs">
+                        <p className="font-semibold text-slate-800">{item.penanggungJawab || item.nama_pengelola || '-'}</p>
+                        {item.jabatan && (
+                          <p className="text-[10px] text-slate-400 font-medium mt-0.5">{item.jabatan}</p>
+                        )}
                       </td>
 
                       {/* Kontak */}

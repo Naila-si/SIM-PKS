@@ -10,7 +10,9 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
 
   // Form State
   const [namaPerusahaan, setNamaPerusahaan] = useState('');
+  const [bidang, setBidang] = useState('Pelayanan');
   const [penanggungJawab, setPenanggungJawab] = useState('');
+  const [jabatan, setJabatan] = useState('');
   const [kontak, setKontak] = useState('');
   const [email, setEmail] = useState('');
   const [alamat, setAlamat] = useState('');
@@ -18,7 +20,9 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
   useEffect(() => {
     if (mitraData) {
       setNamaPerusahaan(mitraData.nama_mitra || mitraData.namaPerusahaan || '');
+      setBidang(mitraData.bidang || 'Pelayanan');
       setPenanggungJawab(mitraData.nama_pengelola || mitraData.penanggungJawab || '');
+      setJabatan(mitraData.jabatan || '');
       setKontak(mitraData.no_hp_pengelola || mitraData.kontak || '');
       setEmail(mitraData.email_pengelola || mitraData.email || '');
       setAlamat(mitraData.alamat_mitra || mitraData.alamat || '');
@@ -36,7 +40,7 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
       setEmailError('');
       return;
     }
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const re = /^[^\s@]+@[^\s@]+$/;
     if (!re.test(val)) {
       setEmailError('Email tidak valid');
     } else {
@@ -57,7 +61,9 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
     try {
       const payload = {
         nama_mitra: namaPerusahaan,
+        bidang: bidang,
         nama_pengelola: penanggungJawab,
+        jabatan: jabatan,
         no_hp_pengelola: kontak,
         email_pengelola: email,
         alamat_mitra: alamat,
@@ -123,7 +129,7 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+                <div className="md:col-span-2">
                   <label className="block text-slate-700 font-semibold mb-1">Nama Perusahaan / Instansi *</label>
                   <div className="relative">
                     <Building2 className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
@@ -136,6 +142,19 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
                       className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">Bidang Kerja Sama *</label>
+                  <select
+                    value={bidang}
+                    onChange={(e) => setBidang(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+                  >
+                    <option value="Pelayanan">Pelayanan</option>
+                    <option value="SW">Sumbangan Wajib (SW)</option>
+                    <option value="IW">Iuran Wajib (IW)</option>
+                  </select>
                 </div>
 
                 <div>
@@ -173,6 +192,20 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
                       placeholder="Masukkan nama penanggung jawab..."
                       value={penanggungJawab}
                       onChange={(e) => setPenanggungJawab(e.target.value)}
+                      className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl outline-none font-medium text-slate-800 focus:ring-2 focus:ring-blue-500/20"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">Jabatan Penanggung Jawab</label>
+                  <div className="relative">
+                    <Briefcase className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
+                    <input
+                      type="text"
+                      placeholder="Contoh: Direktur / Kepala Cabang"
+                      value={jabatan}
+                      onChange={(e) => setJabatan(e.target.value)}
                       className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl outline-none font-medium text-slate-800 focus:ring-2 focus:ring-blue-500/20"
                     />
                   </div>

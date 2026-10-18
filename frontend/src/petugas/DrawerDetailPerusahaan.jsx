@@ -123,6 +123,15 @@ export const DrawerDetailPerusahaan = ({ isOpen, mitraData, onClose }) => {
               </div>
 
               <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Bidang Kerja Sama</p>
+                <div className="mt-1">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                    {mitraData.bidang === 'SW' ? 'Sumbangan Wajib (SW)' : mitraData.bidang === 'IW' ? 'Iuran Wajib (IW)' : (mitraData.bidang || 'Pelayanan')}
+                  </span>
+                </div>
+              </div>
+
+              <div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Alamat Lengkap</p>
                 <p className="text-xs font-medium text-slate-700 mt-0.5 leading-relaxed">
                   {mitraData.alamat_mitra || mitraData.alamat || '-'}

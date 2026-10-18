@@ -30,9 +30,22 @@ class PksDocumentController extends Controller
             'jenis_pks' => 'required|string',
             'ringkasan_pks' => 'required|string',
             'tanggal_mulai' => 'required|date',
-            'tanggal_berakhir' => 'required|date|after:tanggal_mulai',
+            'tanggal_berakhir' => [
+                'required',
+                'date',
+                'after:tanggal_mulai',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->filled('tanggal_mulai') && $value) {
+                        $mulai = \Carbon\Carbon::parse($request->tanggal_mulai);
+                        $berakhir = \Carbon\Carbon::parse($value);
+                        if ($mulai->diffInDays($berakhir, false) < 30) {
+                            $fail('Masa berlaku PKS minimal adalah 30 hari (1 bulan) terhitung dari tanggal mulai berlaku.');
+                        }
+                    }
+                }
+            ],
         ], [
-            'tanggal_berakhir.after' => 'Tanggal Berakhir harus lebih besar dari Tanggal Mulai.'
+            'tanggal_berakhir.after' => 'Tanggal Berakhir harus lebih besar dari Tanggal Mulai.',
         ]);
 
         $validated['status_persetujuan'] = 'Draf';

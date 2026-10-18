@@ -13,7 +13,9 @@ class Mitra extends Model
 
     protected $fillable = [
         'nama_mitra',
+        'bidang',
         'nama_pengelola',
+        'jabatan',
         'no_hp_pengelola',
         'email_pengelola',
         'alamat_mitra',
