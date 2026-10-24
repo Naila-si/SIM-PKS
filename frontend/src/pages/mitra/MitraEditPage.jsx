@@ -70,7 +70,7 @@ export const MitraEditPage = () => {
           <ArrowLeft className="w-4 h-4" />
         </Link>
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Edit Data Mitra</h1>
+          <h1 className="text-xl font-bold text-slate-900">Ubah Data Mitra</h1>
           <p className="text-xs text-slate-500">Perbarui informasi perusahaan mitra</p>
         </div>
       </div>

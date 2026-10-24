@@ -224,7 +224,7 @@ export const Dashboard = () => {
     return (
       <div className="flex flex-col items-center justify-center p-20 space-y-4">
         <RefreshCw className="w-8 h-8 text-[#00529C] animate-spin" />
-        <p className="text-slate-500 font-medium text-sm">Memuat data dashboard petugas...</p>
+        <p className="text-slate-500 font-medium text-sm">Memuat data beranda petugas...</p>
       </div>
     );
   }
@@ -437,7 +437,7 @@ export const Dashboard = () => {
               <div className="mt-4">
                 <p className="text-3xl font-black text-slate-900">{stats.dalamProses}</p>
                 <p className="text-xs font-semibold text-slate-600 mt-1">Dalam Verifikasi</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Menunggu approval</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Menunggu persetujuan</p>
               </div>
             </div>
 

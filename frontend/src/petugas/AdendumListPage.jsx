@@ -40,14 +40,14 @@ export const AdendumListPage = () => {
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `${nomor ? nomor.replace(/\//g, '_') : 'Draft_Adendum'}.docx`);
+      link.setAttribute('download', `${nomor ? nomor.replace(/\//g, '_') : 'Draf_Adendum'}.docx`);
       document.body.appendChild(link);
       link.click();
       link.remove();
-      showToast('success', 'Draft adendum berhasil diunduh.', 'Unduh Berhasil');
+      showToast('success', 'Draf adendum berhasil diunduh.', 'Unduh Berhasil');
       fetchAdendum();
     } catch (err) {
-      showToast('error', err.response?.data?.message || 'Gagal mengunduh draft adendum.', 'Gagal');
+      showToast('error', err.response?.data?.message || 'Gagal mengunduh draf adendum.', 'Gagal');
     }
   };
 
@@ -74,7 +74,7 @@ export const AdendumListPage = () => {
   };
 
   if (loading) {
-    return <div className="p-8 text-center text-xs text-slate-500">Memuat daftar Adendum...</div>;
+    return <div className="p-8 text-center text-xs text-slate-500">Memuat data adendum...</div>;
   }
 
   return (
@@ -130,7 +130,7 @@ export const AdendumListPage = () => {
                       className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-xs flex items-center"
                     >
                       <Download className="w-3.5 h-3.5 mr-1" />
-                      Unduh Draft
+                      Unduh Draf
                     </button>
                   )}
 

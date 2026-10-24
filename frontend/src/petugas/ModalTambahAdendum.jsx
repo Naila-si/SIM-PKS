@@ -62,7 +62,7 @@ export const ModalTambahAdendum = ({ isOpen, pksId, pksInitialData, onClose, onS
         onClose();
       }
     } catch (err) {
-      setErrorMsg(err.response?.data?.message || 'Gagal menyimpan draft Adendum baru.');
+      setErrorMsg(err.response?.data?.message || 'Gagal menyimpan draf adendum baru.');
     } finally {
       setSubmitting(false);
     }
@@ -188,7 +188,7 @@ export const ModalTambahAdendum = ({ isOpen, pksId, pksInitialData, onClose, onS
 
               <div className="p-3 bg-blue-50/50 border border-blue-100 rounded-xl flex items-center space-x-2 text-[11px] text-blue-800 font-medium">
                 <Info className="w-4 h-4 text-blue-600 shrink-0" />
-                <span>Informasi berikut akan digunakan untuk menghasilkan draft dokumen Adendum secara otomatis.</span>
+                <span>Informasi berikut akan digunakan untuk menghasilkan draf dokumen adendum secara otomatis.</span>
               </div>
 
               <div>

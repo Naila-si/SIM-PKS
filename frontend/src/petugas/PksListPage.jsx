@@ -39,8 +39,8 @@ export const PksListPage = () => {
 
   const handleDelete = async (id, nomor) => {
     const isOk = await confirm({
-      title: 'Hapus Draft PKS',
-      message: `Apakah Anda yakin ingin menghapus draft PKS ${nomor ? `"${nomor}"` : ''}? Tindakan ini tidak dapat dibatalkan.`,
+      title: 'Hapus Draf PKS',
+      message: `Apakah Anda yakin ingin menghapus draf PKS ${nomor ? `"${nomor}"` : ''}? Tindakan ini tidak dapat dibatalkan.`,
       confirmText: 'Ya, Hapus',
       cancelText: 'Batal',
       type: 'delete',
@@ -50,11 +50,11 @@ export const PksListPage = () => {
       try {
         const res = await pksService.deletePks(id);
         if (res.success) {
-          showToast('success', 'Draft PKS berhasil dihapus.', 'Berhasil');
+          showToast('success', 'Draf PKS berhasil dihapus.', 'Berhasil');
           fetchPks();
         }
       } catch (err) {
-        showToast('error', err.response?.data?.message || 'Gagal menghapus draft PKS.', 'Gagal');
+        showToast('error', err.response?.data?.message || 'Gagal menghapus draf PKS.', 'Gagal');
       }
     }
   };
@@ -95,7 +95,7 @@ export const PksListPage = () => {
               ? 'Pantau & periksa persetujuan digital PKS lintas bidang yang telah mencapai tahap Pimpinan'
               : user?.role === 'kabag'
               ? 'Pantau & periksa seluruh PKS lintas bidang yang telah mencapai tahap Kabag'
-              : 'Kelola seluruh draft & pengajuan PKS dalam sistem'}
+              : 'Kelola seluruh draf & pengajuan PKS dalam sistem'}
           </p>
         </div>
         <div className="flex items-center space-x-2">
@@ -113,7 +113,7 @@ export const PksListPage = () => {
               className="inline-flex items-center px-4 py-2.5 bg-[#00529C] hover:bg-[#003E75] text-white text-xs font-semibold rounded-xl transition-all shadow-md shrink-0"
             >
               <Plus className="w-4 h-4 mr-1.5" />
-              Buat Draft PKS Baru
+              Buat Draf PKS Baru
             </Link>
           )}
         </div>
@@ -138,7 +138,7 @@ export const PksListPage = () => {
           className="w-full md:w-56 px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#00529C]"
         >
           <option value="">Semua Status Persetujuan</option>
-          <option value="Draft">Draft</option>
+          <option value="Draft">Draf</option>
           <option value="Menunggu Penyerahan">Menunggu Penyerahan</option>
           <option value="Pemeriksaan Pengelola">Pemeriksaan Pengelola</option>
           <option value="Revisi Pengelola">Revisi Pengelola</option>
@@ -153,7 +153,7 @@ export const PksListPage = () => {
       {/* PKS Table */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-xs text-slate-500">Memuat daftar PKS...</div>
+          <div className="p-8 text-center text-xs text-slate-500">Memuat data PKS...</div>
         ) : pksList.length === 0 ? (
           <div className="p-12 text-center space-y-3">
             <FileText className="w-10 h-10 text-slate-300 mx-auto" />
@@ -178,7 +178,7 @@ export const PksListPage = () => {
                 {pksList.map((pks) => (
                   <tr key={pks.pksId} className="hover:bg-slate-50/80 transition-colors">
                     <td className="px-4 py-3 font-bold text-[#00529C]">
-                      {pks.nomorPKS || 'Draft (Auto)'}
+                      {pks.nomorPKS || 'Draf (Otomatis)'}
                     </td>
                     <td className="px-4 py-3 font-medium">
                       <div className="flex items-center">
@@ -219,7 +219,7 @@ export const PksListPage = () => {
                           <Link
                             to={`/pks/${pks.pksId}/edit`}
                             className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-amber-600"
-                            title="Edit Data"
+                            title="Ubah Data"
                           >
                             <Edit3 className="w-4 h-4" />
                           </Link>
@@ -228,7 +228,7 @@ export const PksListPage = () => {
                           <button
                             onClick={() => handleDelete(pks.pksId, pks.nomorPKS)}
                             className="p-1.5 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 cursor-pointer"
-                            title="Hapus Draft"
+                            title="Hapus Draf"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>

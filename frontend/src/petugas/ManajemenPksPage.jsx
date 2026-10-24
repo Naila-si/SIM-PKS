@@ -258,7 +258,7 @@ export const ManajemenPksPage = () => {
               className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 outline-none"
             >
               <option value="Semua">Semua Status</option>
-              <option value="Draft">Draft</option>
+              <option value="Draft">Draf</option>
               <option value="Aktif">Aktif</option>
               <option value="Segera Berakhir">Segera Berakhir</option>
               <option value="Berakhir">Berakhir</option>
@@ -274,7 +274,7 @@ export const ManajemenPksPage = () => {
               className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 outline-none"
             >
               <option value="Semua">Semua</option>
-              <option value="Draft">Draft</option>
+              <option value="Draft">Draf</option>
               <option value="Menunggu Penyerahan">Menunggu Penyerahan</option>
               <option value="Pemeriksaan Pengelola">Pemeriksaan Pengelola</option>
               <option value="Disetujui Pengelola">Disetujui Pengelola</option>
@@ -309,10 +309,10 @@ export const ManajemenPksPage = () => {
           <h2 className="text-sm font-extrabold text-slate-900">Daftar Seluruh PKS</h2>
 
           <div className="flex items-center space-x-2">
-            <button className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-500 cursor-pointer" title="Download">
+            <button className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-500 cursor-pointer" title="Unduh">
               <Download className="w-4 h-4" />
             </button>
-            <button className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-500 cursor-pointer" title="Print">
+            <button className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-500 cursor-pointer" title="Cetak">
               <Printer className="w-4 h-4" />
             </button>
           </div>
@@ -509,7 +509,7 @@ export const ManajemenPksPage = () => {
                                     }}
                                     className="flex items-center w-full px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 font-medium cursor-pointer"
                                   >
-                                    Edit
+                                    Ubah
                                   </button>
                                 );
                               })()}

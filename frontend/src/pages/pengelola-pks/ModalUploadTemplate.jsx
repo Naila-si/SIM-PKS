@@ -53,9 +53,9 @@ export const ModalUploadTemplate = ({ isOpen, onClose, onSuccess }) => {
         {/* Header Modal */}
         <div className="px-6 py-4 border-b border-slate-100 flex items-start justify-between shrink-0 bg-white z-10">
           <div>
-            <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">Upload Template PKS</h2>
+            <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">Unggah Template PKS</h2>
             <p className="text-xs text-slate-500 mt-0.5 max-w-xl">
-              Unggah template dokumen Microsoft Word yang akan digunakan sistem untuk menghasilkan draft PKS secara otomatis.
+              Unggah template dokumen Microsoft Word yang akan digunakan sistem untuk menghasilkan draf PKS secara otomatis.
             </p>
           </div>
           <button
@@ -141,7 +141,7 @@ export const ModalUploadTemplate = ({ isOpen, onClose, onSuccess }) => {
                   <p className="font-extrabold text-slate-900 mt-0.5">Bambang Susanto (Admin IT)</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tanggal Upload</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tanggal Unggah</p>
                   <p className="font-extrabold text-slate-900 mt-0.5">2 Agustus 2026</p>
                 </div>
               </div>
@@ -152,7 +152,7 @@ export const ModalUploadTemplate = ({ isOpen, onClose, onSuccess }) => {
               <div className="flex items-center space-x-2">
                 <div className="w-1 h-4 bg-[#00529C] rounded-full" />
                 <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-800">
-                  UPLOAD DOKUMEN
+                  UNGGAH DOKUMEN
                 </h3>
               </div>
 
@@ -236,7 +236,7 @@ export const ModalUploadTemplate = ({ isOpen, onClose, onSuccess }) => {
             className="px-5 py-2.5 bg-[#00529C] hover:bg-[#003E75] text-white text-xs font-bold rounded-xl shadow-md flex items-center transition-all cursor-pointer disabled:opacity-50"
           >
             <Upload className="w-4 h-4 mr-1.5" />
-            {submitting ? 'Memproses...' : 'Upload Template'}
+            {submitting ? 'Memproses...' : 'Unggah Template'}
           </button>
         </div>
 

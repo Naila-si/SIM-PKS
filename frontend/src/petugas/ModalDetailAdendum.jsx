@@ -99,7 +99,7 @@ export const ModalDetailAdendum = ({ isOpen, adendumId, adendumData, onClose, on
   };
 
   const handleTandaiSiap = () => {
-    showDialog('confirm', 'Konfirmasi Penyerahan', 'Apakah Anda yakin Draft Adendum sudah siap diserahkan?', 
+    showDialog('confirm', 'Konfirmasi Penyerahan', 'Apakah Anda yakin Draf Adendum sudah siap diserahkan?', 
       () => processApprovalAction('Tandai Siap Diserahkan')
     );
   };
@@ -168,7 +168,7 @@ export const ModalDetailAdendum = ({ isOpen, adendumId, adendumData, onClose, on
           <div className="flex items-center space-x-3">
             <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">Detail Adendum</h2>
             <div className="h-4 w-px bg-slate-200" />
-            <StatusBadge status={(statusPersetujuan === 'Disetujui' || statusPersetujuan === 'Selesai') ? 'Aktif' : 'Draft'} />
+            <StatusBadge status={(statusPersetujuan === 'Disetujui' || statusPersetujuan === 'Selesai') ? 'Aktif' : 'Draf'} />
             <StatusBadge status={statusPersetujuan} />
           </div>
           <button
@@ -182,7 +182,7 @@ export const ModalDetailAdendum = ({ isOpen, adendumId, adendumData, onClose, on
 
         {/* Scrollable Body Content */}
         {loading ? (
-          <div className="p-12 text-center text-xs text-slate-500 flex-1">Memuat detail adendum...</div>
+          <div className="p-12 text-center text-xs text-slate-500 flex-1">Memuat data detail adendum...</div>
         ) : (
           <div className="p-6 overflow-y-auto flex-1 space-y-6">
             
@@ -241,7 +241,7 @@ export const ModalDetailAdendum = ({ isOpen, adendumId, adendumData, onClose, on
               
               <div className="space-y-2">
                 <h3 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">
-                  III. DOKUMEN DRAFT
+                  III. DOKUMEN DRAF
                 </h3>
                 
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3 text-xs">
@@ -250,7 +250,7 @@ export const ModalDetailAdendum = ({ isOpen, adendumId, adendumData, onClose, on
                       <FileText className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="font-bold text-slate-900 truncate">Draft_Adendum.docx</p>
+                      <p className="font-bold text-slate-900 truncate">Draf_Adendum.docx</p>
                       <p className="text-[10px] text-slate-400">Dokumen sistem</p>
                     </div>
                   </div>
@@ -260,7 +260,7 @@ export const ModalDetailAdendum = ({ isOpen, adendumId, adendumData, onClose, on
                     onClick={() => adendumService.generateWord(adendum?.adendumId || adendum?.id || adendumId)}
                     className="w-full px-3 py-1.5 border border-blue-200 text-blue-700 font-bold rounded-xl hover:bg-blue-50 text-xs flex items-center justify-center cursor-pointer"
                   >
-                    <Download className="w-3.5 h-3.5 mr-1 text-blue-600" /> Unduh Draft (.docx)
+                    <Download className="w-3.5 h-3.5 mr-1 text-blue-600" /> Unduh Draf (.docx)
                   </button>
                 </div>
               </div>
@@ -328,11 +328,11 @@ export const ModalDetailAdendum = ({ isOpen, adendumId, adendumData, onClose, on
               </h3>
 
               <div className="relative border-l-2 border-slate-200 ml-3.5 space-y-5 py-1 text-xs max-h-[250px] overflow-y-auto pr-2">
-                {/* 1. Draft Dibuat (Always exists) */}
+                {/* 1. Draf Dibuat (Always exists) */}
                 <div className="ml-5 relative bg-white p-3.5 rounded-xl border border-slate-200">
                   <span className="absolute -left-[27px] top-4 w-3.5 h-3.5 rounded-full bg-[#00529C] ring-4 ring-blue-100" />
                   <div className="flex items-center justify-between">
-                    <p className="font-bold text-slate-900">Draft Dibuat</p>
+                    <p className="font-bold text-slate-900">Draf Dibuat</p>
                     <span className="text-[10px] text-slate-400 font-medium">
                       {adendum?.created_at ? new Date(adendum.created_at).toLocaleString('id-ID', {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit'}) : (adendum?.createdAt ? new Date(adendum.createdAt).toLocaleString('id-ID', {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit'}) : '-')}
                     </span>

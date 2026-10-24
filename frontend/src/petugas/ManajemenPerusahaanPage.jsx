@@ -235,7 +235,7 @@ export const ManajemenPerusahaanPage = () => {
               className="px-3 py-1.5 border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold rounded-xl flex items-center shadow-2xs transition-all cursor-pointer shrink-0"
             >
               <Download className="w-3.5 h-3.5 mr-1 text-slate-500" />
-              Export Excel
+              Ekspor Excel
             </button>
           </div>
         </div>

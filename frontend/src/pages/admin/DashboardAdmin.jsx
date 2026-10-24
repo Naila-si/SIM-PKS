@@ -291,7 +291,7 @@ export const DashboardAdmin = () => {
         <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-2xs">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-sm font-extrabold text-slate-900">Distribusi Role Pengguna</h2>
+              <h2 className="text-sm font-extrabold text-slate-900">Distribusi Peran Pengguna</h2>
               <p className="text-[11px] text-slate-500">Sebaran wewenang akun aktif di sistem</p>
             </div>
             <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">
@@ -399,8 +399,8 @@ export const DashboardAdmin = () => {
               <thead className="bg-slate-50/80 text-slate-500 font-bold border-b border-slate-200 uppercase tracking-wider text-[10px]">
                 <tr>
                   <th className="py-3 px-5">Nama Lengkap</th>
-                  <th className="py-3 px-5">Email & Username</th>
-                  <th className="py-3 px-4">Peran (Role)</th>
+                  <th className="py-3 px-5">Email & Nama Pengguna</th>
+                  <th className="py-3 px-4">Peran</th>
                   <th className="py-3 px-4">Bidang</th>
                   <th className="py-3 px-5 text-right">Aksi</th>
                 </tr>

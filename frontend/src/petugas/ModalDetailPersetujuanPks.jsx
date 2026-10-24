@@ -123,7 +123,7 @@ export const ModalDetailPersetujuanPks = ({ isOpen, pksData, onClose, onStatusUp
               <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1">STATUS PKS</p>
               <span className="px-3.5 py-1 rounded-full text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200 inline-flex items-center">
                 <span className="w-1.5 h-1.5 rounded-full bg-sky-500 mr-1.5" />
-                {data.statusPks || 'Draft'}
+                {data.statusPks || 'Draf'}
               </span>
             </div>
 
@@ -240,7 +240,7 @@ export const ModalDetailPersetujuanPks = ({ isOpen, pksData, onClose, onStatusUp
               <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4 shadow-2xs">
                 <div className="flex items-center space-x-2 border-b border-slate-100 pb-2.5">
                   <Folder className="w-4 h-4 text-slate-700" />
-                  <h3 className="text-xs font-extrabold text-slate-800 tracking-tight">DRAFT DOKUMEN PKS</h3>
+                  <h3 className="text-xs font-extrabold text-slate-800 tracking-tight">DRAF DOKUMEN PKS</h3>
                 </div>
 
                 <div className="bg-[#EEF4FF] rounded-xl p-3.5 border border-blue-100 flex items-center space-x-3">
@@ -265,7 +265,7 @@ export const ModalDetailPersetujuanPks = ({ isOpen, pksData, onClose, onStatusUp
                     }}
                     className="w-full py-2 bg-white border border-blue-300 hover:bg-blue-50 text-blue-700 text-xs font-bold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center justify-center"
                   >
-                    <Eye className="w-3.5 h-3.5 mr-1.5 text-blue-600" /> Lihat Draft
+                    <Eye className="w-3.5 h-3.5 mr-1.5 text-blue-600" /> Lihat Draf
                   </button>
 
                   <button
@@ -284,7 +284,7 @@ export const ModalDetailPersetujuanPks = ({ isOpen, pksData, onClose, onStatusUp
                     }}
                     className="w-full py-2 bg-white border border-blue-300 hover:bg-blue-50 text-blue-700 text-xs font-bold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center justify-center"
                   >
-                    <Download className="w-3.5 h-3.5 mr-1.5 text-blue-600" /> Unduh Draft
+                    <Download className="w-3.5 h-3.5 mr-1.5 text-blue-600" /> Unduh Draf
                   </button>
                 </div>
               </div>
@@ -300,7 +300,7 @@ export const ModalDetailPersetujuanPks = ({ isOpen, pksData, onClose, onStatusUp
                 <div className="relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
                   
                   {loadingRiwayat ? (
-                    <p className="text-xs text-slate-400">Memuat riwayat...</p>
+                    <p className="text-xs text-slate-400">Memuat data riwayat...</p>
                   ) : riwayat.length === 0 ? (
                     <p className="text-xs text-slate-400">Belum ada riwayat persetujuan.</p>
                   ) : (

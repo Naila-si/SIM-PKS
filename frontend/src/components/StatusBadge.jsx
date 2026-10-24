@@ -2,6 +2,7 @@ import React from 'react';
 
 const persetujuanStyles = {
   'Draft': 'bg-slate-100 text-slate-700 border-slate-300',
+  'Draf': 'bg-slate-100 text-slate-700 border-slate-300',
   'Menunggu Penyerahan': 'bg-amber-50 text-amber-700 border-amber-300',
   'Pemeriksaan Pengelola': 'bg-blue-50 text-blue-700 border-blue-300',
   'Disetujui Pengelola': 'bg-indigo-50 text-indigo-700 border-indigo-300',
@@ -24,15 +25,16 @@ const pksStyles = {
 export const StatusBadge = ({ status, type = 'persetujuan' }) => {
   if (!status) return null;
 
+  const displayStatus = status === 'Draft' ? 'Draf' : status;
   const stylesMap = type === 'pks' ? pksStyles : persetujuanStyles;
-  const style = stylesMap[status] || 'bg-gray-100 text-gray-700 border-gray-300';
+  const style = stylesMap[status] || stylesMap[displayStatus] || 'bg-gray-100 text-gray-700 border-gray-300';
 
   return (
     <span
       className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${style} transition-all`}
     >
       <span className="w-1.5 h-1.5 rounded-full mr-1.5 bg-current opacity-75" />
-      {status}
+      {displayStatus}
     </span>
   );
 };

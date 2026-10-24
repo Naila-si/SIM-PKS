@@ -292,7 +292,7 @@ export const PksRiwayatPage = () => {
           <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
-          Export Laporan (CSV)
+          Ekspor Laporan (CSV)
         </button>
       </div>
 
@@ -337,9 +337,9 @@ export const PksRiwayatPage = () => {
               className="w-full sm:w-48 border border-slate-200 rounded-xl px-4 py-2 text-xs font-medium focus:ring-2 focus:ring-blue-500/20 outline-none"
             >
               <option value="Semua Aksi">Semua Tipe Aksi</option>
-              <option value="created">Dibuat (Created)</option>
-              <option value="updated">Diperbarui (Updated)</option>
-              <option value="deleted">Dihapus (Deleted)</option>
+              <option value="created">Dibuat</option>
+              <option value="updated">Diperbarui</option>
+              <option value="deleted">Dihapus</option>
             </select>
           </div>
         </div>

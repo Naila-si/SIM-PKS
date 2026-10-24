@@ -386,7 +386,7 @@ export const RegisterPage = () => {
               {/* Row 5: Password & Konfirmasi Password */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                 <div className="space-y-1">
-                  <label className="block font-bold text-slate-800">Password *</label>
+                  <label className="block font-bold text-slate-800">Kata Sandi *</label>
                   <div className="relative">
                     <input
                       type={showPassword ? 'text' : 'password'}
@@ -408,7 +408,7 @@ export const RegisterPage = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block font-bold text-slate-800">Konfirmasi Password *</label>
+                  <label className="block font-bold text-slate-800">Konfirmasi Kata Sandi *</label>
                   <div className="relative">
                     <input
                       type={showConfirmPassword ? 'text' : 'password'}
@@ -416,7 +416,7 @@ export const RegisterPage = () => {
                       required
                       value={formData.confirmPassword}
                       onChange={handleChange}
-                      placeholder="Ulangi password"
+                      placeholder="Ulangi kata sandi"
                       className="w-full bg-[#F8FAFC] border border-slate-200 rounded-xl px-3.5 py-2.5 pr-10 font-medium text-slate-800 outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-400"
                     />
                     <button
@@ -462,7 +462,7 @@ export const RegisterPage = () => {
                   className="w-full py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl shadow-2xs transition-all flex items-center justify-center cursor-pointer"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2 text-slate-600" />
-                  Kembali ke Login
+                  Kembali ke Halaman Masuk
                 </button>
               </div>
 
@@ -507,7 +507,7 @@ export const RegisterPage = () => {
               }}
               className="w-full py-3 bg-[#001D38] hover:bg-[#0A1828] text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer"
             >
-              Mengerti & Kembali ke Login
+              Mengerti & Kembali ke Halaman Masuk
             </button>
 
           </div>

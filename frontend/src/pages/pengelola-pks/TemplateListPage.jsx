@@ -79,11 +79,11 @@ export const TemplateListPage = () => {
         showToast('success', 'Template dokumen baru berhasil diunggah.', 'Berhasil');
         fetchTemplates();
       } else {
-        showToast('error', 'Gagal mengupload template.', 'Gagal');
+        showToast('error', 'Gagal mengunggah template.', 'Gagal');
       }
     } catch (err) {
       console.error(err);
-      showToast('error', 'Terjadi kesalahan jaringan saat mengupload template.', 'Kesalahan Jaringan');
+      showToast('error', 'Terjadi kesalahan jaringan saat mengunggah template.', 'Kesalahan Jaringan');
     }
   };
 
@@ -136,13 +136,13 @@ export const TemplateListPage = () => {
           className="inline-flex items-center px-4 py-2.5 bg-[#00529C] hover:bg-[#003E75] text-white text-xs font-semibold rounded-xl"
         >
           <Upload className="w-4 h-4 mr-1.5" />
-          Upload Template Baru
+          Unggah Template Baru
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {loading ? (
-          <p className="text-xs text-slate-500 p-8 col-span-full text-center">Memuat template...</p>
+          <p className="text-xs text-slate-500 p-8 col-span-full text-center">Memuat data template...</p>
         ) : templates.filter(t => t.kategori_template === 'PKS').length === 0 ? (
           <p className="text-xs text-slate-400 p-8 col-span-full text-center">Belum ada template PKS yang diunggah.</p>
         ) : (
@@ -179,7 +179,7 @@ export const TemplateListPage = () => {
                   <button 
                     onClick={() => setEditingTemplate(t)} 
                     className="text-amber-500 hover:text-amber-700 p-1.5 rounded-lg hover:bg-amber-50 cursor-pointer transition-colors"
-                    title="Edit/Perbarui Template"
+                    title="Ubah/Perbarui Template"
                   >
                     <Edit3 className="w-4 h-4" />
                   </button>
@@ -208,7 +208,7 @@ export const TemplateListPage = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {loading ? (
-          <p className="text-xs text-slate-500 p-8 col-span-full text-center">Memuat template...</p>
+          <p className="text-xs text-slate-500 p-8 col-span-full text-center">Memuat data template...</p>
         ) : templates.filter(t => t.kategori_template === 'Adendum').length === 0 ? (
           <p className="text-xs text-slate-400 p-8 col-span-full text-center">Belum ada template Adendum yang diunggah.</p>
         ) : (
@@ -245,7 +245,7 @@ export const TemplateListPage = () => {
                   <button 
                     onClick={() => setEditingTemplate(t)} 
                     className="text-amber-500 hover:text-amber-700 p-1.5 rounded-lg hover:bg-amber-50 cursor-pointer transition-colors"
-                    title="Edit/Perbarui Template"
+                    title="Ubah/Perbarui Template"
                   >
                     <Edit3 className="w-4 h-4" />
                   </button>
@@ -271,7 +271,7 @@ export const TemplateListPage = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
             <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h2 className="text-sm font-bold text-slate-800">Upload Template PKS</h2>
+              <h2 className="text-sm font-bold text-slate-800">Unggah Template PKS</h2>
               <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600 text-xl font-medium leading-none cursor-pointer">&times;</button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -337,7 +337,7 @@ export const TemplateListPage = () => {
               </div>
               <div className="pt-2">
                 <button type="submit" className="w-full py-2.5 bg-[#00529C] text-white text-xs font-bold rounded-xl shadow-md hover:bg-[#003E75] transition-colors cursor-pointer">
-                  Upload & Aktifkan Template
+                  Unggah & Aktifkan Template
                 </button>
               </div>
             </form>

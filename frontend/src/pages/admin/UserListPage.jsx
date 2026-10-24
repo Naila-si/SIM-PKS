@@ -432,7 +432,7 @@ export const UserListPage = () => {
                           <div>
                             <p className="font-extrabold text-slate-900 text-xs group-hover:text-blue-600 transition-colors">{item.nama}</p>
                             <p className="text-[10px] text-slate-500 font-medium">
-                              {item.jabatan || 'Pengguna System'}
+                              {item.jabatan || 'Pengguna Sistem'}
                             </p>
                           </div>
                         </div>
@@ -542,7 +542,7 @@ export const UserListPage = () => {
                                   className="flex items-center w-full px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 font-medium cursor-pointer"
                                 >
                                   <Edit2 className="w-3.5 h-3.5 mr-2 text-blue-600" />
-                                  Edit Pengguna
+                                  Ubah Pengguna
                                 </button>
 
                                 {/* Options for Non-Preset Users Only */}

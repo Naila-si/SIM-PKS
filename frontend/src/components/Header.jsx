@@ -309,7 +309,7 @@ export const Header = () => {
         <div className="flex items-center space-x-3">
           <div className="text-right hidden sm:block">
             <p className="text-xs font-bold text-slate-900 leading-tight">
-              {user?.nama || 'User'}
+              {user?.nama || 'Pengguna'}
             </p>
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">
               {roleLabels[user?.role] || user?.role?.replace('_', ' ') || 'PETUGAS JR'}

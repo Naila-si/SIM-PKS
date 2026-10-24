@@ -67,7 +67,7 @@ export const ModalHapusAdendum = ({ isOpen, adendumData, onClose, onSuccess }) =
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</p>
               <div className="mt-0.5">
-                <StatusBadge status={adendumData.statusPersetujuan || adendumData.status || 'Draft'} />
+                <StatusBadge status={adendumData.statusPersetujuan || adendumData.status || 'Draf'} />
               </div>
             </div>
           </div>
@@ -76,7 +76,7 @@ export const ModalHapusAdendum = ({ isOpen, adendumData, onClose, onSuccess }) =
         {/* Amber Warning Notice Box */}
         <div className="p-3.5 bg-amber-50 border border-amber-200/90 rounded-xl flex items-start space-x-2.5 text-xs text-amber-900 font-medium">
           <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-          <span>Adendum hanya dapat dihapus apabila masih berstatus Draft.</span>
+          <span>Adendum hanya dapat dihapus apabila masih berstatus Draf.</span>
         </div>
 
         {errorMsg && (

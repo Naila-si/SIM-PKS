@@ -75,7 +75,7 @@ export const AdendumCreatePage = () => {
           <ArrowLeft className="w-4 h-4" />
         </Link>
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Buat Draft Adendum Baru</h1>
+          <h1 className="text-xl font-bold text-slate-900">Buat Draf Adendum Baru</h1>
           <p className="text-xs text-slate-500">PKS Induk: {pks?.nomorPKS}</p>
         </div>
       </div>
@@ -136,7 +136,7 @@ export const AdendumCreatePage = () => {
             className="px-5 py-2.5 bg-[#00529C] hover:bg-[#003E75] text-white text-xs font-semibold rounded-xl shadow-md flex items-center cursor-pointer disabled:opacity-50"
           >
             <Save className="w-4 h-4 mr-1.5" />
-            {isSubmitting ? 'Memproses...' : 'Simpan Draft Adendum'}
+            {isSubmitting ? 'Memproses...' : 'Simpan Draf Adendum'}
           </button>
         </div>
       </form>

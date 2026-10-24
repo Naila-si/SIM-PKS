@@ -100,7 +100,7 @@ export const ModalPerbaruiTemplate = ({ isOpen, templateData, onClose, onSuccess
             </div>
 
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">TANGGAL UPLOAD AWAL</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">TANGGAL UNGGAH AWAL</p>
               <p className="font-bold text-slate-800 mt-0.5">{data.created_at ? new Date(data.created_at).toLocaleDateString('id-ID') : '-'}</p>
             </div>
 
@@ -123,7 +123,7 @@ export const ModalPerbaruiTemplate = ({ isOpen, templateData, onClose, onSuccess
 
           {/* Section Upload Template Baru */}
           <div className="space-y-2">
-            <label className="block text-xs font-semibold text-slate-700">Upload Template Baru</label>
+            <label className="block text-xs font-semibold text-slate-700">Unggah Template Baru</label>
             <div className="border-2 border-dashed border-slate-200 hover:border-blue-400 rounded-2xl p-6 text-center bg-slate-50/50 hover:bg-blue-50/30 transition-all cursor-pointer relative flex flex-col items-center justify-center min-h-[140px]">
               <input
                 type="file"

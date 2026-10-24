@@ -52,13 +52,13 @@ export const PksDetailPage = () => {
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `${pks.nomorPKS ? pks.nomorPKS.replace(/\//g, '_') : 'Draft_PKS'}.docx`);
+      link.setAttribute('download', `${pks.nomorPKS ? pks.nomorPKS.replace(/\//g, '_') : 'Draf_PKS'}.docx`);
       document.body.appendChild(link);
       link.click();
       link.remove();
       fetchDetail();
     } catch (err) {
-      showToast('error', err.response?.data?.message || 'Gagal mengunduh dokumen draft. Pastikan template telah dipilih.', 'Gagal');
+      showToast('error', err.response?.data?.message || 'Gagal mengunduh dokumen draf. Pastikan template telah dipilih.', 'Gagal');
     } finally {
       setIsActionLoading(false);
     }
@@ -194,9 +194,9 @@ export const PksDetailPage = () => {
 
   const handleDelete = async () => {
     const isOk = await confirm({
-      title: 'Hapus Draft PKS',
-      message: 'Apakah Anda yakin ingin menghapus draft PKS ini secara permanen? Data tidak dapat dikembalikan.',
-      confirmText: 'Ya, Hapus Draft',
+      title: 'Hapus Draf PKS',
+      message: 'Apakah Anda yakin ingin menghapus draf PKS ini secara permanen? Data tidak dapat dikembalikan.',
+      confirmText: 'Ya, Hapus Draf',
       cancelText: 'Batal',
       type: 'delete',
     });
@@ -205,16 +205,16 @@ export const PksDetailPage = () => {
     try {
       const res = await pksService.deletePks(id);
       if (res.success) {
-        showToast('success', 'Draft PKS berhasil dihapus.', 'Berhasil');
+        showToast('success', 'Draf PKS berhasil dihapus.', 'Berhasil');
         navigate('/pks');
       }
     } catch (err) {
-      showToast('error', err.response?.data?.message || 'Gagal menghapus draft PKS.', 'Gagal');
+      showToast('error', err.response?.data?.message || 'Gagal menghapus draf PKS.', 'Gagal');
     }
   };
 
   if (loading) {
-    return <div className="p-8 text-center text-xs text-slate-500">Memuat detail PKS...</div>;
+    return <div className="p-8 text-center text-xs text-slate-500">Memuat data detail PKS...</div>;
   }
 
   if (error || !pks) {
@@ -251,7 +251,7 @@ export const PksDetailPage = () => {
           </Link>
           <div>
             <div className="flex items-center space-x-2">
-              <h1 className="text-xl font-bold text-slate-900">{pks.nomorPKS || 'Draft PKS'}</h1>
+              <h1 className="text-xl font-bold text-slate-900">{pks.nomorPKS || 'Draf PKS'}</h1>
               <StatusBadge status={pks.statusPersetujuan} />
               {pks.statusPKS && <StatusBadge status={pks.statusPKS} type="pks" />}
             </div>
@@ -347,7 +347,7 @@ export const PksDetailPage = () => {
               className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-xs flex items-center cursor-pointer disabled:opacity-50"
             >
               <Download className="w-3.5 h-3.5 mr-1.5" />
-              Unduh Draft (.docx)
+              Unduh Draf (.docx)
             </button>
           )}
 
@@ -368,7 +368,7 @@ export const PksDetailPage = () => {
               className="px-3.5 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-semibold rounded-xl flex items-center"
             >
               <Edit3 className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
-              Edit Data
+              Ubah Data
             </Link>
           )}
 

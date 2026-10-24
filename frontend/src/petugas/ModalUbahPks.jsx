@@ -306,7 +306,7 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
                 <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs flex items-start space-x-2">
                   <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
                   <span>
-                    <strong>Status Draft / Revisi:</strong> Seluruh form data PKS dapat diubah secara bebas oleh Petugas sebelum diajukan ke tahap persetujuan final.
+                    <strong>Status Draf / Revisi:</strong> Seluruh form data PKS dapat diubah secara bebas oleh Petugas sebelum diajukan ke tahap persetujuan final.
                   </span>
                 </div>
               )}

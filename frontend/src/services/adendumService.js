@@ -100,7 +100,7 @@ export const adendumService = {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Draft_Adendum_${id}.docx`;
+      a.download = `Draf_Adendum_${id}.docx`;
       document.body.appendChild(a);
       a.click();
       a.remove();

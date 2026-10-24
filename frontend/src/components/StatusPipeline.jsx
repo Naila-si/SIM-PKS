@@ -2,7 +2,7 @@ import React from 'react';
 import { CheckCircle2, AlertCircle, Clock } from 'lucide-react';
 
 const stages = [
-  { key: 'Draft', label: '1. Draft' },
+  { key: 'Draft', label: '1. Draf' },
   { key: 'Menunggu Penyerahan', label: '2. Serah Fisik' },
   { key: 'Pemeriksaan Pengelola', label: '3. Pengelola' },
   { key: 'Pemeriksaan Kabag', label: '4. Kabag' },
@@ -15,7 +15,8 @@ export const StatusPipeline = ({ statusPersetujuan }) => {
 
   const getStageIndex = (status) => {
     switch (status) {
-      case 'Draft': return 0;
+      case 'Draft':
+      case 'Draf': return 0;
       case 'Menunggu Penyerahan': return 1;
       case 'Pemeriksaan Pengelola':
       case 'Disetujui Pengelola': return 2;
@@ -36,7 +37,7 @@ export const StatusPipeline = ({ statusPersetujuan }) => {
   return (
     <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs mb-6">
       <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
-        Tahapan Persetujuan Dokumen (12-Stage Workflow)
+        Tahapan Persetujuan Dokumen (Alur 12 Tahap)
       </h3>
       <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
         {stages.map((stage, idx) => {

@@ -35,7 +35,7 @@ export const LoginPage = () => {
       await login(email, password, rememberMe);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.message || 'Login gagal. Periksa kembali email dan password.');
+      setError(err.message || 'Gagal masuk. Periksa kembali email dan kata sandi.');
     } finally {
       setIsSubmitting(false);
     }
@@ -171,7 +171,7 @@ export const LoginPage = () => {
               {/* Password Input */}
               <div className="space-y-1.5">
                 <label className="block text-xs font-bold text-slate-800">
-                  Password
+                  Kata Sandi
                 </label>
                 <div className="relative">
                   <input

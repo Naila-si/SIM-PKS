@@ -116,8 +116,8 @@ export const PersetujuanPksPage = () => {
               ? new Date(item.created_at || item.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
               : '-',
             rawDate: item.created_at || item.createdAt || '',
-            statusPks: (item.statusPersetujuan === 'Disetujui' || item.statusPersetujuan === 'Selesai') ? 'Aktif' : 'Draft',
-            statusPersetujuan: item.statusPersetujuan || 'Draft',
+            statusPks: (item.statusPersetujuan === 'Disetujui' || item.statusPersetujuan === 'Selesai') ? 'Aktif' : 'Draf',
+            statusPersetujuan: item.statusPersetujuan || 'Draf',
             catatanRevisi: item.catatanRevisi,
             raw: item,
           });
@@ -460,7 +460,7 @@ export const PersetujuanPksPage = () => {
       {/* 4. Tabel Persetujuan PKS & Adendum */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
         {loading ? (
-          <div className="p-12 text-center text-xs text-slate-400">Memuat berkas persetujuan...</div>
+          <div className="p-12 text-center text-xs text-slate-400">Memuat data berkas persetujuan...</div>
         ) : filteredData.length === 0 ? (
           <div className="p-16 text-center space-y-2">
             <CheckSquare className="w-10 h-10 text-slate-300 mx-auto" />

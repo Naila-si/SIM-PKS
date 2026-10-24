@@ -133,7 +133,7 @@ export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, pksData, onCl
               <div className="space-y-3">
                 <div className="flex items-center space-x-2 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-100 pb-2">
                   <Info className="w-3.5 h-3.5 text-[#00529C]" />
-                  <span>SECTION 1: INFORMASI PKS INDUK (READ ONLY)</span>
+                  <span>BAGIAN 1: INFORMASI PKS INDUK (HANYA LIHAT)</span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -203,7 +203,7 @@ export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, pksData, onCl
               <div className="space-y-3">
                 <div className="flex items-center space-x-2 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-100 pb-2">
                   <FileText className="w-3.5 h-3.5 text-[#00529C]" />
-                  <span>SECTION 2: INFORMASI ADENDUM</span>
+                  <span>BAGIAN 2: INFORMASI ADENDUM</span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -234,12 +234,12 @@ export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, pksData, onCl
               <div className="space-y-3">
                 <div className="flex items-center space-x-2 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-100 pb-2">
                   <FileText className="w-3.5 h-3.5 text-[#00529C]" />
-                  <span>SECTION 3: DATA UNTUK DOKUMEN ADENDUM</span>
+                  <span>BAGIAN 3: DATA UNTUK DOKUMEN ADENDUM</span>
                 </div>
 
                 <div className="p-3 bg-blue-50/50 border border-blue-100 rounded-xl flex items-center space-x-2 text-[11px] text-blue-800 font-medium">
                   <Info className="w-4 h-4 text-blue-600 shrink-0" />
-                  <span>Perubahan pada bagian ini akan mempengaruhi isi draft dokumen Adendum.</span>
+                  <span>Perubahan pada bagian ini akan mempengaruhi isi draf dokumen Adendum.</span>
                 </div>
 
                 <div>
@@ -294,7 +294,7 @@ export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, pksData, onCl
               <div className="space-y-3">
                 <div className="flex items-center space-x-2 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-100 pb-2">
                   <Info className="w-3.5 h-3.5 text-[#00529C]" />
-                  <span>SECTION 4: INFORMASI SISTEM</span>
+                  <span>BAGIAN 4: INFORMASI SISTEM</span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -320,11 +320,11 @@ export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, pksData, onCl
                 </div>
               </div>
 
-              {/* SECTION 5: DRAFT DOKUMEN ADENDUM */}
+              {/* SECTION 5: DRAF DOKUMEN ADENDUM */}
               <div className="space-y-3">
                 <div className="flex items-center space-x-2 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-100 pb-2">
                   <FileText className="w-3.5 h-3.5 text-[#00529C]" />
-                  <span>SECTION 5: DRAFT DOKUMEN ADENDUM</span>
+                  <span>BAGIAN 5: DRAF DOKUMEN ADENDUM</span>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
@@ -333,7 +333,7 @@ export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, pksData, onCl
                       <FileText className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="font-bold text-slate-900">Draft_Adendum.docx</p>
+                      <p className="font-bold text-slate-900">Draf_Adendum.docx</p>
                       <p className="text-[10px] text-slate-400">Dokumen sistem adendum</p>
                     </div>
                   </div>
@@ -349,7 +349,7 @@ export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, pksData, onCl
                       }}
                       className="px-3 py-1.5 border border-blue-200 text-blue-700 bg-white hover:bg-blue-50 rounded-xl font-semibold flex items-center cursor-pointer shadow-xs"
                     >
-                      <Download className="w-3.5 h-3.5 mr-1 text-[#00529C]" /> Unduh Draft (.docx)
+                      <Download className="w-3.5 h-3.5 mr-1 text-[#00529C]" /> Unduh Draf (.docx)
                     </button>
                   </div>
                 </div>

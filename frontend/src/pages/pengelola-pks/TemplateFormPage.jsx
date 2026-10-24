@@ -52,7 +52,7 @@ export const TemplateFormPage = () => {
           <ArrowLeft className="w-4 h-4" />
         </Link>
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Upload Template Dokumen</h1>
+          <h1 className="text-xl font-bold text-slate-900">Unggah Template Dokumen</h1>
           <p className="text-xs text-slate-500">Unggah file template (.docx) baru untuk bidang Anda</p>
         </div>
       </div>
@@ -120,7 +120,7 @@ export const TemplateFormPage = () => {
             className="px-5 py-2.5 bg-[#00529C] hover:bg-[#003E75] text-white text-xs font-semibold rounded-xl shadow-md flex items-center cursor-pointer disabled:opacity-50"
           >
             <Upload className="w-4 h-4 mr-1.5" />
-            {isSubmitting ? 'Mengunggah...' : 'Upload Template'}
+            {isSubmitting ? 'Mengunggah...' : 'Unggah Template'}
           </button>
         </div>
       </form>

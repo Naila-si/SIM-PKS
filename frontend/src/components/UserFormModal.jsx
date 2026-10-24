@@ -144,7 +144,7 @@ const UserFormModal = ({ isOpen, onClose, onSuccess, userToEdit = null }) => {
           <div className="flex items-center space-x-2">
             <UserPlus className="w-5 h-5 text-[#002B49]" />
             <h3 className="font-extrabold text-slate-900 text-sm">
-              {isEdit ? (isPresetUser ? `Edit Akun ${userToEdit?.nama || 'Sistem'}` : 'Edit Data Pengguna') : 'Tambah Pengguna Baru'}
+              {isEdit ? (isPresetUser ? `Ubah Akun ${userToEdit?.nama || 'Sistem'}` : 'Ubah Data Pengguna') : 'Tambah Pengguna Baru'}
             </h3>
           </div>
           <button

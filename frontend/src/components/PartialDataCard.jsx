@@ -13,7 +13,7 @@ export const PartialDataCard = ({ pks }) => {
             Tampilan Data Parsial (Status: Menunggu Penyerahan Dokumen Fisik)
           </h3>
           <p className="text-xs text-amber-800 mt-0.5">
-            Dokumen draft telah diunduh oleh Petugas JR. Detail ruang lingkup lengkap masih dikunci hingga Petugas JR menyerahkan dokumen fisik secara langsung.
+            Dokumen draf telah diunduh oleh Petugas JR. Detail ruang lingkup lengkap masih dikunci hingga Petugas JR menyerahkan dokumen fisik secara langsung.
           </p>
         </div>
       </div>

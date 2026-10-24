@@ -109,12 +109,12 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick, onSuccess 
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `Draft_PKS_${pksId}.docx`);
+      link.setAttribute('download', `Draf_PKS_${pksId}.docx`);
       document.body.appendChild(link);
       link.click();
       link.remove();
     } catch (err) {
-      showDialog('info', 'Gagal', 'Gagal mengunduh dokumen draft.');
+      showDialog('info', 'Gagal', 'Gagal mengunduh dokumen draf.');
     } finally {
       setLoading(false);
     }
@@ -433,18 +433,18 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick, onSuccess 
               {/* 3. DOKUMEN DRAFT & FINAL */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 
-                {/* Left Card: Dokumen Draft */}
+                {/* Left Card: Dokumen Draf */}
                 <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 space-y-4">
                   <div className="flex items-center space-x-2 border-b border-slate-200 pb-2">
                     <FileText className="w-4 h-4 text-[#00529C]" />
-                    <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Dokumen Draft</h4>
+                    <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Dokumen Draf</h4>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-9 h-9 rounded-xl bg-blue-100 text-[#00529C] flex items-center justify-center font-bold shrink-0">
                       <FileText className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="font-bold text-slate-900 text-xs truncate">Draft_PKS.docx</p>
+                      <p className="font-bold text-slate-900 text-xs truncate">Draf_PKS.docx</p>
                       <p className="text-[10px] text-slate-400">Dokumen sistem</p>
                     </div>
                   </div>
@@ -454,7 +454,7 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick, onSuccess 
                     onClick={handleDownloadDraft}
                     className="w-full px-3 py-1.5 border border-blue-200 text-blue-700 font-bold rounded-xl hover:bg-blue-50 text-xs flex items-center justify-center cursor-pointer transition-colors disabled:opacity-50"
                   >
-                    <Download className="w-3.5 h-3.5 mr-1" /> Unduh Draft (.docx)
+                    <Download className="w-3.5 h-3.5 mr-1" /> Unduh Draf (.docx)
                   </button>
                 </div>
 
@@ -564,7 +564,7 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick, onSuccess 
                                     ? 'bg-blue-50 text-blue-700 border-blue-200'
                                     : 'bg-slate-50 text-slate-700 border-slate-200'
                                 }`}>
-                                  {ad.statusPersetujuan || ad.status || 'Draft'}
+                                  {(ad.statusPersetujuan || ad.status || 'Draft') === 'Draft' ? 'Draf' : (ad.statusPersetujuan || ad.status || 'Draf')}
                                 </span>
                               </td>
                               <td className="px-3 py-3 text-center whitespace-nowrap">
@@ -672,11 +672,11 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick, onSuccess 
                 </div>
 
                 <div className="relative border-l-2 border-slate-200 ml-3.5 space-y-5 py-1 text-xs max-h-[280px] overflow-y-auto pr-2">
-                  {/* 1. Draft Dibuat */}
+                  {/* 1. Draf Dibuat */}
                   <div className="ml-5 relative bg-white p-3.5 rounded-xl border border-slate-200">
                     <span className="absolute -left-[27px] top-4 w-3.5 h-3.5 rounded-full bg-[#00529C] ring-4 ring-blue-100" />
                     <div className="flex items-center justify-between">
-                      <p className="font-bold text-slate-900">Draft Dibuat</p>
+                      <p className="font-bold text-slate-900">Draf Dibuat</p>
                       <span className="text-[10px] text-slate-400 font-medium">
                         {data.created_at ? new Date(data.created_at).toLocaleString('id-ID', {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit'}) : '-'}
                       </span>

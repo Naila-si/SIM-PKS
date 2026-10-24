@@ -157,7 +157,7 @@ export const UserDetailModal = ({ isOpen, onClose, user, onEdit }) => {
                 className="px-4 py-2 bg-[#002B49] hover:bg-[#001D33] text-white text-xs font-bold rounded-xl inline-flex items-center space-x-1.5 transition-colors cursor-pointer"
               >
                 <Edit2 className="w-3.5 h-3.5" />
-                <span>Edit Pengguna</span>
+                <span>Ubah Pengguna</span>
               </button>
             )}
           </div>

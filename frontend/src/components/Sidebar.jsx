@@ -105,10 +105,10 @@ export const Sidebar = () => {
           {/* Navigation Menu */}
           <nav className="space-y-1">
             
-            {/* 1. Dashboard */}
+            {/* 1. Dashboard -> Beranda */}
             <Link
               to="/dashboard"
-              title="Dashboard"
+              title="Beranda"
               className={`group relative flex items-center rounded-xl text-xs font-semibold transition-all ${
                 isCollapsed ? 'justify-center p-3' : 'space-x-3 px-3.5 py-2.5'
               } ${
@@ -118,12 +118,12 @@ export const Sidebar = () => {
               }`}
             >
               <LayoutDashboard className="w-4 h-4 shrink-0" />
-              {!isCollapsed && <span className="truncate">Dashboard</span>}
+              {!isCollapsed && <span className="truncate">Beranda</span>}
 
               {/* Floating Tooltip in Collapsed Mode */}
               {isCollapsed && (
                 <div className="fixed left-20 ml-2 px-3 py-1.5 bg-[#0F2238] text-white text-xs font-bold rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[100]">
-                  Dashboard
+                  Beranda
                 </div>
               )}
             </Link>
@@ -244,7 +244,7 @@ export const Sidebar = () => {
                   <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
                     isPetugas ? 'bg-amber-500 text-white' : 'bg-[#00529C] text-white'
                   }`}>
-                    {isPetugas ? `${revisionCount} Revisi` : `${approvalPendingCount} Pending`}
+                    {isPetugas ? `${revisionCount} Revisi` : `${approvalPendingCount} Menunggu`}
                   </span>
                 </div>
               )}

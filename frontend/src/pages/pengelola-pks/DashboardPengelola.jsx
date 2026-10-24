@@ -282,7 +282,7 @@ export const DashboardPengelola = () => {
           </p>
         </div>
 
-        {/* Card 2: Menunggu Upload Final */}
+        {/* Card 2: Menunggu Unggah Final */}
         <div 
           onClick={() => navigate('/pks')}
           className="bg-white rounded-2xl p-5 border-l-4 border-l-emerald-600 border border-slate-200 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer group"
@@ -295,7 +295,7 @@ export const DashboardPengelola = () => {
               Tahap Akhir
             </span>
           </div>
-          <p className="text-xs font-bold text-slate-400 mt-3">Menunggu Upload Dokumen Final</p>
+          <p className="text-xs font-bold text-slate-400 mt-3">Menunggu Unggah Dokumen Final</p>
           <p className="text-3xl font-extrabold text-slate-900 mt-0.5 group-hover:text-emerald-600 transition-colors">
             {totalWaitingUpload}
           </p>
@@ -363,7 +363,7 @@ export const DashboardPengelola = () => {
               </h2>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Dokumen yang sedang menunggu tindakan pemeriksaan, verifikasi, atau upload dokumen final dari Anda.
+              Dokumen yang sedang menunggu tindakan pemeriksaan, verifikasi, atau unggah dokumen final dari Anda.
             </p>
           </div>
 
@@ -399,7 +399,7 @@ export const DashboardPengelola = () => {
                 activeTab === 'upload_final' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Upload Final ({totalWaitingUpload})
+              Unggah Final ({totalWaitingUpload})
             </button>
           </div>
         </div>
@@ -407,7 +407,7 @@ export const DashboardPengelola = () => {
         {/* Tabel Antrean Dokumen */}
         <div className="overflow-x-auto">
           {loading ? (
-            <div className="p-16 text-center text-xs text-slate-400">Memuat berkas kerja pengelola...</div>
+            <div className="p-16 text-center text-xs text-slate-400">Memuat data berkas kerja pengelola...</div>
           ) : filteredTasks.length === 0 ? (
             <div className="p-16 text-center space-y-2">
               <CheckSquare className="w-12 h-12 text-emerald-400 mx-auto" />

@@ -93,7 +93,7 @@ export const ModalRiwayatPks = ({ isOpen, pksData, onClose }) => {
           <div className="space-y-4">
             <div className="flex items-center space-x-2 border-b border-slate-100 pb-2.5">
               <Clock className="w-4 h-4 text-[#00529C]" />
-              <h3 className="text-xs font-extrabold text-slate-800 tracking-tight">Timeline Aktivitas</h3>
+              <h3 className="text-xs font-extrabold text-slate-800 tracking-tight">Linimasa Aktivitas</h3>
             </div>
 
             <div className="relative pl-6 space-y-3.5 before:absolute before:left-3.5 before:top-3.5 before:bottom-3.5 before:w-0.5 before:bg-slate-200">
@@ -116,7 +116,7 @@ export const ModalRiwayatPks = ({ isOpen, pksData, onClose }) => {
                         {ev.actorRole && (
                           <div className="flex items-center space-x-1.5 text-[11px] text-slate-500 font-medium">
                             <span>👤 {ev.actorRole}</span>
-                            {ev.actorUser && <span className="text-slate-400">• User: {ev.actorUser}</span>}
+                            {ev.actorUser && <span className="text-slate-400">• Pengguna: {ev.actorUser}</span>}
                           </div>
                         )}
                       </div>

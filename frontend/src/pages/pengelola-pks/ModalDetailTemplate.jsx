@@ -100,7 +100,7 @@ export const ModalDetailTemplate = ({ isOpen, templateData, onClose, onPerbaruiC
                   </div>
 
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tanggal Upload</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tanggal Unggah</p>
                     <p className="font-semibold text-slate-800 mt-0.5">{data.tanggalUpload || '12 Sep 2023'}</p>
                   </div>
 
@@ -213,7 +213,7 @@ export const ModalDetailTemplate = ({ isOpen, templateData, onClose, onPerbaruiC
                 <thead className="bg-[#EEF4FF] border-b border-slate-200 text-slate-700 font-extrabold text-[11px]">
                   <tr>
                     <th className="px-5 py-3">Versi</th>
-                    <th className="px-5 py-3">Tanggal Upload</th>
+                    <th className="px-5 py-3">Tanggal Unggah</th>
                     <th className="px-5 py-3">Diunggah Oleh</th>
                     <th className="px-5 py-3">Status</th>
                     <th className="px-5 py-3 text-center">Aksi</th>

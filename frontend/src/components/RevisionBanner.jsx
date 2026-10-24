@@ -23,7 +23,7 @@ export const RevisionBanner = ({ statusPersetujuan, catatanRevisi, pksId }) => {
                 to={`/pks/${pksId}/edit`}
                 className="inline-flex items-center px-3 py-1.5 text-xs font-bold rounded-lg bg-rose-600 text-white hover:bg-rose-700 transition-colors cursor-pointer shadow-xs"
               >
-                <span>Edit Data PKS Sekarang</span>
+                <span>Ubah Data PKS Sekarang</span>
                 <ArrowRight className="w-3.5 h-3.5 ml-1" />
               </Link>
             )}
@@ -35,7 +35,7 @@ export const RevisionBanner = ({ statusPersetujuan, catatanRevisi, pksId }) => {
             "{catatanRevisi || 'Tidak ada catatan revisi spesifik.'}"
           </div>
           <p className="text-[11px] text-rose-700 mt-2 font-medium">
-            💡 <b>Alur Revisi:</b> Silakan edit data PKS sesuai catatan di atas, unduh dokumen draft (.docx) baru, lalu serahkan dokumen fisik kembali. Pemeriksaan akan dimulai ulang dari Pengelola PKS.
+            💡 <b>Alur Revisi:</b> Silakan ubah data PKS sesuai catatan di atas, unduh dokumen draf (.docx) baru, lalu serahkan dokumen fisik kembali. Pemeriksaan akan dimulai ulang dari Pengelola PKS.
           </p>
         </div>
       </div>

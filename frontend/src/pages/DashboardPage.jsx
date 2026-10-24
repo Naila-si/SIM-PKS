@@ -151,7 +151,7 @@ export const DashboardPage = () => {
       {/* 1. Header Page */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Dashboard</h1>
+          <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Beranda</h1>
           <p className="text-xs text-slate-500 mt-0.5">
             Ringkasan informasi pengelolaan Perjanjian Kerja Sama (PKS).
           </p>
@@ -183,7 +183,7 @@ export const DashboardPage = () => {
             <div className="w-6 h-6 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center font-extrabold text-xs">
               !
             </div>
-            <span className="text-[10px] font-extrabold bg-amber-50 text-amber-700 px-2 py-0.5 rounded uppercase">URGENT</span>
+            <span className="text-[10px] font-extrabold bg-amber-50 text-amber-700 px-2 py-0.5 rounded uppercase">MENDESAK</span>
           </div>
           <p className="text-xs font-bold text-slate-400 mt-3">Segera Berakhir</p>
           <p className="text-3xl font-extrabold text-slate-900 mt-0.5">{summary.pks_segera_berakhir}</p>
@@ -196,7 +196,7 @@ export const DashboardPage = () => {
             <div className="w-6 h-6 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center font-extrabold text-xs">
               ✕
             </div>
-            <span className="text-[10px] font-extrabold bg-rose-50 text-rose-700 px-2 py-0.5 rounded uppercase">EXPIRED</span>
+            <span className="text-[10px] font-extrabold bg-rose-50 text-rose-700 px-2 py-0.5 rounded uppercase">BERAKHIR</span>
           </div>
           <p className="text-xs font-bold text-slate-400 mt-3">PKS Berakhir</p>
           <p className="text-3xl font-extrabold text-slate-900 mt-0.5">{summary.pks_berakhir}</p>

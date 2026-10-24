@@ -27,7 +27,7 @@ const OverrideConfirmModal = ({ isOpen, onClose, onConfirm, actionType = 'edit',
           <div className="flex items-center space-x-2 text-amber-800 dark:text-amber-300">
             <ShieldAlert className="w-5 h-5 shrink-0 text-amber-600 dark:text-amber-400" />
             <h3 className="font-semibold text-base">
-              Konfirmasi Override Admin ({isDelete ? 'Hapus' : 'Edit'})
+              Konfirmasi Override Admin ({isDelete ? 'Hapus' : 'Ubah'})
             </h3>
           </div>
           <button
