@@ -21,6 +21,7 @@ import {
   Eye
 } from 'lucide-react';
 import { authService } from '../../services/authService';
+import { useToast } from '../../context/ToastContext';
 import UserFormModal from '../../components/UserFormModal';
 import UserDetailModal from '../../components/UserDetailModal';
 
@@ -53,6 +54,7 @@ const ROLE_CONFIG = {
 };
 
 export const UserListPage = () => {
+  const { showToast } = useToast();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all'); // 'all', 'pending', 'active'
@@ -97,27 +99,30 @@ export const UserListPage = () => {
   const handleApprove = async (penggunaId) => {
     try {
       await authService.approveUser(penggunaId);
+      showToast('success', 'Pengguna berhasil disetujui.');
       fetchUsers();
     } catch (err) {
-      alert('Gagal menyetujui pengguna.');
+      showToast('error', err.response?.data?.message || 'Gagal menyetujui pengguna.');
     }
   };
 
   const handleReject = async (penggunaId) => {
     try {
       await authService.rejectUser(penggunaId);
+      showToast('info', 'Pendaftaran pengguna berhasil ditolak.');
       fetchUsers();
     } catch (err) {
-      alert('Gagal menolak pengguna.');
+      showToast('error', err.response?.data?.message || 'Gagal menolak pengguna.');
     }
   };
 
   const handleToggleStatus = async (userItem) => {
     try {
       await authService.toggleUserStatus(userItem.penggunaId);
+      showToast('success', 'Status pengguna berhasil diperbarui.');
       fetchUsers();
     } catch (err) {
-      alert('Gagal mengubah status pengguna.');
+      showToast('error', err.response?.data?.message || 'Gagal mengubah status pengguna.');
     }
   };
 
@@ -125,10 +130,11 @@ export const UserListPage = () => {
     if (!deleteConfirmUser) return;
     try {
       await authService.deleteUser(deleteConfirmUser.penggunaId);
+      showToast('success', `Pengguna ${deleteConfirmUser.nama} berhasil dihapus.`);
       setDeleteConfirmUser(null);
       fetchUsers();
     } catch (err) {
-      alert('Gagal menghapus pengguna.');
+      showToast('error', err.response?.data?.message || 'Gagal menghapus pengguna.');
       setDeleteConfirmUser(null);
     }
   };

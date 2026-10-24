@@ -109,7 +109,9 @@ export const adendumService = {
       return { success: true };
     } catch (err) {
       console.error(err);
-      alert(err.message); // Tampilkan alert agar user tahu jika gagal
+      if (window.showToast) {
+        window.showToast('error', err.message || 'Gagal generate document', 'Gagal');
+      }
       return { success: false, message: err.message };
     }
   },
@@ -186,7 +188,9 @@ export const adendumService = {
       return { success: true };
     } catch (err) {
       console.error(err);
-      alert(err.message);
+      if (window.showToast) {
+        window.showToast('error', err.message || 'Gagal mengunduh dokumen final', 'Gagal');
+      }
       return { success: false, message: err.message };
     }
   },

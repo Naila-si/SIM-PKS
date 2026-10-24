@@ -256,7 +256,13 @@ export const ModalDetailPersetujuanPks = ({ isOpen, pksData, onClose, onStatusUp
                 <div className="grid grid-cols-2 gap-2.5 pt-1">
                   <button
                     type="button"
-                    onClick={() => alert('Membuka pratinjau Draft PKS...')}
+                    onClick={() => {
+                      if (data.url_berkas) {
+                        window.open(`/storage/${data.url_berkas}`, '_blank');
+                      } else {
+                        showToast('info', 'Pratinjau draf dokumen sedang disiapkan oleh sistem.', 'Pratinjau Dokumen');
+                      }
+                    }}
                     className="w-full py-2 bg-white border border-blue-300 hover:bg-blue-50 text-blue-700 text-xs font-bold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center justify-center"
                   >
                     <Eye className="w-3.5 h-3.5 mr-1.5 text-blue-600" /> Lihat Draft
@@ -264,7 +270,18 @@ export const ModalDetailPersetujuanPks = ({ isOpen, pksData, onClose, onStatusUp
 
                   <button
                     type="button"
-                    onClick={() => alert('Mengunduh file Draft PKS...')}
+                    onClick={() => {
+                      if (data.url_berkas) {
+                        const link = document.createElement('a');
+                        link.href = `/storage/${data.url_berkas}`;
+                        link.setAttribute('download', data.url_berkas.split('/').pop());
+                        document.body.appendChild(link);
+                        link.click();
+                        link.remove();
+                      } else {
+                        showToast('info', 'Berkas draf dokumen belum tersedia untuk diunduh.', 'Unduh Berkas');
+                      }
+                    }}
                     className="w-full py-2 bg-white border border-blue-300 hover:bg-blue-50 text-blue-700 text-xs font-bold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center justify-center"
                   >
                     <Download className="w-3.5 h-3.5 mr-1.5 text-blue-600" /> Unduh Draft

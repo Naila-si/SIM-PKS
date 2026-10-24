@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { mitraService } from '../../services/mitraService';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import { DocumentUploadModal } from '../../components/DocumentUploadModal';
 import { Building2, Plus, Search, Edit3, Phone, UserCheck, Power, FileText, CheckCircle2 } from 'lucide-react';
 
 export const MitraListPage = () => {
   const { user } = useAuth();
+  const { showToast, confirm } = useToast();
   const [mitraList, setMitraList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -37,21 +39,36 @@ export const MitraListPage = () => {
       setSelectedMitraId(mitra.mitraId);
       setIsDeactivateModalOpen(true);
     } else {
-      if (window.confirm(`Aktifkan kembali perusahaan mitra ${mitra.nama_mitra}?`)) {
-        try {
-          const res = await mitraService.updateStatus(mitra.mitraId, 'Aktif');
-          if (res.success) fetchMitra();
-        } catch (err) {
-          alert(err.response?.data?.message || 'Gagal mengaktifkan kembali mitra.');
+      const ok = await confirm({
+        title: 'Aktifkan Kembali Mitra',
+        message: `Apakah Anda yakin ingin mengaktifkan kembali perusahaan mitra "${mitra.nama_mitra}"?`,
+        confirmText: 'Ya, Aktifkan',
+        cancelText: 'Batal',
+        type: 'confirm'
+      });
+      if (!ok) return;
+
+      try {
+        const res = await mitraService.updateStatus(mitra.mitraId, 'Aktif');
+        if (res.success) {
+          showToast('success', `Mitra ${mitra.nama_mitra} berhasil diaktifkan kembali.`);
+          fetchMitra();
         }
+      } catch (err) {
+        showToast('error', err.response?.data?.message || 'Gagal mengaktifkan kembali mitra.');
       }
     }
   };
 
   const handleDeactivateSubmit = async (fileProof) => {
-    const res = await mitraService.updateStatus(selectedMitraId, 'Tidak Aktif', fileProof);
-    if (res.success) {
-      fetchMitra();
+    try {
+      const res = await mitraService.updateStatus(selectedMitraId, 'Tidak Aktif', fileProof);
+      if (res.success) {
+        showToast('success', 'Status perusahaan mitra berhasil dinonaktifkan.');
+        fetchMitra();
+      }
+    } catch (err) {
+      showToast('error', err.response?.data?.message || 'Gagal menonaktifkan mitra.');
     }
   };
 

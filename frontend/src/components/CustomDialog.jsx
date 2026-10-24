@@ -1,5 +1,5 @@
-import React from 'react';
-import { CheckCircle2, AlertTriangle, XCircle, Edit3, Info } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { CheckCircle2, AlertTriangle, XCircle, Edit3, Info, Trash2, HelpCircle } from 'lucide-react';
 
 export const CustomDialog = ({
   isOpen,
@@ -14,6 +14,18 @@ export const CustomDialog = ({
   promptValue = '',
   setPromptValue
 }) => {
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (onCancel) onCancel();
+        else if (onClose) onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onCancel, onClose]);
+
   if (!isOpen) return null;
 
   const handleCancel = onCancel || onClose;
@@ -25,6 +37,9 @@ export const CustomDialog = ({
     }
   };
 
+  const isDanger = type === 'delete' || type === 'error';
+  const isWarning = type === 'warning' || type === 'confirm';
+
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
       <div 
@@ -35,13 +50,17 @@ export const CustomDialog = ({
         <div className="p-6 sm:p-7 text-center">
           <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xs ring-8 ${
             type === 'info' ? 'bg-blue-50 text-[#00529C] ring-blue-50/50' :
-            type === 'confirm' ? 'bg-amber-50 text-amber-600 ring-amber-50/50' :
+            type === 'delete' ? 'bg-rose-50 text-rose-600 ring-rose-50/50' :
+            type === 'warning' ? 'bg-amber-50 text-amber-600 ring-amber-50/50' :
+            type === 'confirm' ? 'bg-blue-50 text-[#00529C] ring-blue-50/50' :
             type === 'success' ? 'bg-emerald-50 text-emerald-600 ring-emerald-50/50' :
             type === 'prompt' ? 'bg-rose-50 text-rose-600 ring-rose-50/50' :
             'bg-rose-50 text-rose-600 ring-rose-50/50'
           }`}>
             {type === 'info' && <Info className="w-8 h-8" />}
-            {type === 'confirm' && <AlertTriangle className="w-8 h-8" />}
+            {type === 'delete' && <Trash2 className="w-8 h-8" />}
+            {type === 'warning' && <AlertTriangle className="w-8 h-8" />}
+            {type === 'confirm' && <HelpCircle className="w-8 h-8" />}
             {type === 'success' && <CheckCircle2 className="w-8 h-8" />}
             {type === 'prompt' && <Edit3 className="w-8 h-8" />}
             {type === 'error' && <XCircle className="w-8 h-8" />}
@@ -63,7 +82,7 @@ export const CustomDialog = ({
             </div>
           )}
 
-          {type === 'confirm' || type === 'prompt' ? (
+          {type === 'confirm' || type === 'prompt' || type === 'delete' || type === 'warning' ? (
             <div className="flex space-x-2.5">
               <button
                 type="button"
@@ -77,10 +96,12 @@ export const CustomDialog = ({
                 disabled={type === 'prompt' && (!promptValue || promptValue.trim() === '')}
                 onClick={handleConfirm}
                 className={`flex-1 px-4 py-2.5 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer shadow-xs disabled:opacity-50 disabled:cursor-not-allowed ${
-                  type === 'prompt' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-[#00529C] hover:bg-[#003E75]'
+                  type === 'prompt' || isDanger ? 'bg-rose-600 hover:bg-rose-700' :
+                  type === 'warning' ? 'bg-amber-600 hover:bg-amber-700' :
+                  'bg-[#00529C] hover:bg-[#003E75]'
                 }`}
               >
-                {confirmText || (type === 'prompt' ? 'Kirim Catatan' : 'Ya, Lanjutkan')}
+                {confirmText || (type === 'prompt' ? 'Kirim Catatan' : isDanger ? 'Ya, Hapus' : 'Ya, Lanjutkan')}
               </button>
             </div>
           ) : (
@@ -89,7 +110,7 @@ export const CustomDialog = ({
               onClick={handleConfirm}
               className={`w-full px-4 py-2.5 text-xs font-bold rounded-xl transition-colors cursor-pointer shadow-xs ${
                 type === 'success' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' :
-                type === 'error' ? 'bg-rose-600 hover:bg-rose-700 text-white' :
+                isDanger ? 'bg-rose-600 hover:bg-rose-700 text-white' :
                 'bg-[#00529C] hover:bg-[#003E75] text-white'
               }`}
             >

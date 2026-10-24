@@ -11,11 +11,13 @@ import { DocumentUploadModal } from '../components/DocumentUploadModal';
 import {
   ArrowLeft, Download, CheckCircle, Edit3, Trash2, FilePlus, Building2, Calendar, User, History, FileText, Check, XCircle, Upload, AlertCircle
 } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
 
 export const PksDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { showToast, confirm } = useToast();
 
   const [pks, setPks] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -56,43 +58,55 @@ export const PksDetailPage = () => {
       link.remove();
       fetchDetail();
     } catch (err) {
-      alert(err.response?.data?.message || 'Gagal mengunduh dokumen draft. Pastikan template telah dipilih.');
+      showToast('error', err.response?.data?.message || 'Gagal mengunduh dokumen draft. Pastikan template telah dipilih.', 'Gagal');
     } finally {
       setIsActionLoading(false);
     }
   };
 
   const handleKonfirmasiPenyerahan = async () => {
-    if (!window.confirm('Apakah Anda yakin telah menyerahkan dokumen fisik PKS ke Pengelola PKS?')) {
-      return;
-    }
+    const isOk = await confirm({
+      title: 'Konfirmasi Penyerahan Fisik',
+      message: 'Apakah Anda yakin telah menyerahkan dokumen fisik PKS ke Pengelola PKS?',
+      confirmText: 'Ya, Serahkan',
+      cancelText: 'Batal',
+      type: 'confirm',
+    });
+    if (!isOk) return;
 
     setIsActionLoading(true);
     try {
       const res = await pksService.konfirmasiPenyerahan(id);
       if (res.success) {
+        showToast('success', 'Dokumen fisik PKS berhasil ditandai siap diperiksa oleh Pengelola PKS.', 'Berhasil');
         fetchDetail();
       }
     } catch (err) {
-      alert(err.response?.data?.message || 'Gagal mengonfirmasi penyerahan.');
+      showToast('error', err.response?.data?.message || 'Gagal mengonfirmasi penyerahan.', 'Gagal');
     } finally {
       setIsActionLoading(false);
     }
   };
 
   const handleSetujuiPengelola = async () => {
-    if (!window.confirm('Setujui dokumen fisik PKS dan teruskan ke pemeriksaan Kabag?')) {
-      return;
-    }
+    const isOk = await confirm({
+      title: 'Persetujuan Pengelola PKS',
+      message: 'Setujui dokumen fisik PKS ini dan teruskan ke tahap pemeriksaan Kabag?',
+      confirmText: 'Ya, Setujui',
+      cancelText: 'Batal',
+      type: 'confirm',
+    });
+    if (!isOk) return;
 
     setIsActionLoading(true);
     try {
       const res = await pksService.setujuiPengelola(id);
       if (res.success) {
+        showToast('success', 'PKS berhasil disetujui dan diteruskan ke Kabag.', 'Berhasil');
         fetchDetail();
       }
     } catch (err) {
-      alert(err.response?.data?.message || 'Gagal menyetujui PKS.');
+      showToast('error', err.response?.data?.message || 'Gagal menyetujui PKS.', 'Gagal');
     } finally {
       setIsActionLoading(false);
     }
@@ -101,23 +115,30 @@ export const PksDetailPage = () => {
   const handleTolakPengelolaSubmit = async (catatanRevisi) => {
     const res = await pksService.tolakPengelola(id, catatanRevisi);
     if (res.success) {
+      showToast('info', 'Catatan revisi telah dikirimkan ke Petugas JR.', 'Revisi Dikirim');
       fetchDetail();
     }
   };
 
   const handleSetujuiKabag = async () => {
-    if (!window.confirm('Setujui dokumen PKS ini dan teruskan ke pemeriksaan Pimpinan?')) {
-      return;
-    }
+    const isOk = await confirm({
+      title: 'Persetujuan Kabag Operasional',
+      message: 'Setujui dokumen PKS ini dan teruskan ke pemeriksaan Pimpinan?',
+      confirmText: 'Ya, Setujui',
+      cancelText: 'Batal',
+      type: 'confirm',
+    });
+    if (!isOk) return;
 
     setIsActionLoading(true);
     try {
       const res = await pksService.setujuiKabag(id);
       if (res.success) {
+        showToast('success', 'PKS berhasil disetujui dan diteruskan ke Pimpinan.', 'Berhasil');
         fetchDetail();
       }
     } catch (err) {
-      alert(err.response?.data?.message || 'Gagal menyetujui PKS pada tahap Kabag.');
+      showToast('error', err.response?.data?.message || 'Gagal menyetujui PKS pada tahap Kabag.', 'Gagal');
     } finally {
       setIsActionLoading(false);
     }
@@ -126,24 +147,30 @@ export const PksDetailPage = () => {
   const handleTolakKabagSubmit = async (catatanRevisi) => {
     const res = await pksService.tolakKabag(id, catatanRevisi);
     if (res.success) {
+      showToast('info', 'Catatan revisi Kabag telah dicatat.', 'Revisi Dikirim');
       fetchDetail();
     }
   };
 
   const handleSetujuiPimpinan = async () => {
-    if (!window.confirm('Setujui persetujuan digital PKS ini pada tahap Pimpinan? Status akan menjadi Disetujui Pimpinan dan menunggu pengunggahan dokumen final oleh Pengelola PKS.')) {
-      return;
-    }
+    const isOk = await confirm({
+      title: 'Persetujuan Pimpinan Kanwil',
+      message: 'Setujui persetujuan digital PKS ini pada tahap Pimpinan? Status akan menjadi Disetujui Pimpinan dan menunggu pengunggahan dokumen final oleh Pengelola PKS.',
+      confirmText: 'Ya, Setujui Dokumen',
+      cancelText: 'Batal',
+      type: 'confirm',
+    });
+    if (!isOk) return;
 
     setIsActionLoading(true);
     try {
       const res = await pksService.setujuiPimpinan(id);
       if (res.success) {
-        alert('PKS berhasil disetujui pada tahap Pimpinan. Pengelola PKS akan mengambil dokumen fisik untuk di-scan dan diunggah.');
+        showToast('success', 'PKS berhasil disetujui pada tahap Pimpinan. Pengelola PKS akan mengunggah dokumen fisik final.', 'PKS Disetujui');
         fetchDetail();
       }
     } catch (err) {
-      alert(err.response?.data?.message || 'Gagal menyetujui PKS pada tahap Pimpinan.');
+      showToast('error', err.response?.data?.message || 'Gagal menyetujui PKS pada tahap Pimpinan.', 'Gagal');
     } finally {
       setIsActionLoading(false);
     }
@@ -152,6 +179,7 @@ export const PksDetailPage = () => {
   const handleTolakPimpinanSubmit = async (catatanRevisi) => {
     const res = await pksService.tolakPimpinan(id, catatanRevisi);
     if (res.success) {
+      showToast('info', 'Catatan revisi Pimpinan telah dicatat.', 'Revisi Dikirim');
       fetchDetail();
     }
   };
@@ -159,20 +187,29 @@ export const PksDetailPage = () => {
   const handleUploadFinalSubmit = async (file) => {
     const res = await pksService.uploadDokumenFinal(id, file);
     if (res.success) {
+      showToast('success', 'Dokumen fisik scan final PKS berhasil diunggah.', 'Dokumen Selesai');
       fetchDetail();
     }
   };
 
   const handleDelete = async () => {
-    if (window.confirm('Hapus draft PKS ini secara permanen?')) {
-      try {
-        const res = await pksService.deletePks(id);
-        if (res.success) {
-          navigate('/pks');
-        }
-      } catch (err) {
-        alert(err.response?.data?.message || 'Gagal menghapus draft PKS.');
+    const isOk = await confirm({
+      title: 'Hapus Draft PKS',
+      message: 'Apakah Anda yakin ingin menghapus draft PKS ini secara permanen? Data tidak dapat dikembalikan.',
+      confirmText: 'Ya, Hapus Draft',
+      cancelText: 'Batal',
+      type: 'delete',
+    });
+    if (!isOk) return;
+
+    try {
+      const res = await pksService.deletePks(id);
+      if (res.success) {
+        showToast('success', 'Draft PKS berhasil dihapus.', 'Berhasil');
+        navigate('/pks');
       }
+    } catch (err) {
+      showToast('error', err.response?.data?.message || 'Gagal menghapus draft PKS.', 'Gagal');
     }
   };
 

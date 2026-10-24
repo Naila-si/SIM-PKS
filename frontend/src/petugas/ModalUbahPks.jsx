@@ -8,9 +8,11 @@ import {
   X, Info, FileText, Check, AlertCircle, Plus, MoreVertical,
   Eye, Edit3, Trash2, Download, Upload, Shield, Calendar
 } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
 
 export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
   const { user } = useAuth();
+  const { showToast } = useToast();
 
   // Data Loading States
   const [loading, setLoading] = useState(true);
@@ -504,7 +506,7 @@ export const ModalUbahPks = ({ isOpen, pksId, onClose, onSuccess }) => {
                       if (pksData?.status_pks === 'Aktif' || pksData?.statusPks === 'Aktif') {
                         setIsAddendumModalOpen(true);
                       } else {
-                        alert('Adendum hanya dapat dibuat untuk PKS yang berstatus Aktif.');
+                        showToast('warning', 'Adendum hanya dapat dibuat untuk PKS yang berstatus Aktif.', 'Perhatian');
                       }
                     }}
                     disabled={pksData?.status_pks !== 'Aktif' && pksData?.statusPks !== 'Aktif'}

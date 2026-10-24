@@ -6,6 +6,7 @@ import {
   History as HistoryIcon, Clock, User, Activity, Search,
   ChevronLeft, ChevronRight, FileText
 } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
 
 // Helper component for formatting JSON nicely
 const FormatJsonValues = ({ data, textColor, borderColor, bgColor }) => {
@@ -156,6 +157,7 @@ const ModalDetailLog = ({ isOpen, onClose, log }) => {
 
 export const PksRiwayatPage = () => {
   const { user } = useAuth();
+  const { showToast } = useToast();
   
   if (user?.role !== 'admin_utama') {
     return <Navigate to="/dashboard" replace />;
@@ -231,7 +233,10 @@ export const PksRiwayatPage = () => {
   });
 
   const handleExport = () => {
-    if (filteredLogs.length === 0) return alert('Tidak ada data untuk diekspor');
+    if (filteredLogs.length === 0) {
+      showToast('warning', 'Tidak ada data log aktivitas untuk diekspor.', 'Ekspor Dibatalkan');
+      return;
+    }
     
     // Convert to CSV
     const headers = ['Waktu', 'Aktor/Pengguna', 'Jabatan/Peran', 'Deskripsi Aktivitas', 'Tipe Aksi'];
@@ -256,6 +261,7 @@ export const PksRiwayatPage = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    showToast('success', 'Riwayat log sistem berhasil diekspor.', 'Ekspor Selesai');
   };
 
   const totalPages = Math.ceil(filteredLogs.length / itemsPerPage) || 1;

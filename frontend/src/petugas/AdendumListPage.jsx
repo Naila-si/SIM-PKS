@@ -4,9 +4,11 @@ import { adendumService } from '../services/adendumService';
 import { pksService } from '../services/pksService';
 import { StatusBadge } from '../components/StatusBadge';
 import { ArrowLeft, Plus, Download, Check, FileText } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
 
 export const AdendumListPage = () => {
   const { id } = useParams(); // pksId
+  const { showToast, confirm } = useToast();
   const [pks, setPks] = useState(null);
   const [adendumList, setAdendumList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -42,19 +44,31 @@ export const AdendumListPage = () => {
       document.body.appendChild(link);
       link.click();
       link.remove();
+      showToast('success', 'Draft adendum berhasil diunduh.', 'Unduh Berhasil');
       fetchAdendum();
     } catch (err) {
-      alert(err.response?.data?.message || 'Gagal mengunduh draft adendum.');
+      showToast('error', err.response?.data?.message || 'Gagal mengunduh draft adendum.', 'Gagal');
     }
   };
 
   const handleKonfirmasiPenyerahan = async (adendumId) => {
-    if (window.confirm('Konfirmasi penyerahan fisik dokumen adendum ini?')) {
+    const isOk = await confirm({
+      title: 'Konfirmasi Penyerahan Adendum',
+      message: 'Apakah Anda yakin ingin mengonfirmasi penyerahan fisik dokumen adendum ini?',
+      confirmText: 'Ya, Konfirmasi',
+      cancelText: 'Batal',
+      type: 'confirm',
+    });
+
+    if (isOk) {
       try {
         const res = await adendumService.konfirmasiPenyerahan(adendumId);
-        if (res.success) fetchAdendum();
+        if (res.success) {
+          showToast('success', 'Penyerahan fisik adendum berhasil dikonfirmasi.', 'Berhasil');
+          fetchAdendum();
+        }
       } catch (err) {
-        alert(err.response?.data?.message || 'Gagal konfirmasi penyerahan adendum.');
+        showToast('error', err.response?.data?.message || 'Gagal konfirmasi penyerahan adendum.', 'Gagal');
       }
     }
   };

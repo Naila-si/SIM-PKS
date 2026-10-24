@@ -4,8 +4,10 @@ import { ModalDetailAktivitas } from './ModalDetailAktivitas';
 import {
   X, CheckCircle2, PlusCircle, Settings, FileText, ThumbsUp, ShieldCheck, Clock, Download
 } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
 
 export const ModalRiwayatPks = ({ isOpen, pksData, onClose }) => {
+  const { showToast } = useToast();
   const [selectedActivity, setSelectedActivity] = useState(null);
 
   if (!isOpen) return null;
@@ -15,7 +17,7 @@ export const ModalRiwayatPks = ({ isOpen, pksData, onClose }) => {
   const timelineEvents = data.riwayat_aktivitas || [];
 
   const handleExport = () => {
-    alert(`Mengekspor riwayat lengkap PKS ${data.nomorPKS}...`);
+    showToast('info', `Mengekspor riwayat lengkap PKS ${data.nomor_pks || data.nomorPKS || ''}...`, 'Ekspor Riwayat');
   };
 
   return createPortal(

@@ -12,6 +12,7 @@ export const ToastProvider = ({ children }) => {
     title: '',
     message: '',
     onConfirm: null,
+    onCancel: null,
     confirmText: '',
     cancelText: '',
   });
@@ -23,11 +24,18 @@ export const ToastProvider = ({ children }) => {
 
     setTimeout(() => {
       removeToast(id);
-    }, 3500);
+    }, 3800);
   };
 
   const removeToast = (id) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const toast = {
+    success: (message, title = 'Berhasil') => showToast('success', message, title),
+    error: (message, title = 'Perhatian') => showToast('error', message, title),
+    warning: (message, title = 'Peringatan') => showToast('warning', message, title),
+    info: (message, title = 'Informasi') => showToast('info', message, title),
   };
 
   const showDialog = (type, title, message, onConfirm = null, confirmText = '', cancelText = '') => {
@@ -37,22 +45,83 @@ export const ToastProvider = ({ children }) => {
       title,
       message,
       onConfirm,
+      onCancel: null,
       confirmText,
       cancelText,
     });
   };
 
+  const confirm = ({
+    title = 'Konfirmasi',
+    message = 'Apakah Anda yakin ingin melanjutkan tindakan ini?',
+    confirmText = 'Ya, Lanjutkan',
+    cancelText = 'Batal',
+    type = 'confirm',
+  }) => {
+    return new Promise((resolve) => {
+      setDialogState({
+        isOpen: true,
+        type,
+        title,
+        message,
+        confirmText,
+        cancelText,
+        onConfirm: () => {
+          setDialogState((prev) => ({ ...prev, isOpen: false }));
+          resolve(true);
+        },
+        onCancel: () => {
+          setDialogState((prev) => ({ ...prev, isOpen: false }));
+          resolve(false);
+        },
+      });
+    });
+  };
+
+  const showAlert = ({
+    title = 'Pemberitahuan',
+    message = '',
+    confirmText = 'Mengerti',
+    type = 'info',
+  }) => {
+    return new Promise((resolve) => {
+      setDialogState({
+        isOpen: true,
+        type,
+        title,
+        message,
+        confirmText,
+        cancelText: '',
+        onConfirm: () => {
+          setDialogState((prev) => ({ ...prev, isOpen: false }));
+          resolve(true);
+        },
+        onCancel: () => {
+          setDialogState((prev) => ({ ...prev, isOpen: false }));
+          resolve(true);
+        },
+      });
+    });
+  };
+
   const closeDialog = () => {
+    if (dialogState.onCancel) {
+      dialogState.onCancel();
+    }
     setDialogState((prev) => ({ ...prev, isOpen: false }));
   };
 
   // Intercept window.alert so no ugly native browser alerts appear
   useEffect(() => {
+    window.showToast = showToast;
+    window.toast = toast;
+    window.confirmAsync = confirm;
+
     const originalAlert = window.alert;
     window.alert = (msg) => {
       const msgStr = String(msg || '');
       const isSuccess = msgStr.toLowerCase().includes('berhasil') || msgStr.toLowerCase().includes('sukses');
-      const isError = msgStr.toLowerCase().includes('gagal') || msgStr.toLowerCase().includes('error') || msgStr.toLowerCase().includes('kesalahan');
+      const isError = msgStr.toLowerCase().includes('gagal') || msgStr.toLowerCase().includes('error') || msgStr.toLowerCase().includes('kesalahan') || msgStr.toLowerCase().includes('tidak dapat') || msgStr.toLowerCase().includes('hanya');
       const type = isSuccess ? 'success' : isError ? 'error' : 'info';
       showToast(type, msgStr, isSuccess ? 'Berhasil' : isError ? 'Perhatian' : 'Informasi');
     };
@@ -63,7 +132,7 @@ export const ToastProvider = ({ children }) => {
   }, []);
 
   return (
-    <ToastContext.Provider value={{ showToast, showDialog, closeDialog }}>
+    <ToastContext.Provider value={{ showToast, toast, confirm, showAlert, showDialog, closeDialog }}>
       {children}
 
       {/* Modern Floating Toasts Container (Top-Right) */}
@@ -127,11 +196,26 @@ export const ToastProvider = ({ children }) => {
         title={dialogState.title}
         message={dialogState.message}
         onConfirm={() => {
-          if (dialogState.onConfirm) dialogState.onConfirm();
-          closeDialog();
+          if (dialogState.onConfirm) {
+            dialogState.onConfirm();
+          } else {
+            closeDialog();
+          }
         }}
-        onCancel={closeDialog}
-        onClose={closeDialog}
+        onCancel={() => {
+          if (dialogState.onCancel) {
+            dialogState.onCancel();
+          } else {
+            closeDialog();
+          }
+        }}
+        onClose={() => {
+          if (dialogState.onCancel) {
+            dialogState.onCancel();
+          } else {
+            closeDialog();
+          }
+        }}
         confirmText={dialogState.confirmText}
         cancelText={dialogState.cancelText}
       />

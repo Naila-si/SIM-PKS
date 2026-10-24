@@ -1,6 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { X, FileText, Eye, Download, Code2, Clock, RotateCcw } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
 
 const TAG_TABLE_DATA = [
   { tag: '{{nomor_pks}}', ket: 'Nomor PKS' },
@@ -17,6 +18,7 @@ const VERSION_HISTORY_DATA = [
 ];
 
 export const ModalDetailTemplate = ({ isOpen, templateData, onClose, onPerbaruiClick }) => {
+  const { showToast } = useToast();
   if (!isOpen) return null;
 
   const data = templateData || {
@@ -142,14 +144,14 @@ export const ModalDetailTemplate = ({ isOpen, templateData, onClose, onPerbaruiC
                   <div className="flex items-center space-x-2 shrink-0">
                     <button
                       type="button"
-                      onClick={() => alert('Pratinjau Template Dokumen')}
+                      onClick={() => showToast('info', 'Pratinjau template dokumen sedang disiapkan.')}
                       className="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-xl shadow-2xs transition-all cursor-pointer flex items-center"
                     >
                       <Eye className="w-3.5 h-3.5 mr-1 text-blue-600" /> Lihat Template
                     </button>
                     <button
                       type="button"
-                      onClick={() => alert('Unduh Template Dokumen')}
+                      onClick={() => showToast('info', 'Mengunduh berkas template dokumen...')}
                       className="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-xl shadow-2xs transition-all cursor-pointer flex items-center"
                     >
                       <Download className="w-3.5 h-3.5 mr-1 text-slate-600" /> Unduh Template
@@ -235,7 +237,7 @@ export const ModalDetailTemplate = ({ isOpen, templateData, onClose, onPerbaruiC
                       <td className="px-5 py-3 text-center whitespace-nowrap">
                         <button
                           type="button"
-                          onClick={() => alert(`Detail Versi ${r.versi}`)}
+                          onClick={() => showToast('info', `Rincian riwayat template versi ${r.versi}`)}
                           className="text-xs font-bold text-blue-600 hover:underline cursor-pointer"
                         >
                           Detail

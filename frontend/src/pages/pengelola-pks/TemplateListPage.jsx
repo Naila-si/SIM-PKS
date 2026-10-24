@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Upload, FileText, Plus, Trash2, CheckCircle2, Clock, Edit3, Power } from 'lucide-react';
 import { ModalPerbaruiTemplate } from './ModalPerbaruiTemplate';
+import { useToast } from '../../context/ToastContext';
 
 export const TemplateListPage = () => {
   const { user } = useAuth();
+  const { showToast, confirm } = useToast();
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -48,7 +50,9 @@ export const TemplateListPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.file) return alert('Silakan pilih file .docx');
+    if (!formData.file) {
+      return showToast('warning', 'Silakan pilih berkas dokumen template (.docx)', 'Berkas Diperlukan');
+    }
 
     const form = new FormData();
     form.append('nama_template', formData.nama_template);
@@ -56,7 +60,11 @@ export const TemplateListPage = () => {
     form.append('bidang', formData.bidang);
     form.append('jenis_pks', formData.jenis_pks);
     form.append('file_template', formData.file);
-    if (user?.penggunaId) form.append('penggunaId', user.penggunaId);
+    const userId = user?.pengguna_id || user?.penggunaId;
+    if (userId) {
+      form.append('pengguna_id', userId);
+      form.append('penggunaId', userId);
+    }
 
     try {
       let token = localStorage.getItem('pks_token');
@@ -68,40 +76,49 @@ export const TemplateListPage = () => {
       if (res.ok) {
         setShowModal(false);
         setFormData({ nama_template: '', kategori_template: 'PKS', bidang: 'Pelayanan', jenis_pks: 'Pelayanan Kesehatan', file: null });
+        showToast('success', 'Template dokumen baru berhasil diunggah.', 'Berhasil');
         fetchTemplates();
       } else {
-        alert('Gagal mengupload template');
+        showToast('error', 'Gagal mengupload template.', 'Gagal');
       }
     } catch (err) {
       console.error(err);
-      alert('Terjadi kesalahan jaringan');
+      showToast('error', 'Terjadi kesalahan jaringan saat mengupload template.', 'Kesalahan Jaringan');
     }
   };
 
   const handleToggleStatus = async (template) => {
     const newStatus = template.status_template === 'Aktif' ? 'Tidak Aktif' : 'Aktif';
-    if (!window.confirm(`Yakin ingin mengubah status template ini menjadi ${newStatus}?`)) return;
+    const isOk = await confirm({
+      title: 'Ubah Status Template',
+      message: `Apakah Anda yakin ingin mengubah status template "${template.nama_template}" menjadi ${newStatus}?`,
+      confirmText: 'Ya, Ubah Status',
+      cancelText: 'Batal',
+      type: newStatus === 'Aktif' ? 'confirm' : 'warning',
+    });
+    if (!isOk) return;
     
     try {
-      // Create FormData to simulate a PUT/PATCH if needed, or simply POST with _method=PUT
       const form = new FormData();
       form.append('_method', 'PUT');
       form.append('status_template', newStatus);
 
       let token = localStorage.getItem('pks_token');
-      const res = await fetch(`/api/pks-templates/${template.templateId}`, {
+      const templateId = template.template_id || template.templateId;
+      const res = await fetch(`/api/pks-templates/${templateId}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: form
       });
       if (res.ok) {
+        showToast('success', `Status template berhasil diubah menjadi ${newStatus}.`, 'Status Diperbarui');
         fetchTemplates();
       } else {
-        alert('Gagal mengubah status template');
+        showToast('error', 'Gagal mengubah status template.', 'Gagal');
       }
     } catch (err) {
       console.error(err);
-      alert('Terjadi kesalahan jaringan');
+      showToast('error', 'Terjadi kesalahan jaringan.', 'Kesalahan Jaringan');
     }
   };
   

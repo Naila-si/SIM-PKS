@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, FileText, Upload, Info } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 
 export const ModalPerbaruiTemplate = ({ isOpen, templateData, onClose, onSuccess }) => {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [file, setFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -24,33 +26,39 @@ export const ModalPerbaruiTemplate = ({ isOpen, templateData, onClose, onSuccess
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!file) return alert('Silakan pilih file .docx yang baru');
+    if (!file) {
+      return showToast('warning', 'Silakan pilih berkas dokumen template (.docx) yang baru.', 'Berkas Diperlukan');
+    }
     setSubmitting(true);
     
     try {
       const form = new FormData();
       form.append('_method', 'PUT');
       form.append('file_template', file);
-      if (user?.penggunaId) {
-        form.append('penggunaId', user.penggunaId);
+      const userId = user?.pengguna_id || user?.penggunaId;
+      if (userId) {
+        form.append('pengguna_id', userId);
+        form.append('penggunaId', userId);
       }
       
       let token = localStorage.getItem('pks_token');
-      const res = await fetch(`/api/pks-templates/${data.templateId}`, {
+      const templateId = data.template_id || data.templateId;
+      const res = await fetch(`/api/pks-templates/${templateId}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: form
       });
       
       if (res.ok) {
+        showToast('success', 'Template dokumen berhasil diperbarui ke versi baru.', 'Pembaruan Berhasil');
         if (onSuccess) onSuccess();
         onClose();
       } else {
-        alert('Gagal memperbarui template');
+        showToast('error', 'Gagal memperbarui template dokumen.', 'Gagal');
       }
     } catch (err) {
       console.error(err);
-      alert('Terjadi kesalahan jaringan');
+      showToast('error', 'Terjadi kesalahan jaringan.', 'Kesalahan Jaringan');
     } finally {
       setSubmitting(false);
     }

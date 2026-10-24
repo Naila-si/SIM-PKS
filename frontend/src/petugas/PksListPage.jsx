@@ -4,9 +4,11 @@ import { pksService } from '../services/pksService';
 import { useAuth } from '../context/AuthContext';
 import { StatusBadge } from '../components/StatusBadge';
 import { Plus, Search, FileText, Eye, Edit3, Trash2, Calendar, Building2, Download, Layers } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
 
 export const PksListPage = () => {
   const { user } = useAuth();
+  const { showToast, confirm } = useToast();
   const [pksList, setPksList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
@@ -36,14 +38,23 @@ export const PksListPage = () => {
   }, [search, statusFilter]);
 
   const handleDelete = async (id, nomor) => {
-    if (window.confirm(`Apakah Anda yakin ingin menghapus draft PKS ${nomor || ''}?`)) {
+    const isOk = await confirm({
+      title: 'Hapus Draft PKS',
+      message: `Apakah Anda yakin ingin menghapus draft PKS ${nomor ? `"${nomor}"` : ''}? Tindakan ini tidak dapat dibatalkan.`,
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      type: 'delete',
+    });
+
+    if (isOk) {
       try {
         const res = await pksService.deletePks(id);
         if (res.success) {
+          showToast('success', 'Draft PKS berhasil dihapus.', 'Berhasil');
           fetchPks();
         }
       } catch (err) {
-        alert(err.response?.data?.message || 'Gagal menghapus draft PKS.');
+        showToast('error', err.response?.data?.message || 'Gagal menghapus draft PKS.', 'Gagal');
       }
     }
   };
@@ -63,8 +74,9 @@ export const PksListPage = () => {
       document.body.appendChild(link);
       link.click();
       link.remove();
+      showToast('success', 'Data PKS berhasil diekspor.', 'Ekspor Selesai');
     } catch (err) {
-      alert(err.response?.data?.message || 'Gagal mengunduh ekspor data PKS.');
+      showToast('error', err.response?.data?.message || 'Gagal mengunduh ekspor data PKS.', 'Gagal');
     } finally {
       setIsExporting(false);
     }
