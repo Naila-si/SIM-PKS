@@ -166,7 +166,8 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick, onSuccess 
   const statusPers = data.status_persetujuan || data.statusPersetujuan || 'Draf';
   
   // 1. Petugas Actions
-  const canShowSiapDiserahkan = (isPetugas || isPengelolaOrAdmin) && (isDraftPersetujuan || statusPers.includes('Revisi'));
+  const canShowSiapDiserahkan = isPetugas && (isDraftPersetujuan || statusPers.includes('Revisi'));
+  const canShowEditDraf = isPetugas && (isDraftPersetujuan || statusPers.includes('Revisi'));
   const canShowTambahAdendum = isPetugas && (isCreator || isPengelolaOrAdmin);
   
   // 2. Accept Document Action (Sudah Diterima)
@@ -252,7 +253,7 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick, onSuccess 
 
           <div className="flex items-center space-x-3">
             {/* Action Edit untuk Petugas jika Revisi atau Draft */}
-            {(isDraftPersetujuan || statusPers.includes('Revisi')) && onEditClick && (
+            {canShowEditDraf && onEditClick && (
               <button
                 type="button"
                 onClick={() => {
