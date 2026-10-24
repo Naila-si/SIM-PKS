@@ -11,29 +11,34 @@ class AdendumApprovalController extends Controller
 {
     public function store(Request $request)
     {
+        $adendumId = $request->input('adendum_id', $request->input('adendumId'));
+        $penggunaId = $request->input('pengguna_id', $request->input('user_id', $request->input('penggunaId')));
+        $request->merge([
+            'adendum_id' => $adendumId,
+            'pengguna_id' => $penggunaId,
+            'user_id' => $penggunaId,
+        ]);
+
         $validated = $request->validate([
-            'adendum_id' => 'required|exists:adendums,adendumId',
-            'user_id' => 'nullable|exists:pengguna,penggunaId',
+            'adendum_id' => 'required|exists:adendum,adendum_id',
+            'pengguna_id' => 'nullable|exists:pengguna,pengguna_id',
             'status_aksi' => 'required|string',
             'catatan' => 'nullable|string',
         ]);
 
         $userRole = null;
-        $userName = 'Sistem';
-        if (!empty($validated['user_id'])) {
-            $pengguna = Pengguna::find($validated['user_id']);
+        if (!empty($validated['pengguna_id'])) {
+            $pengguna = Pengguna::find($validated['pengguna_id']);
             if ($pengguna) {
                 $userRole = $pengguna->role;
-                $userName = $pengguna->nama;
             }
         }
 
         $approval = AdendumApproval::create([
-            'adendumId' => $validated['adendum_id'],
-            'penggunaId' => $validated['user_id'],
-            'aktor' => $userName,
+            'adendum_id' => $validated['adendum_id'],
+            'pengguna_id' => $validated['pengguna_id'],
             'status_aksi' => $validated['status_aksi'],
-            'catatan' => $validated['catatan']
+            'catatan' => $validated['catatan'] ?? null
         ]);
 
         $adendum = Adendum::find($validated['adendum_id']);
@@ -41,39 +46,40 @@ class AdendumApprovalController extends Controller
             $statusAksi = $validated['status_aksi'];
             
             if ($statusAksi === 'Sudah Diterima') {
-                if ($adendum->statusPersetujuan === 'Menunggu Penyerahan') {
+                $statusSaatIni = $adendum->status_persetujuan ?? $adendum->statusPersetujuan;
+                if ($statusSaatIni === 'Menunggu Penyerahan') {
                     $newStatus = 'Pemeriksaan Pengelola';
-                } elseif ($adendum->statusPersetujuan === 'Disetujui Pengelola') {
+                } elseif ($statusSaatIni === 'Disetujui Pengelola') {
                     $newStatus = 'Pemeriksaan Kabag';
-                } elseif ($adendum->statusPersetujuan === 'Disetujui Kabag') {
+                } elseif ($statusSaatIni === 'Disetujui Kabag') {
                     $newStatus = 'Pemeriksaan Pimpinan';
                 } else {
                     return response()->json(['success' => false, 'message' => 'Status Adendum saat ini tidak valid untuk aksi ini.'], 400);
                 }
 
                 $adendum->update([
-                    'statusPersetujuan' => $newStatus,
+                    'status_persetujuan' => $newStatus,
                 ]);
                 $approval->update(['status_aksi' => $newStatus]); 
             } elseif ($statusAksi === 'Tandai Siap Diserahkan') {
                 $adendum->update([
-                    'statusPersetujuan' => 'Menunggu Penyerahan',
-                    'catatanRevisi' => null
+                    'status_persetujuan' => 'Menunggu Penyerahan',
+                    'catatan_revisi' => null
                 ]);
                 $approval->update([
                     'status_aksi' => 'Menunggu Penyerahan',
                     'catatan' => $validated['catatan'] ?? 'Dokumen fisik siap diserahkan oleh Petugas'
                 ]);
             } elseif ($statusAksi === 'Draf Adendum Disetujui') {
-                $nomorAdendum = $adendum->nomorAdendum ?: \App\Services\NomorDokumenService::generateNextNomor();
+                $nomorAdendum = ($adendum->nomor_adendum ?? $adendum->nomorAdendum) ?: \App\Services\NomorDokumenService::generateNextNomor();
                 $adendum->update([
-                    'statusPersetujuan' => 'Disetujui',
-                    'nomorAdendum' => $nomorAdendum,
+                    'status_persetujuan' => 'Disetujui',
+                    'nomor_adendum' => $nomorAdendum,
                 ]);
             } else {
                 $adendum->update([
-                    'statusPersetujuan' => $statusAksi,
-                    'catatanRevisi' => str_contains($statusAksi, 'Revisi') ? $validated['catatan'] : $adendum->catatanRevisi,
+                    'status_persetujuan' => $statusAksi,
+                    'catatan_revisi' => str_contains($statusAksi, 'Revisi') ? $validated['catatan'] : ($adendum->catatan_revisi ?? $adendum->catatanRevisi),
                 ]);
             }
         }

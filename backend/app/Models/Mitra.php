@@ -9,7 +9,7 @@ class Mitra extends Model
     use \App\Traits\LogsSystemActivity;
 
     protected $table = 'mitra';
-    protected $primaryKey = 'mitraId';
+    protected $primaryKey = 'mitra_id';
 
     protected $fillable = [
         'nama_mitra',
@@ -22,8 +22,22 @@ class Mitra extends Model
         'status_mitra',
     ];
 
+    protected $appends = [
+        'mitraId',
+    ];
+
+    public function getMitraIdAttribute()
+    {
+        return $this->attributes['mitra_id'] ?? $this->attributes['mitraId'] ?? null;
+    }
+
+    public function pks()
+    {
+        return $this->hasMany(PksDocument::class, 'mitra_id', 'mitra_id');
+    }
+
     public function pksDocuments()
     {
-        return $this->hasMany(PksDocument::class, 'mitraId', 'mitraId');
+        return $this->pks();
     }
 }

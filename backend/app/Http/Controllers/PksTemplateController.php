@@ -30,7 +30,7 @@ class PksTemplateController extends Controller
                     ->update(['status_template' => 'Tidak Aktif']);
 
         $template = PksTemplate::create([
-            'penggunaId' => $request->input('penggunaId', 1), 
+            'pengguna_id' => $request->input('pengguna_id', $request->input('penggunaId', 1)), 
             'nama_template' => $request->nama_template,
             'kategori_template' => $request->input('kategori_template', 'PKS'),
             'bidang' => $request->bidang,
@@ -51,8 +51,9 @@ class PksTemplateController extends Controller
         $dataToUpdate = $request->only(['status_template', 'nama_template']);
         
         // Simpan siapa yang memperbarui
-        if ($request->has('penggunaId')) {
-            $dataToUpdate['diperbarui_oleh'] = $request->input('penggunaId');
+        $updater = $request->input('pengguna_id', $request->input('penggunaId'));
+        if ($updater) {
+            $dataToUpdate['diperbarui_oleh'] = $updater;
         }
 
         if ($request->hasFile('file_template')) {

@@ -25,7 +25,7 @@ trait LogsSystemActivity
     protected static function recordLog($model, $action)
     {
         // Don't log if running in console without user, unless we want to
-        $userId = Auth::id() ?? request()->user()?->penggunaId ?? request()->input('user_id') ?? null;
+        $userId = Auth::id() ?? request()->user()?->pengguna_id ?? request()->user()?->penggunaId ?? request()->input('pengguna_id') ?? request()->input('user_id') ?? null;
         
         if (!$userId) {
             $token = request()->bearerToken();
@@ -61,12 +61,12 @@ trait LogsSystemActivity
         }
 
         SystemLog::create([
-            'user_id' => $userId,
+            'pengguna_id' => $userId,
             'bidang' => $bidang,
-            'action' => $action,
+            'aksi' => $action,
             'loggable_type' => get_class($model),
             'loggable_id' => $model->getKey(),
-            'description' => $desc,
+            'keterangan' => $desc,
             'old_values' => $oldValues,
             'new_values' => $newValues,
         ]);

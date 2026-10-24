@@ -17,8 +17,8 @@ class Pengguna extends Authenticatable
     // Nama tabel khusus di database
     protected $table = 'pengguna';
 
-    // Primary Key khusus tabel 'pengguna'
-    protected $primaryKey = 'penggunaId';
+    // Primary Key tabel 'pengguna'
+    protected $primaryKey = 'pengguna_id';
 
     // Kolom yang dapat diisi secara massal (Mass Assignable)
     protected $fillable = [
@@ -37,12 +37,21 @@ class Pengguna extends Authenticatable
     // Field terhitung yang otomatis disertakan pada serialisasi JSON
     protected $appends = [
         'jabatan',
+        'penggunaId',
     ];
 
     // Kolom yang disembunyikan saat data diubah ke JSON
     protected $hidden = [
         'password',
     ];
+
+    /**
+     * Accessor untuk backward compatibility (penggunaId -> pengguna_id)
+     */
+    public function getPenggunaIdAttribute()
+    {
+        return $this->attributes['pengguna_id'] ?? $this->attributes['penggunaId'] ?? null;
+    }
 
     /**
      * Accessor Otomatis untuk Jabatan (Label Tampilan Formal Berdasarkan Kode Role)
@@ -68,19 +77,16 @@ class Pengguna extends Authenticatable
     }
 
     /**
-     * Relasi ke Tabel Sesi Pengguna (Satu Pengguna punya banyak Sesi "Ingat Saya")
+     * Relasi ke Tabel PKS
      */
-    public function sesiPengguna()
+    public function pks()
     {
-        return $this->hasMany(SesiPengguna::class, 'penggunaId');
+        return $this->hasMany(PksDocument::class, 'pengguna_id', 'pengguna_id');
     }
 
-    /**
-     * Relasi ke Tabel PKS Documents
-     */
     public function pksDocuments()
     {
-        return $this->hasMany(PksDocument::class, 'penggunaId', 'penggunaId');
+        return $this->pks();
     }
 
     /**
@@ -88,6 +94,6 @@ class Pengguna extends Authenticatable
      */
     public function pksTemplates()
     {
-        return $this->hasMany(PksTemplate::class, 'penggunaId', 'penggunaId');
+        return $this->hasMany(PksTemplate::class, 'pengguna_id', 'pengguna_id');
     }
 }

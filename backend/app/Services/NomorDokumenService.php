@@ -25,7 +25,7 @@ class NomorDokumenService
         }
 
         // Check in Adendums
-        $adendumNumbers = Adendum::whereNotNull('nomorAdendum')->pluck('nomorAdendum');
+        $adendumNumbers = Adendum::whereNotNull('nomor_adendum')->pluck('nomor_adendum');
         foreach ($adendumNumbers as $num) {
             if (preg_match($pattern, trim($num), $matches)) {
                 $maxUrut = max($maxUrut, (int)$matches[1]);

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Pengguna;
-use App\Models\SesiPengguna;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
@@ -75,24 +74,15 @@ class AutentikasiKontroller extends Controller
             ], 401);
         }
 
-        // 5. Penanganan Fitur "Ingat Saya" (Remember Me ke Database)
+        // 5. Penanganan Fitur "Ingat Saya" (Remember Me)
         $tokenIngatSaya = null;
         if ($permintaan->ingat_saya) {
-            // Buat token unik 60 karakter
             $tokenIngatSaya = Str::random(60);
-
-            // Simpan token pengingat sesi ke Tabel 'sesi_pengguna' di Database (Kadaluarsa 30 Hari)
-            SesiPengguna::create([
-                'penggunaId' => $pengguna->penggunaId,
-                'token_ingat_saya' => $tokenIngatSaya,
-                'ip_address' => $permintaan->ip(),
-                'user_agent' => substr($permintaan->userAgent(), 0, 255),
-                'kadaluarsa_pada' => Carbon::now()->addDays(30),
-            ]);
         }
 
         // Buat Token Sesi Akses (Bearer Token)
-        $tokenSesiAkses = 'sim-pks-token-' . $pengguna->penggunaId . '-' . time();
+        $idPengguna = $pengguna->pengguna_id ?? $pengguna->penggunaId;
+        $tokenSesiAkses = 'sim-pks-token-' . $idPengguna . '-' . time();
 
         // 6. Kembalikan Respon Sukses Login
         return response()->json([
@@ -102,9 +92,11 @@ class AutentikasiKontroller extends Controller
                 'token_akses' => $tokenSesiAkses,
                 'token_ingat_saya' => $tokenIngatSaya,
                 'pengguna' => [
-                    'penggunaId' => $pengguna->penggunaId,
+                    'pengguna_id' => $idPengguna,
+                    'penggunaId' => $idPengguna,
                     'nama' => $pengguna->nama,
                     'email' => $pengguna->email,
+                    'nomor_hp' => $pengguna->nomor_hp,
                     'nomorHp' => $pengguna->nomor_hp,
                     'jabatan' => $pengguna->jabatan,
                     'role' => $pengguna->role,
@@ -122,23 +114,19 @@ class AutentikasiKontroller extends Controller
      */
     public function sesiSaya(Request $permintaan)
     {
-        $tokenIngat = $permintaan->header('X-Remember-Token') ?? $permintaan->query('token_ingat');
-
-        if ($tokenIngat) {
-            // Cari sesi di database yang belum kadaluarsa
-            $sesi = SesiPengguna::with('pengguna')
-                ->where('token_ingat_saya', $tokenIngat)
-                ->where('kadaluarsa_pada', '>', Carbon::now())
-                ->first();
-
-            if ($sesi && $sesi->pengguna && $sesi->pengguna->status === 'Aktif') {
-                $p = $sesi->pengguna;
+        $authHeader = $permintaan->header('Authorization');
+        if ($authHeader && preg_match('/sim-pks-token-(\d+)-/', $authHeader, $matches)) {
+            $p = Pengguna::find($matches[1]);
+            if ($p && $p->status === 'Aktif') {
+                $id = $p->pengguna_id ?? $p->penggunaId;
                 return response()->json([
                     'status' => 'sukses',
                     'data' => [
-                        'penggunaId' => $p->penggunaId,
+                        'pengguna_id' => $id,
+                        'penggunaId' => $id,
                         'nama' => $p->nama,
                         'email' => $p->email,
+                        'nomor_hp' => $p->nomor_hp,
                         'nomorHp' => $p->nomor_hp,
                         'jabatan' => $p->jabatan,
                         'role' => $p->role,
@@ -153,23 +141,15 @@ class AutentikasiKontroller extends Controller
 
         return response()->json([
             'status' => 'gagal',
-            'pesan' => 'Sesi tidak ditemukan atau telah kadaluarsa.',
+            'pesan' => 'Sesi login tidak valid atau telah berakhir.',
         ], 401);
     }
 
     /**
      * Fungsi Keluar / Logout (POST /api/autentikasi/keluar)
-     * Hapus token pengingat dari database
      */
     public function keluar(Request $permintaan)
     {
-        $tokenIngat = $permintaan->header('X-Remember-Token') ?? $permintaan->input('token_ingat_saya');
-
-        if ($tokenIngat) {
-            // Hapus sesi pengingat dari database
-            SesiPengguna::where('token_ingat_saya', $tokenIngat)->delete();
-        }
-
         return response()->json([
             'status' => 'sukses',
             'pesan' => 'Berhasil keluar dari sistem.',

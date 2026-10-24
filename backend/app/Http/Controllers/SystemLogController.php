@@ -27,14 +27,17 @@ class SystemLogController extends Controller
             ], 403);
         }
 
-        $query = SystemLog::with(['user:penggunaId,nama,role,bidang']);
+        $query = SystemLog::with(['user:pengguna_id,nama,role,bidang']);
 
         // Additional filters from request (Optional)
         if ($request->has('bidang') && $request->bidang !== 'Semua Bidang') {
             $query->where('bidang', $request->bidang);
         }
-        if ($request->has('action') && $request->action !== 'Semua Aksi') {
-            $query->where('action', $request->action);
+        $action = $request->input('aksi', $request->input('action'));
+        if ($action && $action !== 'Semua Aksi') {
+            $query->where(function ($q) use ($action) {
+                $q->where('aksi', $action)->orWhere('aksi', 'like', "%{$action}%");
+            });
         }
 
         $logs = $query->orderBy('created_at', 'desc')->get();

@@ -23,9 +23,16 @@ class PksDocumentController extends Controller
 
     public function store(Request $request)
     {
+        $mitraId = $request->input('mitra_id', $request->input('mitraId'));
+        $penggunaId = $request->input('pengguna_id', $request->input('penggunaId'));
+        $request->merge([
+            'mitra_id' => $mitraId,
+            'pengguna_id' => $penggunaId,
+        ]);
+
         $validated = $request->validate([
-            'mitraId' => 'required|exists:mitra,mitraId',
-            'penggunaId' => 'required|exists:pengguna,penggunaId',
+            'mitra_id' => 'required|exists:mitra,mitra_id',
+            'pengguna_id' => 'required|exists:pengguna,pengguna_id',
             'bidang' => 'required|string',
             'jenis_pks' => 'required|string',
             'ringkasan_pks' => 'required|string',
@@ -61,7 +68,7 @@ class PksDocumentController extends Controller
 
         // Cek apakah PKS memiliki adendum yang masih dalam proses persetujuan
         $hasPendingAdendum = $doc->adendums()
-            ->whereNotIn('statusPersetujuan', ['Disetujui', 'Selesai', 'Draf Adendum Disetujui'])
+            ->whereNotIn('status_persetujuan', ['Disetujui', 'Selesai', 'Draf Adendum Disetujui'])
             ->exists();
 
         if ($hasPendingAdendum) {

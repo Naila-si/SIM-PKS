@@ -55,22 +55,30 @@ Route::apiResource('pks-templates', \App\Http\Controllers\PksTemplateController:
 
 // ================= RUTE DOKUMEN PKS =================
 Route::get('pks-documents/{id}/generate-docx', [\App\Http\Controllers\PksDocumentController::class, 'generateDocx']);
+Route::get('pks/{id}/generate-docx', [\App\Http\Controllers\PksDocumentController::class, 'generateDocx']);
 Route::apiResource('pks-documents', \App\Http\Controllers\PksDocumentController::class);
+Route::apiResource('pks', \App\Http\Controllers\PksDocumentController::class);
 
 // ================= RUTE RIWAYAT PERSETUJUAN =================
 Route::post('pks-approvals', [\App\Http\Controllers\PksApprovalController::class, 'store']);
+Route::post('pks-persetujuan', [\App\Http\Controllers\PksApprovalController::class, 'store']);
 
 // ================= RUTE LOG SISTEM (CCTV) =================
 Route::get('system-logs', [\App\Http\Controllers\SystemLogController::class, 'index']);
+Route::get('log-sistem', [\App\Http\Controllers\SystemLogController::class, 'index']);
 
 // ================= RUTE ADENDUM PKS =================
 Route::prefix('pks')->group(function () {
     Route::get('{pksId}/adendums', [\App\Http\Controllers\AdendumController::class, 'index']);
     Route::post('{pksId}/adendums', [\App\Http\Controllers\AdendumController::class, 'store']);
+    Route::get('{pksId}/adendum', [\App\Http\Controllers\AdendumController::class, 'index']);
+    Route::post('{pksId}/adendum', [\App\Http\Controllers\AdendumController::class, 'store']);
 });
 
 Route::get('approvals/count', [\App\Http\Controllers\PksApprovalController::class, 'getPendingCount']);
+Route::get('persetujuan/jumlah-menunggu', [\App\Http\Controllers\PksApprovalController::class, 'getPendingCount']);
 Route::get('adendums', [\App\Http\Controllers\AdendumController::class, 'getAll']);
+Route::get('adendum', [\App\Http\Controllers\AdendumController::class, 'getAll']);
 
 Route::prefix('adendums')->group(function () {
     Route::get('{id}/generate-docx', [\App\Http\Controllers\AdendumController::class, 'generateDocx']);
@@ -81,4 +89,14 @@ Route::prefix('adendums')->group(function () {
     Route::delete('{id}', [\App\Http\Controllers\AdendumController::class, 'destroy']);
 });
 
+Route::prefix('adendum')->group(function () {
+    Route::get('{id}/generate-docx', [\App\Http\Controllers\AdendumController::class, 'generateDocx']);
+    Route::get('{id}/download-final', [\App\Http\Controllers\AdendumController::class, 'downloadFinal']);
+    Route::post('{id}/upload-final', [\App\Http\Controllers\AdendumController::class, 'uploadFinal']);
+    Route::get('{id}', [\App\Http\Controllers\AdendumController::class, 'show']);
+    Route::put('{id}', [\App\Http\Controllers\AdendumController::class, 'update']);
+    Route::delete('{id}', [\App\Http\Controllers\AdendumController::class, 'destroy']);
+});
+
 Route::post('adendum-approvals', [\App\Http\Controllers\AdendumApprovalController::class, 'store']);
+Route::post('adendum-persetujuan', [\App\Http\Controllers\AdendumApprovalController::class, 'store']);

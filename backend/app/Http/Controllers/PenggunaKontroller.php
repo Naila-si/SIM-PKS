@@ -39,10 +39,13 @@ class PenggunaKontroller extends Controller
         }
 
         $daftarPengguna = $query->orderBy('created_at', 'desc')->get()->map(function ($p) {
+            $id = $p->pengguna_id ?? $p->penggunaId;
             return [
-                'penggunaId' => $p->penggunaId,
+                'pengguna_id' => $id,
+                'penggunaId' => $id,
                 'nama' => $p->nama,
                 'email' => $p->email,
+                'nomor_hp' => $p->nomor_hp,
                 'nomorHp' => $p->nomor_hp,
                 'jabatan' => $p->jabatan,
                 'role' => $p->role,
@@ -51,6 +54,7 @@ class PenggunaKontroller extends Controller
                 'bidang' => $p->bidang,
                 'status' => $p->status,
                 'createdAt' => $p->created_at->toIso8601String(),
+                'created_at' => $p->created_at->toIso8601String(),
             ];
         });
 
@@ -73,12 +77,16 @@ class PenggunaKontroller extends Controller
             ], 404);
         }
 
+        $idPengguna = $p->pengguna_id ?? $p->penggunaId;
+
         return response()->json([
             'status' => 'sukses',
             'data' => [
-                'penggunaId' => $p->penggunaId,
+                'pengguna_id' => $idPengguna,
+                'penggunaId' => $idPengguna,
                 'nama' => $p->nama,
                 'email' => $p->email,
+                'nomor_hp' => $p->nomor_hp,
                 'nomorHp' => $p->nomor_hp,
                 'jabatan' => $p->jabatan,
                 'role' => $p->role,
@@ -87,6 +95,7 @@ class PenggunaKontroller extends Controller
                 'bidang' => $p->bidang,
                 'status' => $p->status,
                 'createdAt' => $p->created_at->toIso8601String(),
+                'created_at' => $p->created_at->toIso8601String(),
             ],
         ], 200);
     }
@@ -137,7 +146,8 @@ class PenggunaKontroller extends Controller
             'status' => 'sukses',
             'pesan' => 'Registrasi berhasil! Akun Anda sedang Menunggu Persetujuan Administrator Utama.',
             'data' => [
-                'penggunaId' => $penggunaBaru->penggunaId,
+                'pengguna_id' => $penggunaBaru->pengguna_id ?? $penggunaBaru->penggunaId,
+                'penggunaId' => $penggunaBaru->pengguna_id ?? $penggunaBaru->penggunaId,
                 'nama' => $penggunaBaru->nama,
                 'email' => $penggunaBaru->email,
                 'status' => $penggunaBaru->status,

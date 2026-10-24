@@ -24,7 +24,7 @@ class AdendumController extends Controller
 
     public function index($pksId)
     {
-        $adendums = Adendum::where('pks_document_id', $pksId)
+        $adendums = Adendum::where('pks_id', $pksId)
             ->with(['pembuat', 'pksDocument.mitra', 'pksDocument.pengguna', 'riwayat_persetujuan.user'])
             ->orderBy('created_at', 'desc')
             ->get();
@@ -46,10 +46,19 @@ class AdendumController extends Controller
 
     public function store(Request $request, $pksId)
     {
-        $validator = Validator::make($request->all(), [
-            'ruangLingkupPerubahan' => 'required',
-            'tanggalMulai' => 'required|date',
-            'tanggalBerakhir' => 'required|date',
+        $ruangLingkup = $request->input('ruang_lingkup_perubahan', $request->input('ruangLingkupPerubahan'));
+        $tanggalMulai = $request->input('tanggal_mulai', $request->input('tanggalMulai'));
+        $tanggalBerakhir = $request->input('tanggal_berakhir', $request->input('tanggalBerakhir'));
+        $penggunaId = $request->input('pengguna_id', $request->input('user_id', $request->attributes->get('user_id') ?? 1));
+
+        $validator = Validator::make([
+            'ruang_lingkup_perubahan' => $ruangLingkup,
+            'tanggal_mulai' => $tanggalMulai,
+            'tanggal_berakhir' => $tanggalBerakhir,
+        ], [
+            'ruang_lingkup_perubahan' => 'required',
+            'tanggal_mulai' => 'required|date',
+            'tanggal_berakhir' => 'required|date',
         ]);
 
         if ($validator->fails()) {
@@ -57,13 +66,13 @@ class AdendumController extends Controller
         }
 
         $adendum = Adendum::create([
-            'pks_document_id' => $pksId,
-            'nomorAdendum' => null,
-            'ruangLingkupPerubahan' => $request->ruangLingkupPerubahan,
-            'tanggalMulai' => $request->tanggalMulai,
-            'tanggalBerakhir' => $request->tanggalBerakhir,
-            'statusPersetujuan' => 'Draft',
-            'pembuat_id' => $request->attributes->get('user_id'),
+            'pks_id' => $pksId,
+            'nomor_adendum' => null,
+            'ruang_lingkup_perubahan' => $ruangLingkup,
+            'tanggal_mulai' => $tanggalMulai,
+            'tanggal_berakhir' => $tanggalBerakhir,
+            'status_persetujuan' => 'Draft',
+            'pengguna_id' => $penggunaId,
         ]);
 
         return response()->json(['success' => true, 'data' => $adendum]);
@@ -74,14 +83,24 @@ class AdendumController extends Controller
         $adendum = Adendum::find($id);
         if (!$adendum) return response()->json(['success' => false, 'message' => 'Not found'], 404);
 
-        $statusPers = strtolower($adendum->statusPersetujuan ?? 'draft');
+        $statusPers = strtolower($adendum->status_persetujuan ?? 'draft');
         if (!in_array($statusPers, ['draft', 'draf']) && !str_contains($statusPers, 'revisi')) {
             return response()->json(['success' => false, 'message' => 'Adendum yang sedang dalam proses persetujuan tidak dapat diubah.'], 403);
         }
 
-        $adendum->update($request->only([
-            'ruangLingkupPerubahan', 'tanggalMulai', 'tanggalBerakhir', 'statusPersetujuan', 'catatanRevisi'
-        ]));
+        $updateData = [];
+        if ($request->has('ruang_lingkup_perubahan')) $updateData['ruang_lingkup_perubahan'] = $request->input('ruang_lingkup_perubahan');
+        if ($request->has('ruangLingkupPerubahan')) $updateData['ruang_lingkup_perubahan'] = $request->input('ruangLingkupPerubahan');
+        if ($request->has('tanggal_mulai')) $updateData['tanggal_mulai'] = $request->input('tanggal_mulai');
+        if ($request->has('tanggalMulai')) $updateData['tanggal_mulai'] = $request->input('tanggalMulai');
+        if ($request->has('tanggal_berakhir')) $updateData['tanggal_berakhir'] = $request->input('tanggal_berakhir');
+        if ($request->has('tanggalBerakhir')) $updateData['tanggal_berakhir'] = $request->input('tanggalBerakhir');
+        if ($request->has('status_persetujuan')) $updateData['status_persetujuan'] = $request->input('status_persetujuan');
+        if ($request->has('statusPersetujuan')) $updateData['status_persetujuan'] = $request->input('statusPersetujuan');
+        if ($request->has('catatan_revisi')) $updateData['catatan_revisi'] = $request->input('catatan_revisi');
+        if ($request->has('catatanRevisi')) $updateData['catatan_revisi'] = $request->input('catatanRevisi');
+
+        $adendum->update($updateData);
 
         return response()->json(['success' => true, 'data' => $adendum]);
     }
@@ -91,7 +110,7 @@ class AdendumController extends Controller
         $adendum = Adendum::find($id);
         if (!$adendum) return response()->json(['success' => false, 'message' => 'Not found'], 404);
 
-        $statusPers = strtolower($adendum->statusPersetujuan ?? 'draft');
+        $statusPers = strtolower($adendum->status_persetujuan ?? 'draft');
         if (!in_array($statusPers, ['draft', 'draf'])) {
             return response()->json(['success' => false, 'message' => 'Hanya adendum berstatus Draft yang dapat dihapus.'], 403);
         }
@@ -186,17 +205,16 @@ class AdendumController extends Controller
             $path = $file->storeAs('adendum_finals', $fileName, 'public');
 
             $adendum->update([
-                'urlBerkas' => 'adendum_finals/' . $fileName,
+                'url_berkas' => 'adendum_finals/' . $fileName,
             ]);
 
             // Catat ke riwayat persetujuan
-            $userId = $request->input('user_id') ?? $request->attributes->get('user_id');
+            $userId = $request->input('pengguna_id') ?? $request->input('user_id') ?? $request->attributes->get('user_id');
             $pengguna = $userId ? \App\Models\Pengguna::find($userId) : null;
 
             \App\Models\AdendumApproval::create([
-                'adendumId' => $adendum->adendumId,
-                'penggunaId' => $pengguna ? $pengguna->penggunaId : ($adendum->pembuat_id ?? 1),
-                'aktor' => $pengguna ? $pengguna->nama : 'Pengelola',
+                'adendum_id' => $adendum->adendum_id,
+                'pengguna_id' => $pengguna ? ($pengguna->pengguna_id ?? $pengguna->penggunaId) : ($adendum->pengguna_id ?? 1),
                 'status_aksi' => 'Dokumen Final Scan Diunggah',
                 'catatan' => 'Dokumen fisik adendum yang telah ditandatangani berhasil diunggah.'
             ]);
@@ -214,11 +232,12 @@ class AdendumController extends Controller
     public function downloadFinal($id)
     {
         $adendum = Adendum::find($id);
-        if (!$adendum || !$adendum->urlBerkas) {
+        $url = $adendum ? ($adendum->url_berkas ?? $adendum->urlBerkas) : null;
+        if (!$adendum || !$url) {
             return response()->json(['message' => 'Dokumen final adendum belum diunggah.'], 404);
         }
 
-        $path = storage_path('app/public/' . $adendum->urlBerkas);
+        $path = storage_path('app/public/' . $url);
         if (!file_exists($path)) {
             return response()->json(['message' => 'Berkas fisik tidak ditemukan di server.'], 404);
         }
