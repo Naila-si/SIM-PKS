@@ -116,7 +116,8 @@ export const PersetujuanPksPage = () => {
               ? new Date(item.created_at || item.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
               : '-',
             rawDate: item.created_at || item.createdAt || '',
-            statusPks: (item.statusPersetujuan === 'Disetujui' || item.statusPersetujuan === 'Selesai') ? 'Aktif' : 'Draf',
+            statusPks: item.status_adendum || item.statusAdendum || ((item.statusPersetujuan === 'Disetujui' || item.statusPersetujuan === 'Selesai') ? 'Aktif' : 'Draf'),
+            statusAdendum: item.status_adendum || item.statusAdendum || 'Draf',
             statusPersetujuan: item.statusPersetujuan || 'Draf',
             catatanRevisi: item.catatanRevisi,
             raw: item,

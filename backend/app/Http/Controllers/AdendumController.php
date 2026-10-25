@@ -72,6 +72,7 @@ class AdendumController extends Controller
             'tanggal_mulai' => $tanggalMulai,
             'tanggal_berakhir' => $tanggalBerakhir,
             'status_persetujuan' => 'Draft',
+            'status_adendum' => 'Draf',
             'pengguna_id' => $penggunaId,
         ]);
 
@@ -97,6 +98,8 @@ class AdendumController extends Controller
         if ($request->has('tanggalBerakhir')) $updateData['tanggal_berakhir'] = $request->input('tanggalBerakhir');
         if ($request->has('status_persetujuan')) $updateData['status_persetujuan'] = $request->input('status_persetujuan');
         if ($request->has('statusPersetujuan')) $updateData['status_persetujuan'] = $request->input('statusPersetujuan');
+        if ($request->has('status_adendum')) $updateData['status_adendum'] = $request->input('status_adendum');
+        if ($request->has('statusAdendum')) $updateData['status_adendum'] = $request->input('statusAdendum');
         if ($request->has('catatan_revisi')) $updateData['catatan_revisi'] = $request->input('catatan_revisi');
         if ($request->has('catatanRevisi')) $updateData['catatan_revisi'] = $request->input('catatanRevisi');
 

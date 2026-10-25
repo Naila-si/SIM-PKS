@@ -28,6 +28,8 @@ class Adendum extends Model
         'tanggalBerakhir',
         'status_persetujuan',
         'statusPersetujuan',
+        'status_adendum',
+        'statusAdendum',
         'url_berkas',
         'urlBerkas',
         'catatan_revisi',
@@ -44,6 +46,7 @@ class Adendum extends Model
         'tanggalMulai',
         'tanggalBerakhir',
         'statusPersetujuan',
+        'statusAdendum',
         'urlBerkas',
         'catatanRevisi',
         'pembuat_id',
@@ -77,6 +80,11 @@ class Adendum extends Model
     public function setStatusPersetujuanAttribute($value)
     {
         $this->attributes['status_persetujuan'] = $value;
+    }
+
+    public function setStatusAdendumAttribute($value)
+    {
+        $this->attributes['status_adendum'] = $value;
     }
 
     public function setUrlBerkasAttribute($value)
@@ -132,6 +140,29 @@ class Adendum extends Model
     public function getStatusPersetujuanAttribute()
     {
         return $this->attributes['status_persetujuan'] ?? $this->attributes['statusPersetujuan'] ?? null;
+    }
+
+    public function getStatusAdendumAttribute()
+    {
+        $status = $this->attributes['status_adendum'] ?? $this->attributes['statusAdendum'] ?? null;
+        $statusPers = strtolower($this->attributes['status_persetujuan'] ?? $this->attributes['statusPersetujuan'] ?? '');
+
+        if (in_array($statusPers, ['disetujui', 'selesai', 'draf adendum disetujui']) || $status === 'Aktif' || $status === 'Segera Berakhir' || $status === 'Berakhir') {
+            if (!empty($this->attributes['tanggal_berakhir'])) {
+                $today = \Carbon\Carbon::today();
+                $end = \Carbon\Carbon::parse($this->attributes['tanggal_berakhir']);
+                if ($end->isPast()) {
+                    return 'Berakhir';
+                } elseif ($today->diffInDays($end, false) <= 30) {
+                    return 'Segera Berakhir';
+                } else {
+                    return 'Aktif';
+                }
+            }
+            return 'Aktif';
+        }
+
+        return $status ?: 'Draf';
     }
 
     public function getUrlBerkasAttribute()

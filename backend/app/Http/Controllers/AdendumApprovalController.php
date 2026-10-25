@@ -74,6 +74,7 @@ class AdendumApprovalController extends Controller
                 $nomorAdendum = ($adendum->nomor_adendum ?? $adendum->nomorAdendum) ?: \App\Services\NomorDokumenService::generateNextNomor();
                 $adendum->update([
                     'status_persetujuan' => 'Disetujui',
+                    'status_adendum' => 'Aktif',
                     'nomor_adendum' => $nomorAdendum,
                 ]);
             } else {

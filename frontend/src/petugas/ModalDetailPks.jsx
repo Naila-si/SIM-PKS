@@ -535,8 +535,8 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick, onSuccess 
                     <tbody className="divide-y divide-slate-100">
                       {displayAdendum && displayAdendum.length > 0 ? (
                         displayAdendum.map((ad, idx) => {
-                          const statusP = (ad.statusPersetujuan || '').toLowerCase();
-                          const statusA = (ad.status || '').toLowerCase();
+                          const statusP = (ad.statusPersetujuan || ad.status_persetujuan || '').toLowerCase();
+                          const statusA = (ad.status_adendum || ad.statusAdendum || ad.status || '').toLowerCase();
                           const isApprovedOrActive = (statusP.includes('disetujui') || statusA === 'aktif') && !statusP.includes('draft') && !statusP.includes('draf');
                           const displayNomor = isApprovedOrActive && ad.nomorAdendum ? ad.nomorAdendum : '-';
 

@@ -168,7 +168,7 @@ export const ModalDetailAdendum = ({ isOpen, adendumId, adendumData, onClose, on
           <div className="flex items-center space-x-3">
             <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">Detail Adendum</h2>
             <div className="h-4 w-px bg-slate-200" />
-            <StatusBadge status={(statusPersetujuan === 'Disetujui' || statusPersetujuan === 'Selesai') ? 'Aktif' : 'Draf'} />
+            <StatusBadge status={adendum?.status_adendum || adendum?.statusAdendum || ((statusPersetujuan === 'Disetujui' || statusPersetujuan === 'Selesai') ? 'Aktif' : 'Draf')} />
             <StatusBadge status={statusPersetujuan} />
           </div>
           <button
