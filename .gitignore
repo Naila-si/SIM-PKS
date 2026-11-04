@@ -22,3 +22,5 @@ build/
 logs/
 .DS_Store
 Thumbs.db
+.vscode/
+frontend/jsconfig.json

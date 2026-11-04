@@ -1,23 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
 import { pksService } from '../../services/pksService';
 import { adendumService } from '../../services/adendumService';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  Building2, CheckCircle2, Clock, Calendar, AlertTriangle,
-  ArrowRight, Eye, ShieldCheck, TrendingUp, Sparkles, RefreshCw,
-  FolderKanban, CheckSquare, Layers, FileCheck, Layers3
+  Building2, CheckCircle2, Clock, Calendar,
+  ArrowRight, Eye, RefreshCw, FolderKanban, CheckSquare
 } from 'lucide-react';
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip,
-  CartesianGrid, Cell, PieChart, Pie, Legend
+  CartesianGrid, Cell
 } from 'recharts';
 import { ModalDetailPks } from '../../petugas/ModalDetailPks';
 import { ModalDetailAdendum } from '../../petugas/ModalDetailAdendum';
 import logoEmblem from '../../assets/logo-jr-emblem.png';
 
 export const DashboardKabag = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
