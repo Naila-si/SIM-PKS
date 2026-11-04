@@ -78,6 +78,16 @@ class PksDocumentController extends Controller
             ], 422);
         }
 
+        $authUser = $request->user();
+        if ($authUser && in_array($authUser->role, ['petugas_jr', 'petugas'])) {
+            if ($doc->pengguna_id && $doc->pengguna_id != $authUser->pengguna_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Hanya Petugas pembuat PKS yang berhak mengubah data dokumen ini.'
+                ], 403);
+            }
+        }
+
         $validated = $request->validate([
             'bidang' => 'sometimes|string',
             'jenis_pks' => 'sometimes|string',

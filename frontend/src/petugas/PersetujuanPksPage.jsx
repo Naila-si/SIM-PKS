@@ -83,7 +83,7 @@ export const PersetujuanPksPage = () => {
             bidang: item.bidang || '-',
             perusahaan: item.mitra?.nama_mitra || item.mitra?.namaPerusahaan || '-',
             petugas: item.pengguna?.nama || item.pengguna?.nama_pengguna || item.pembuat?.nama || item.pembuat?.nama_pengguna || '-',
-            pembuat_id: item.penggunaId || item.pembuat_id,
+            pembuat_id: item.pengguna_id || item.penggunaId || item.pembuat_id || item.pengguna?.pengguna_id || item.pengguna?.penggunaId,
             tglPengajuan: (item.created_at || item.createdAt)
               ? new Date(item.created_at || item.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
               : '-',
@@ -111,7 +111,7 @@ export const PersetujuanPksPage = () => {
             bidang: pksDoc?.bidang || item.bidang || '-',
             perusahaan: pksDoc?.mitra?.nama_mitra || pksDoc?.mitra?.namaPerusahaan || '-',
             petugas: item.pembuat?.nama || item.pembuat?.nama_pengguna || pksDoc?.pengguna?.nama || pksDoc?.pengguna?.nama_pengguna || pksDoc?.pembuat?.nama || '-',
-            pembuat_id: item.pembuat_id || pksDoc?.penggunaId,
+            pembuat_id: item.pembuat_id || item.pengguna_id || item.penggunaId || pksDoc?.pengguna_id || pksDoc?.penggunaId,
             tglPengajuan: (item.created_at || item.createdAt)
               ? new Date(item.created_at || item.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
               : '-',
@@ -151,7 +151,11 @@ export const PersetujuanPksPage = () => {
   const isItemNeedingMyAction = (item) => {
     const status = item.statusPersetujuan || '';
     if (isPetugas) {
-      return status.includes('Revisi') || ['draft', 'draf'].includes(status.toLowerCase());
+      const currentUserId = user?.pengguna_id || user?.penggunaId || user?.id;
+      const isCreator = (currentUserId && item.pembuat_id && String(currentUserId) === String(item.pembuat_id)) ||
+        (user?.nama && item.petugas && user.nama.trim().toLowerCase() === item.petugas.trim().toLowerCase()) ||
+        isPengelolaOrAdmin;
+      return isCreator && (status.includes('Revisi') || ['draft', 'draf'].includes(status.toLowerCase()));
     }
     if (isPengelolaOrAdmin) {
       return status === 'Menunggu Penyerahan' || status === 'Pemeriksaan Pengelola';
@@ -475,7 +479,7 @@ export const PersetujuanPksPage = () => {
                 <tr>
                   <th className="px-5 py-4">Tipe & Nomor</th>
                   <th className="px-4 py-4">Bidang</th>
-                  <th className="px-5 py-4">Perusahaan / Instansi</th>
+                  <th className="px-5 py-4">Mitra / Instansi</th>
                   <th className="px-4 py-4">Petugas Pembuat</th>
                   <th className="px-4 py-4">Tgl Pengajuan</th>
                   <th className="px-4 py-4">Status</th>
@@ -496,8 +500,13 @@ export const PersetujuanPksPage = () => {
                   const canAcceptPimpinan = isPimpinan && status === 'Disetujui Kabag';
                   const canDecidePimpinan = isPimpinan && status === 'Pemeriksaan Pimpinan';
 
-                  const canEditRevisi = isPetugas && status.includes('Revisi');
-                  const canTandaiSiap = isPetugas && ['draft', 'draf'].includes(status.toLowerCase());
+                  const currentUserId = user?.pengguna_id || user?.penggunaId || user?.id;
+                  const isCreator = (currentUserId && item.pembuat_id && String(currentUserId) === String(item.pembuat_id)) ||
+                    (user?.nama && item.petugas && user.nama.trim().toLowerCase() === item.petugas.trim().toLowerCase()) ||
+                    isPengelolaOrAdmin;
+
+                  const canEditRevisi = isPetugas && isCreator && status.includes('Revisi');
+                  const canTandaiSiap = isPetugas && isCreator && ['draft', 'draf'].includes(status.toLowerCase());
 
                   return (
                     <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">

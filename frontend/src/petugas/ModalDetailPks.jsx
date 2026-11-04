@@ -16,6 +16,7 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick, onSuccess 
   const { user } = useAuth();
   
   const isPetugas = ['petugas', 'petugas_jr'].includes(user?.role);
+  const isAdmin = ['admin_utama', 'admin'].includes(user?.role);
   const isPengelolaOrAdmin = ['pengelola_pks', 'admin_utama', 'admin', 'pengelola'].includes(user?.role);
   const isKabag = user?.role === 'kabag';
   const isPimpinan = user?.role === 'pimpinan';
@@ -156,8 +157,15 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick, onSuccess 
   const displayAdendum = adendumList;
 
   // RBAC & Ownership Logic
-  const creatorName = data.pengguna?.nama || data.pengguna?.nama_pengguna || data.pembuat?.nama || data.pengelola || 'Sistem';
-  const isCreator = user?.nama === creatorName || user?.nama_pengguna === creatorName || user?.penggunaId === data?.penggunaId || user?.penggunaId === data?.pengguna?.penggunaId;
+  const creatorName = data.pengguna?.nama || data.pengguna?.nama_pengguna || data.pembuat?.nama || data.pengelola || '';
+  const currentUserId = user?.pengguna_id || user?.penggunaId || user?.id;
+  const docCreatorId = data?.pengguna_id || data?.penggunaId || data?.pengguna?.pengguna_id || data?.pengguna?.penggunaId || data?.pembuat?.pengguna_id || data?.pembuat_id;
+
+  const isCreator = (currentUserId && docCreatorId && String(currentUserId) === String(docCreatorId)) ||
+    (user?.nama && creatorName && user.nama.trim().toLowerCase() === creatorName.trim().toLowerCase()) ||
+    (user?.nama_pengguna && creatorName && user.nama_pengguna.trim().toLowerCase() === creatorName.trim().toLowerCase()) ||
+    isAdmin;
+
   const isDraft = ['draft', 'draf'].includes((data.status_pks || data.statusPks || 'Draf').toLowerCase());
   const isPemeriksaanPengelola = ['pemeriksaan pengelola', 'menunggu penyerahan'].includes((data.status_persetujuan || data.statusPersetujuan || '').toLowerCase());
   const isDisetujui = ['disetujui', 'aktif'].includes((data.status_pks || data.statusPks || '').toLowerCase());
@@ -165,9 +173,9 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick, onSuccess 
   
   const statusPers = data.status_persetujuan || data.statusPersetujuan || 'Draf';
   
-  // 1. Petugas Actions
-  const canShowSiapDiserahkan = isPetugas && (isDraftPersetujuan || statusPers.includes('Revisi'));
-  const canShowEditDraf = isPetugas && (isDraftPersetujuan || statusPers.includes('Revisi'));
+  // 1. Petugas Actions (Hanya Petugas Pembuat atau Admin)
+  const canShowSiapDiserahkan = isPetugas && isCreator && (isDraftPersetujuan || statusPers.includes('Revisi'));
+  const canShowEditDraf = isPetugas && isCreator && (isDraftPersetujuan || statusPers.includes('Revisi'));
   const canShowTambahAdendum = isPetugas && (isCreator || isPengelolaOrAdmin);
   
   // 2. Accept Document Action (Sudah Diterima)
@@ -395,7 +403,7 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick, onSuccess 
 
                 <div className="grid grid-cols-2 gap-y-3.5 gap-x-4">
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">NAMA PERUSAHAAN/INSTANSI</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">NAMA MITRA / INSTANSI</p>
                     <p className="font-extrabold text-slate-900 text-xs mt-0.5">
                       {data.mitra?.nama_mitra || '-'}
                     </p>
@@ -743,9 +751,15 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick, onSuccess 
             onEditClick={(adData) => setEditingAdendum(adData)}
             onDeleteClick={(adData) => setDeletingAdendum(adData)}
             onSuccess={(updatedAd) => {
-              setAdendumList((prev) =>
-                prev.map((a) => ((a.adendumId === updatedAd.adendumId || a.id === updatedAd.adendumId) ? { ...a, ...updatedAd } : a))
-              );
+              const targetId = updatedAd?.adendum_id || updatedAd?.adendumId || updatedAd?.id;
+              if (targetId) {
+                setAdendumList((prev) =>
+                  prev.map((a) => {
+                    const aId = a?.adendum_id || a?.adendumId || a?.id;
+                    return (aId && String(aId) === String(targetId)) ? { ...a, ...updatedAd } : a;
+                  })
+                );
+              }
             }}
           />
         )}
@@ -758,9 +772,15 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick, onSuccess 
             pksData={data}
             onClose={() => setEditingAdendum(null)}
             onSuccess={(updatedAd) => {
-              setAdendumList((prev) =>
-                prev.map((a) => ((a.adendumId === updatedAd.adendumId || a.id === updatedAd.adendumId) ? { ...a, ...updatedAd } : a))
-              );
+              const targetId = updatedAd?.adendum_id || updatedAd?.adendumId || updatedAd?.id;
+              if (targetId) {
+                setAdendumList((prev) =>
+                  prev.map((a) => {
+                    const aId = a?.adendum_id || a?.adendumId || a?.id;
+                    return (aId && String(aId) === String(targetId)) ? { ...a, ...updatedAd } : a;
+                  })
+                );
+              }
             }}
           />
         )}

@@ -8,9 +8,10 @@ import { ModalTambahPks } from './ModalTambahPks';
 import { ModalUbahPks } from './ModalUbahPks';
 import { ModalDetailPks } from './ModalDetailPks';
 import { ModalHapusPks } from './ModalHapusPks';
+import { exportPksToExcel } from '../utils/excelReportHelper';
 import {
   Plus, Search, RotateCcw, MoreVertical, Eye, Edit3, Trash2,
-  FileText, CheckCircle2, Clock, XCircle, Calendar, Filter, Download, Printer,
+  FileText, CheckCircle2, Clock, XCircle, Calendar, Filter, Download,
   ChevronLeft, ChevronRight, AlertTriangle
 } from 'lucide-react';
 
@@ -21,6 +22,8 @@ export const ManajemenPksPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const isPetugas = user?.role === 'petugas_jr';
+  const isPengelolaOrAdmin = ['pengelola_pks', 'pengelola', 'admin_utama', 'admin'].includes(user?.role);
+  const [isExporting, setIsExporting] = useState(false);
 
   const [pksList, setPksList] = useState([]);
   const [mitraList, setMitraList] = useState([]);
@@ -129,6 +132,25 @@ export const ManajemenPksPage = () => {
     const dateB = new Date(b.created_at || 0).getTime();
     return urutan === 'Terbaru' ? dateB - dateA : dateA - dateB;
   });
+
+  const handleExport = async () => {
+    try {
+      setIsExporting(true);
+      await exportPksToExcel({
+        data: filteredData,
+        filters: {
+          bidang: bidang,
+          status: statusPks,
+          search: searchQuery,
+        },
+        user: user
+      });
+    } catch (err) {
+      console.error('Export error:', err);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <div className="space-y-6 font-sans">
@@ -307,15 +329,20 @@ export const ManajemenPksPage = () => {
         {/* Table Bar Header */}
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <h2 className="text-sm font-extrabold text-slate-900">Daftar Seluruh PKS</h2>
-
-          <div className="flex items-center space-x-2">
-            <button className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-500 cursor-pointer" title="Unduh">
-              <Download className="w-4 h-4" />
-            </button>
-            <button className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-500 cursor-pointer" title="Cetak">
-              <Printer className="w-4 h-4" />
-            </button>
-          </div>
+          {isPengelolaOrAdmin && (
+            <div className="flex items-center space-x-2">
+              <button
+                type="button"
+                onClick={handleExport}
+                disabled={isExporting}
+                className="px-3 py-1.5 border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-xl flex items-center shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+                title="Unduh Laporan Excel Rekap PKS"
+              >
+                <Download className="w-3.5 h-3.5 mr-1.5 text-emerald-600" />
+                {isExporting ? 'Mengunduh...' : 'Unduh Excel'}
+              </button>
+            </div>
+          )}
         </div>
 
         {loading ? (

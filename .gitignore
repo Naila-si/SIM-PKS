@@ -1,0 +1,24 @@
+# File Konfigurasi / Rahasia
+.env
+*.env
+frontend/.env
+backend/.env
+
+# File Sampah / Dummy Testing di root
+dummy_final.pdf
+test_draft.docx
+*.pdf
+*.docx
+
+# Folder Dependensi & Build
+node_modules/
+vendor/
+dist/
+dist-ssr/
+build/
+
+# Logs & Cache
+*.log
+logs/
+.DS_Store
+Thumbs.db

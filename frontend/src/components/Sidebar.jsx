@@ -151,10 +151,10 @@ export const Sidebar = () => {
               )}
             </Link>
 
-            {/* 3. Manajemen Perusahaan */}
+            {/* 3. Manajemen Mitra */}
             <Link
               to="/mitra"
-              title="Manajemen Perusahaan"
+              title="Manajemen Mitra"
               className={`group relative flex items-center rounded-xl text-xs font-semibold transition-all ${
                 isCollapsed ? 'justify-center p-3' : 'space-x-3 px-3.5 py-2.5'
               } ${
@@ -164,12 +164,12 @@ export const Sidebar = () => {
               }`}
             >
               <Building2 className="w-4 h-4 shrink-0" />
-              {!isCollapsed && <span className="truncate">Manajemen Perusahaan</span>}
+              {!isCollapsed && <span className="truncate">Manajemen Mitra</span>}
 
               {/* Floating Tooltip in Collapsed Mode */}
               {isCollapsed && (
                 <div className="fixed left-20 ml-2 px-3 py-1.5 bg-[#0F2238] text-white text-xs font-bold rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[100]">
-                  Manajemen Perusahaan
+                  Manajemen Mitra
                 </div>
               )}
             </Link>

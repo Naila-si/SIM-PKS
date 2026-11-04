@@ -211,7 +211,7 @@ export const DashboardPage = () => {
             </div>
             <span className="text-[10px] font-extrabold bg-blue-50 text-blue-700 px-2 py-0.5 rounded uppercase">MITRA</span>
           </div>
-          <p className="text-xs font-bold text-slate-400 mt-3">Perusahaan Mitra</p>
+          <p className="text-xs font-bold text-slate-400 mt-3">Total Mitra</p>
           <p className="text-3xl font-extrabold text-slate-900 mt-0.5">{summary.total_mitra}</p>
           <p className="text-[10px] text-slate-400 font-medium italic mt-0.5">Mitra aktif terdaftar</p>
         </div>

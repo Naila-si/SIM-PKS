@@ -56,7 +56,12 @@ export const ModalDetailAdendum = ({ isOpen, adendumId, adendumData, onClose, on
   
   const roleSuffix = isPengelolaOrAdmin ? 'Pengelola' : isKabag ? 'Kabag' : isPimpinan ? 'Pimpinan' : '';
   const creatorName = adendum?.pembuat?.nama || adendum?.pembuat?.nama_pengguna || 'Petugas';
-  const isCreator = user?.penggunaId === adendum?.pembuat_id || isPetugas;
+  const currentUserId = user?.pengguna_id || user?.penggunaId || user?.id;
+  const docCreatorId = adendum?.pembuat_id || adendum?.pengguna_id || adendum?.penggunaId || adendum?.pembuat?.pengguna_id || adendum?.pembuat?.penggunaId;
+  const isCreator = (currentUserId && docCreatorId && String(currentUserId) === String(docCreatorId)) ||
+    (user?.nama && creatorName && user.nama.trim().toLowerCase() === creatorName.trim().toLowerCase()) ||
+    (user?.nama_pengguna && creatorName && user.nama_pengguna.trim().toLowerCase() === creatorName.trim().toLowerCase()) ||
+    isAdmin;
   const isDraftPersetujuan = ['draft', 'draf'].includes((statusPersetujuan).toLowerCase());
   const isRevisi = (statusPersetujuan).toLowerCase().includes('revisi');
 

@@ -272,7 +272,7 @@ export const Dashboard = () => {
                 <span>Daftar Dokumen PKS</span>
               </Link>
               <Link
-                to="/perusahaan"
+                to="/mitra"
                 className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-xs transition-all duration-200"
               >
                 <Building2 className="w-4 h-4 text-sky-200" />

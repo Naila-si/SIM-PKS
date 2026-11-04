@@ -241,7 +241,7 @@ export const DashboardAdmin = () => {
               Mitra Rekanan
             </span>
           </div>
-          <p className="text-xs font-bold text-slate-400 mt-3">Master Perusahaan Mitra</p>
+          <p className="text-xs font-bold text-slate-400 mt-3">Master Data Mitra</p>
           <p className="text-3xl font-extrabold text-slate-900 mt-0.5 group-hover:text-sky-600 transition-colors">{mitraList.length}</p>
           <p className="text-[11px] text-slate-500 font-medium mt-1">Instansi & Korporasi mitra JR</p>
         </Link>

@@ -41,7 +41,7 @@ export const MitraListPage = () => {
     } else {
       const ok = await confirm({
         title: 'Aktifkan Kembali Mitra',
-        message: `Apakah Anda yakin ingin mengaktifkan kembali perusahaan mitra "${mitra.nama_mitra}"?`,
+        message: `Apakah Anda yakin ingin mengaktifkan kembali mitra "${mitra.nama_mitra}"?`,
         confirmText: 'Ya, Aktifkan',
         cancelText: 'Batal',
         type: 'confirm'
@@ -64,7 +64,7 @@ export const MitraListPage = () => {
     try {
       const res = await mitraService.updateStatus(selectedMitraId, 'Tidak Aktif', fileProof);
       if (res.success) {
-        showToast('success', 'Status perusahaan mitra berhasil dinonaktifkan.');
+        showToast('success', 'Status mitra berhasil dinonaktifkan.');
         fetchMitra();
       }
     } catch (err) {
@@ -76,7 +76,7 @@ export const MitraListPage = () => {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Perusahaan & Instansi Mitra</h1>
+          <h1 className="text-xl font-bold text-slate-900">Daftar Mitra & Instansi</h1>
           <p className="text-xs text-slate-500">Master data mitra Perjanjian Kerja Sama Jasa Raharja</p>
         </div>
         <Link
@@ -95,7 +95,7 @@ export const MitraListPage = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari nama perusahaan atau penanggung jawab..."
+            placeholder="Cari nama mitra atau penanggung jawab..."
             className="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00529C]"
           />
         </div>
@@ -105,7 +105,7 @@ export const MitraListPage = () => {
         {loading ? (
           <div className="col-span-3 p-8 text-center text-xs text-slate-500">Memuat data mitra...</div>
         ) : mitraList.length === 0 ? (
-          <div className="col-span-3 p-12 text-center text-xs text-slate-400">Tidak ada perusahaan mitra ditemukan.</div>
+          <div className="col-span-3 p-12 text-center text-xs text-slate-400">Tidak ada mitra ditemukan.</div>
         ) : (
           mitraList.map((m) => (
             <div key={m.mitraId} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between space-y-3">
@@ -167,7 +167,7 @@ export const MitraListPage = () => {
         isOpen={isDeactivateModalOpen}
         onClose={() => setIsDeactivateModalOpen(false)}
         onSubmit={handleDeactivateSubmit}
-        title="Nonaktifkan Perusahaan Mitra"
+        title="Nonaktifkan Mitra"
         description="Unggah dokumen 'Surat Pernyataan Tidak Lanjut' (PDF/JPG/PNG maks. 10MB) sebagai bukti penonaktifan mitra."
         accept=".pdf,.jpg,.jpeg,.png"
         maxMB={10}

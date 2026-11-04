@@ -128,7 +128,7 @@ export const ModalTambahAdendum = ({ isOpen, pksId, pksInitialData, onClose, onS
                     <p className="font-bold text-slate-800 text-xs mt-0.5">{pksData?.bidang || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase">Perusahaan / Instansi</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase">Mitra / Instansi</p>
                     <p className="font-bold text-slate-900 text-xs mt-0.5">{pksData?.mitra?.nama_mitra || pksData?.mitra?.namaPerusahaan || pksData?.namaMitra || '-'}</p>
                   </div>
                   <div>

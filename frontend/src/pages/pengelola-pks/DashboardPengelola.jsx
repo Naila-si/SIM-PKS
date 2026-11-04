@@ -421,7 +421,7 @@ export const DashboardPengelola = () => {
               <thead className="bg-blue-50/50 border-b border-slate-100 text-slate-700 font-extrabold text-[11px]">
                 <tr>
                   <th className="px-5 py-4">Tipe & Nomor</th>
-                  <th className="px-5 py-4">Perusahaan / Instansi Mitra</th>
+                  <th className="px-5 py-4">Mitra / Instansi</th>
                   <th className="px-4 py-4">Petugas Pembuat</th>
                   <th className="px-4 py-4">Tanggal Pengajuan</th>
                   <th className="px-4 py-4">Status Saat Ini</th>

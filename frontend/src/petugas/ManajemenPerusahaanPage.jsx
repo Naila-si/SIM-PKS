@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { mitraService } from '../services/mitraService';
+import { exportMitraToExcel } from '../utils/excelReportHelper';
 import { DrawerDetailPerusahaan } from './DrawerDetailPerusahaan';
 import { ModalUbahPerusahaan } from './ModalUbahPerusahaan';
 import { useAuth } from '../context/AuthContext';
 import {
   Building2, CheckCircle2, AlertTriangle, XCircle, Search, RotateCcw,
-  Download, RefreshCw, Eye, Edit3, MoreVertical, ChevronLeft, ChevronRight, FileText, Power
+  Download, RefreshCw, Eye, Edit3, MoreVertical, ChevronLeft, ChevronRight, FileText, Power, Lock
 } from 'lucide-react';
 
 export const ManajemenPerusahaanPage = () => {
@@ -14,6 +15,8 @@ export const ManajemenPerusahaanPage = () => {
   
   const canEdit = ['petugas_jr', 'petugas', 'pengelola_pks', 'pengelola', 'admin_utama', 'admin'].includes(role);
   const canToggleStatus = ['pengelola_pks', 'pengelola', 'admin_utama', 'admin'].includes(role);
+  const canExport = ['pengelola_pks', 'pengelola', 'admin_utama', 'admin'].includes(role);
+  const [isExporting, setIsExporting] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [mitraList, setMitraList] = useState([]);
@@ -118,16 +121,21 @@ export const ManajemenPerusahaanPage = () => {
 
   const handleExportExcel = async () => {
     try {
-      const res = await mitraService.exportMitra({});
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `Daftar_Mitra_Perusahaan_${new Date().toISOString().split('T')[0]}.xlsx`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      setIsExporting(true);
+      await exportMitraToExcel({
+        data: filteredData,
+        filters: {
+          bidang: bidangFilter,
+          status: statusMitraFilter,
+          search: searchQuery,
+        },
+        user: user
+      });
     } catch (err) {
-      showDialog('info', 'Ekspor Data', 'Mengunduh data ekspor Excel...');
+      console.error('Export error:', err);
+      showDialog('info', 'Ekspor Data', 'Gagal mengunduh data ekspor Excel.');
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -166,9 +174,9 @@ export const ManajemenPerusahaanPage = () => {
       
       {/* 1. Header Halaman */}
       <div>
-        <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Manajemen Perusahaan</h1>
+        <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Manajemen Mitra</h1>
         <p className="text-xs text-slate-500 mt-0.5">
-          Kelola data perusahaan, instansi, dan mitra yang menjadi pihak kedua dalam Perjanjian Kerja Sama (PKS).
+          Kelola data mitra dan instansi yang menjadi pihak kedua dalam Perjanjian Kerja Sama (PKS).
         </p>
       </div>
 
@@ -176,13 +184,13 @@ export const ManajemenPerusahaanPage = () => {
 
 
 
-      {/* 4. Tabel Daftar Perusahaan Mitra */}
+      {/* 4. Tabel Daftar Mitra */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
         
         {/* Table Bar Header */}
         <div className="px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center space-x-2">
-            <h2 className="text-sm font-extrabold text-slate-900">Daftar Perusahaan Mitra</h2>
+            <h2 className="text-sm font-extrabold text-slate-900">Daftar Mitra</h2>
             <span className="text-[10px] font-extrabold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
               {filteredData.length} Total
             </span>
@@ -193,7 +201,7 @@ export const ManajemenPerusahaanPage = () => {
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
               <input
                 type="text"
-                placeholder="Cari perusahaan..."
+                placeholder="Cari mitra..."
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -230,23 +238,27 @@ export const ManajemenPerusahaanPage = () => {
               <option value="Tidak Aktif">Tidak Aktif</option>
             </select>
 
-            <button
-              onClick={handleExportExcel}
-              className="px-3 py-1.5 border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold rounded-xl flex items-center shadow-2xs transition-all cursor-pointer shrink-0"
-            >
-              <Download className="w-3.5 h-3.5 mr-1 text-slate-500" />
-              Ekspor Excel
-            </button>
+            {canExport && (
+              <button
+                type="button"
+                onClick={handleExportExcel}
+                disabled={isExporting}
+                className="px-3 py-1.5 border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold rounded-xl flex items-center shadow-2xs transition-all cursor-pointer shrink-0 disabled:opacity-50"
+              >
+                <Download className="w-3.5 h-3.5 mr-1.5 text-emerald-600" />
+                {isExporting ? 'Mengunduh...' : 'Unduh Excel'}
+              </button>
+            )}
           </div>
         </div>
 
         {/* Table Body */}
         {loading ? (
-          <div className="p-12 text-center text-xs text-slate-500">Memuat data perusahaan...</div>
+          <div className="p-12 text-center text-xs text-slate-500">Memuat data mitra...</div>
         ) : filteredData.length === 0 ? (
           <div className="p-12 text-center space-y-2 py-16">
             <Building2 className="w-10 h-10 text-slate-300 mx-auto" />
-            <p className="text-sm font-semibold text-slate-700">Tidak Ada Data Perusahaan Mitra</p>
+            <p className="text-sm font-semibold text-slate-700">Tidak Ada Data Mitra</p>
             <p className="text-xs text-slate-400">Silakan atur ulang kriteria pencarian atau filter Anda.</p>
             {(searchQuery || bidangFilter !== 'Semua' || statusMitraFilter !== 'Semua') && (
               <button
@@ -263,7 +275,7 @@ export const ManajemenPerusahaanPage = () => {
             <table className="w-full text-left text-xs text-slate-700">
               <thead className="bg-slate-50/80 border-b border-slate-100 text-slate-500 uppercase font-extrabold text-[10px] tracking-wider">
                 <tr>
-                  <th className="px-5 py-3.5">Nama Perusahaan / Instansi</th>
+                  <th className="px-5 py-3.5">Nama Mitra / Instansi</th>
                   <th className="px-4 py-3.5">Bidang</th>
                   <th className="px-4 py-3.5">Penanggung Jawab</th>
                   <th className="px-4 py-3.5">Kontak</th>
@@ -276,7 +288,7 @@ export const ManajemenPerusahaanPage = () => {
                   const statusMitra = item.status_mitra || item.statusMitra || item.status || 'Aktif';
 
                   return (
-                    <tr key={item.perusahaanId || item.mitraId} className="hover:bg-slate-50/70 transition-colors">
+                    <tr key={item.mitra_id || item.mitraId || item.perusahaanId || item.id} className="hover:bg-slate-50/70 transition-colors">
                       {/* Nama Perusahaan / Instansi + ID */}
                       <td className="px-5 py-4">
                         <p className="font-extrabold text-slate-900 text-xs">{item.namaPerusahaan || item.nama_mitra || item.nama}</p>
@@ -325,7 +337,7 @@ export const ManajemenPerusahaanPage = () => {
                         <div className="flex items-center justify-center space-x-1 relative">
                           <button
                             type="button"
-                            title="Detail Perusahaan"
+                            title="Detail Mitra"
                             onClick={() => setViewingMitra(item)}
                             className="p-1.5 rounded-lg hover:bg-blue-50 text-slate-500 hover:text-blue-600 transition-colors cursor-pointer"
                           >
@@ -335,11 +347,33 @@ export const ManajemenPerusahaanPage = () => {
                           {canEdit && (
                             <button
                               type="button"
-                              title="Ubah Perusahaan"
-                              onClick={() => setEditingMitra(item)}
-                              className="p-1.5 rounded-lg hover:bg-amber-50 text-slate-500 hover:text-amber-600 transition-colors cursor-pointer"
+                              title={
+                                (item.pksSedangPersetujuan || 0) > 0
+                                  ? 'Data mitra dikunci (draf PKS sedang dalam proses persetujuan)'
+                                  : 'Ubah Mitra'
+                              }
+                              onClick={() => {
+                                if ((item.pksSedangPersetujuan || 0) > 0) {
+                                  showDialog(
+                                    'info',
+                                    'Data Mitra Terkunci',
+                                    `Data mitra "${item.namaPerusahaan || item.nama_mitra}" saat ini tidak dapat diubah karena terdapat draf PKS yang sedang dalam proses persetujuan aktif (Menunggu Penyerahan / Pemeriksaan). Kolom data dikunci sementara untuk menjaga integritas dokumen draf kontrak.`
+                                  );
+                                  return;
+                                }
+                                setEditingMitra(item);
+                              }}
+                              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                                (item.pksSedangPersetujuan || 0) > 0
+                                  ? 'hover:bg-amber-50 text-amber-500 hover:text-amber-600'
+                                  : 'hover:bg-amber-50 text-slate-500 hover:text-amber-600'
+                              }`}
                             >
-                              <Edit3 className="w-4 h-4" />
+                              {(item.pksSedangPersetujuan || 0) > 0 ? (
+                                <Lock className="w-4 h-4" />
+                              ) : (
+                                <Edit3 className="w-4 h-4" />
+                              )}
                             </button>
                           )}
 
@@ -355,7 +389,7 @@ export const ManajemenPerusahaanPage = () => {
                                   `Yakin ingin mengubah status mitra ini menjadi ${newStatus}?`, 
                                   async () => {
                                     setDialog(prev => ({ ...prev, isOpen: false }));
-                                    const res = await mitraService.updateMitra(item.perusahaanId || item.mitraId || item.id, { status_mitra: newStatus });
+                                    const res = await mitraService.updateMitra(item.mitra_id || item.mitraId || item.perusahaanId || item.id, { status_mitra: newStatus });
                                     if (res.success) {
                                       window.location.reload();
                                     } else {
@@ -442,13 +476,19 @@ export const ManajemenPerusahaanPage = () => {
           mitraData={editingMitra}
           onClose={() => setEditingMitra(null)}
           onSuccess={(updatedMitra) => {
-            setMitraList((prev) =>
-              prev.map((m) =>
-                (m.perusahaanId === updatedMitra.perusahaanId || m.mitraId === updatedMitra.mitraId)
-                  ? { ...m, ...updatedMitra }
-                  : m
-              )
-            );
+            const targetId = updatedMitra?.mitra_id || updatedMitra?.mitraId || updatedMitra?.perusahaanId || updatedMitra?.id;
+            if (targetId) {
+              setMitraList((prev) =>
+                prev.map((m) => {
+                  const mId = m?.mitra_id || m?.mitraId || m?.perusahaanId || m?.id;
+                  return (mId && String(mId) === String(targetId))
+                    ? { ...m, ...updatedMitra }
+                    : m;
+                })
+              );
+            }
+            fetchMitraData();
+            setEditingMitra(null);
           }}
         />
       )}

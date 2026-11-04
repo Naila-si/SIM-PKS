@@ -71,6 +71,15 @@ class PksApprovalController extends Controller
                 ]);
                 $approval->update(['status_aksi' => $newStatus]); // Update approval log as well
             } elseif ($statusAksi === 'Tandai Siap Diserahkan') {
+                $isCreator = $pks->pengguna_id == $validated['pengguna_id'];
+                $isAdmin = in_array($userRole, ['admin_utama', 'admin']);
+                if (!$isCreator && !$isAdmin) {
+                    $approval->delete();
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Hanya Petugas pembuat PKS yang berhak menandai dokumen siap diserahkan.'
+                    ], 403);
+                }
                 $pks->update([
                     'status_persetujuan' => 'Menunggu Penyerahan',
                     'catatan_revisi' => null

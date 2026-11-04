@@ -12,7 +12,8 @@ export const DrawerDetailPerusahaan = ({ isOpen, mitraData, onClose }) => {
   const { user } = useAuth();
   const isPengelolaOrAdmin = ['pengelola_pks', 'admin_utama', 'admin', 'pengelola'].includes(user?.role);
 
-  const storageKey = `survey_mitra_${mitraData.perusahaanId || mitraData.id}`;
+  const mitraKey = mitraData.mitra_id || mitraData.mitraId || mitraData.perusahaanId || mitraData.id;
+  const storageKey = `survey_mitra_${mitraKey}`;
   
   // State for survey
   const [surveyRatings, setSurveyRatings] = React.useState(() => {
@@ -53,7 +54,7 @@ export const DrawerDetailPerusahaan = ({ isOpen, mitraData, onClose }) => {
   let recommendation = { text: '', color: '' };
   if (isComplete) {
     if (totalScore >= 20) {
-      recommendation = { text: 'Sangat Baik - Perusahaan Jasa Raharja tetap harus bekerja sama dengan mitra ini.', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+      recommendation = { text: 'Sangat Baik - PT Jasa Raharja tetap harus bekerja sama dengan mitra ini.', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
     } else if (totalScore >= 15) {
       recommendation = { text: 'Cukup Baik - Perlu evaluasi bersama untuk peningkatan kinerja.', color: 'bg-amber-50 text-amber-700 border-amber-200' };
     } else {
@@ -86,7 +87,7 @@ export const DrawerDetailPerusahaan = ({ isOpen, mitraData, onClose }) => {
               <Building2 className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-lg font-extrabold tracking-tight text-white">Detail Perusahaan</h2>
+              <h2 className="text-lg font-extrabold tracking-tight text-white">Detail Mitra</h2>
               <p className="text-xs text-blue-200/80 mt-0.5">Informasi lengkap mitra strategis</p>
             </div>
           </div>
@@ -116,7 +117,7 @@ export const DrawerDetailPerusahaan = ({ isOpen, mitraData, onClose }) => {
 
             <div className="space-y-3">
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Nama Perusahaan / Instansi</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Nama Mitra / Instansi</p>
                 <h3 className="text-base font-extrabold text-[#001D38] mt-0.5 leading-snug">
                   {mitraData.nama_mitra || mitraData.namaPerusahaan || '-'}
                 </h3>

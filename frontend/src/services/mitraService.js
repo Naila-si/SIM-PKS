@@ -90,8 +90,20 @@ export const mitraService = {
   },
 
   getMitraById: async (id) => {
+    try {
+      let token = localStorage.getItem('pks_token');
+      const res = await fetch(`/api/mitra/${id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return { success: true, data: data };
+      }
+    } catch (err) {
+      console.error(err);
+    }
     const list = loadMitraStorage();
-    const item = list.find((m) => String(m.perusahaanId) === String(id) || String(m.mitraId) === String(id)) || list[0];
+    const item = list.find((m) => String(m.mitra_id || m.perusahaanId || m.mitraId) === String(id)) || list[0];
     return { success: true, data: item };
   },
 
@@ -137,9 +149,9 @@ export const mitraService = {
         body: JSON.stringify(data)
       });
       const updatedItem = await res.json();
-      return { success: true, data: updatedItem };
+      return { success: res.ok, message: updatedItem.message, data: updatedItem };
     } catch (err) {
-      return { success: false, message: 'Gagal update' };
+      return { success: false, message: 'Gagal memperbarui data perusahaan' };
     }
   },
 

@@ -168,7 +168,7 @@ export const ModalUbahAdendum = ({ isOpen, adendumId, adendumData, pksData, onCl
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nama Perusahaan / Instansi</label>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nama Mitra / Instansi</label>
                     <input
                       type="text"
                       disabled

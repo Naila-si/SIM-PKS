@@ -76,7 +76,7 @@ export const UserDetailModal = ({ isOpen, onClose, user, onEdit }) => {
                 <Mail className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase">Email Perusahaan</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase">Email Akun</p>
                 <p className="font-bold text-slate-900 text-xs mt-0.5">{user.email}</p>
               </div>
             </div>

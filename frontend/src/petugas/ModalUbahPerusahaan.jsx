@@ -31,8 +31,8 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
 
   if (!isOpen || !mitraData) return null;
 
-  // Jika perusahaan sudah memiliki dokumen PKS, Nama dan Alamat dikunci.
-  const hasPks = (mitraData.pks_documents_count || mitraData.totalPks || 0) > 0;
+  // Jika perusahaan sedang memiliki draf PKS dalam proses persetujuan aktif, seluruh kolom dikunci.
+  const isLocked = (mitraData.pksSedangPersetujuan || 0) > 0;
 
   const validateEmail = (val) => {
     setEmail(val);
@@ -50,6 +50,10 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isLocked) {
+      setErrorMsg('Data mitra tidak dapat diubah karena draf PKS sedang dalam proses persetujuan aktif.');
+      return;
+    }
     setErrorMsg('');
 
     if (emailError) {
@@ -69,13 +73,16 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
         alamat_mitra: alamat,
       };
 
-      const res = await mitraService.updateMitra(mitraData.perusahaanId || mitraData.mitraId, payload);
-      if (res.success || true) {
-        onSuccess && onSuccess({ ...mitraData, ...payload });
+      const targetId = mitraData.mitra_id || mitraData.mitraId || mitraData.perusahaanId || mitraData.id;
+      const res = await mitraService.updateMitra(targetId, payload);
+      if (res.success) {
+        onSuccess && onSuccess({ ...mitraData, ...payload, mitra_id: targetId, mitraId: targetId });
         onClose();
+      } else {
+        setErrorMsg(res.message || 'Gagal memperbarui data mitra.');
       }
     } catch (err) {
-      setErrorMsg(err.response?.data?.message || 'Gagal memperbarui data perusahaan.');
+      setErrorMsg(err.response?.data?.message || 'Gagal memperbarui data mitra.');
     } finally {
       setSubmitting(false);
     }
@@ -88,8 +95,8 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
         {/* Header Modal */}
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white z-10">
           <div>
-            <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">Ubah Data Perusahaan</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Perbarui informasi perusahaan mitra yang terdaftar dalam sistem.</p>
+            <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">Ubah Data Mitra</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Perbarui informasi mitra yang terdaftar dalam sistem.</p>
           </div>
           <button
             type="button"
@@ -104,12 +111,21 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
         <div className="p-6 overflow-y-auto flex-1 space-y-5">
           
           {/* Info Notice Box */}
-          <div className="p-3.5 bg-blue-50/70 border border-blue-100/90 rounded-xl flex items-start space-x-2.5 text-xs text-blue-900 font-medium">
-            <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-            <span className="leading-relaxed">
-              Perubahan data hanya akan memperbarui informasi perusahaan pada sistem. Data ini tidak mengubah isi dokumen PKS yang telah diterbitkan maupun riwayat PKS sebelumnya.
-            </span>
-          </div>
+          {isLocked ? (
+            <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-start space-x-2.5 text-xs text-amber-900 font-medium">
+              <Lock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <span className="leading-relaxed">
+                <strong className="font-bold">Data Mitra Terkunci:</strong> Mitra ini sedang memiliki draf PKS yang berada dalam proses persetujuan aktif (Menunggu Penyerahan / Pemeriksaan). Pengubahan data tidak dapat dilakukan saat ini guna menjaga integritas dokumen kontrak.
+              </span>
+            </div>
+          ) : (
+            <div className="p-3.5 bg-blue-50/70 border border-blue-100/90 rounded-xl flex items-start space-x-2.5 text-xs text-blue-900 font-medium">
+              <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+              <span className="leading-relaxed">
+                Perubahan data hanya akan memperbarui informasi mitra pada sistem. Data ini tidak mengubah isi dokumen PKS yang telah diterbitkan maupun riwayat PKS sebelumnya.
+              </span>
+            </div>
+          )}
 
           {errorMsg && (
             <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold rounded-xl">
@@ -119,18 +135,18 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
 
           <form id="form-edit-perusahaan" onSubmit={handleSubmit} className="space-y-6 text-xs">
             
-            {/* SECTION 1: INFORMASI PERUSAHAAN (READ ONLY / LOCK ICON 🔒) */}
+            {/* SECTION 1: INFORMASI MITRA */}
             <div className="space-y-3">
               <div className="flex items-center space-x-2 pb-1">
                 <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider shrink-0">
-                  INFORMASI PERUSAHAAN
+                  INFORMASI MITRA
                 </span>
                 <div className="flex-1 border-t border-slate-200" />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
-                  <label className="block text-slate-700 font-semibold mb-1">Nama Perusahaan / Instansi *</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Nama Mitra / Instansi *</label>
                   <div className="relative">
                     <Building2 className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
                     <input
@@ -138,8 +154,10 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
                       required
                       value={namaPerusahaan}
                       onChange={(e) => setNamaPerusahaan(e.target.value)}
-                      disabled={false}
-                      className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
+                      disabled={isLocked}
+                      className={`w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl font-medium outline-none ${
+                        isLocked ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-white text-slate-800 focus:ring-2 focus:ring-blue-500/20'
+                      }`}
                     />
                   </div>
                 </div>
@@ -149,7 +167,10 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
                   <select
                     value={bidang}
                     onChange={(e) => setBidang(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-medium outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+                    disabled={isLocked}
+                    className={`w-full px-3 py-2 border border-slate-200 rounded-xl font-medium outline-none ${
+                      isLocked ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-white text-slate-800 focus:ring-2 focus:ring-blue-500/20 cursor-pointer'
+                    }`}
                   >
                     <option value="Pelayanan">Pelayanan</option>
                     <option value="SW">Sumbangan Wajib (SW)</option>
@@ -172,7 +193,7 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
               </div>
             </div>
 
-            {/* SECTION 2: INFORMASI KONTAK (EDITABLE) */}
+            {/* SECTION 2: INFORMASI KONTAK */}
             <div className="space-y-3">
               <div className="flex items-center space-x-2 pb-1">
                 <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider shrink-0">
@@ -189,10 +210,13 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
                     <input
                       type="text"
                       required
+                      disabled={isLocked}
                       placeholder="Masukkan nama penanggung jawab..."
                       value={penanggungJawab}
                       onChange={(e) => setPenanggungJawab(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl outline-none font-medium text-slate-800 focus:ring-2 focus:ring-blue-500/20"
+                      className={`w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl outline-none font-medium ${
+                        isLocked ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-white text-slate-800 focus:ring-2 focus:ring-blue-500/20'
+                      }`}
                     />
                   </div>
                 </div>
@@ -203,10 +227,13 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
                     <Briefcase className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
                     <input
                       type="text"
+                      disabled={isLocked}
                       placeholder="Contoh: Direktur / Kepala Cabang"
                       value={jabatan}
                       onChange={(e) => setJabatan(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl outline-none font-medium text-slate-800 focus:ring-2 focus:ring-blue-500/20"
+                      className={`w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl outline-none font-medium ${
+                        isLocked ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-white text-slate-800 focus:ring-2 focus:ring-blue-500/20'
+                      }`}
                     />
                   </div>
                 </div>
@@ -218,10 +245,13 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
                     <input
                       type="text"
                       required
+                      disabled={isLocked}
                       placeholder="081234567890"
                       value={kontak}
                       onChange={(e) => setKontak(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl outline-none font-medium text-slate-800 focus:ring-2 focus:ring-blue-500/20"
+                      className={`w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl outline-none font-medium ${
+                        isLocked ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-white text-slate-800 focus:ring-2 focus:ring-blue-500/20'
+                      }`}
                     />
                   </div>
                 </div>
@@ -232,12 +262,13 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
                     <Mail className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
                     <input
                       type="email"
-                      placeholder="email@perusahaan.com"
+                      disabled={isLocked}
+                      placeholder="email@mitra.com"
                       value={email}
                       onChange={(e) => validateEmail(e.target.value)}
-                      className={`w-full pl-9 pr-3 py-2 bg-white border rounded-xl focus:ring-2 outline-none font-medium text-slate-800 ${
-                        emailError ? 'border-rose-500 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-blue-500/20'
-                      }`}
+                      className={`w-full pl-9 pr-3 py-2 border rounded-xl outline-none font-medium ${
+                        isLocked ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-white text-slate-800'
+                      } ${emailError ? 'border-rose-500 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-blue-500/20'}`}
                     />
                   </div>
                   {emailError && (
@@ -249,24 +280,24 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-slate-700 font-semibold mb-1">Alamat Perusahaan *</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Alamat Mitra *</label>
                   <div className="relative">
                     <MapPin className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
                     <textarea
                       rows="2"
                       required
-                      disabled={false}
+                      disabled={isLocked}
                       placeholder="Jl. Sudirman No. 123, Blok M, Jakarta Selatan, 12160"
                       value={alamat}
                       onChange={(e) => setAlamat(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 border rounded-xl outline-none font-medium text-slate-800 bg-white border-slate-200 focus:ring-2 focus:ring-blue-500/20"
+                      className={`w-full pl-9 pr-3 py-2 border rounded-xl outline-none font-medium border-slate-200 ${
+                        isLocked ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-white text-slate-800 focus:ring-2 focus:ring-blue-500/20'
+                      }`}
                     />
                   </div>
                 </div>
               </div>
             </div>
-
-
 
           </form>
         </div>
@@ -283,8 +314,8 @@ export const ModalUbahPerusahaan = ({ isOpen, mitraData, onClose, onSuccess }) =
           <button
             type="submit"
             form="form-edit-perusahaan"
-            disabled={submitting}
-            className="px-5 py-2.5 bg-[#0F2238] hover:bg-[#0A1828] text-white text-xs font-semibold rounded-xl shadow-md flex items-center transition-all cursor-pointer disabled:opacity-50"
+            disabled={submitting || isLocked}
+            className="px-5 py-2.5 bg-[#0F2238] hover:bg-[#0A1828] text-white text-xs font-semibold rounded-xl shadow-md flex items-center transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Save className="w-4 h-4 mr-1.5" />
             {submitting ? 'Memproses...' : 'Simpan Perubahan'}

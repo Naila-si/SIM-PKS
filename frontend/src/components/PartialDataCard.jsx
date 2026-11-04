@@ -20,7 +20,7 @@ export const PartialDataCard = ({ pks }) => {
 
       <div className="bg-white rounded-xl p-4 border border-amber-200 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
         <div>
-          <span className="font-semibold text-slate-400 block text-[11px] uppercase">Perusahaan Mitra</span>
+          <span className="font-semibold text-slate-400 block text-[11px] uppercase">Mitra</span>
           <span className="font-bold text-slate-900 flex items-center mt-1">
             <Building2 className="w-4 h-4 mr-1 text-[#00529C]" />
             {pks.mitra?.namaPerusahaan || '-'}

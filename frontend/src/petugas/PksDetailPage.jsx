@@ -477,7 +477,7 @@ export const PksDetailPage = () => {
               <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center">
                   <Building2 className="w-4 h-4 mr-1.5 text-[#00529C]" />
-                  Perusahaan Mitra
+                  Data Mitra
                 </h3>
                 <div className="space-y-2">
                   <p className="text-sm font-bold text-slate-900">{pks.mitra?.namaPerusahaan || '-'}</p>

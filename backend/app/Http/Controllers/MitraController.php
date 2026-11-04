@@ -9,6 +9,15 @@ class MitraController extends Controller
 {
     public function index(Request $request)
     {
+        $inReviewStatuses = [
+            'Menunggu Penyerahan',
+            'Pemeriksaan Pengelola',
+            'Disetujui Pengelola',
+            'Pemeriksaan Kabag',
+            'Disetujui Kabag',
+            'Pemeriksaan Pimpinan'
+        ];
+
         $query = Mitra::withCount([
             'pksDocuments as totalPks',
             'pksDocuments as pksAktif' => function ($q) {
@@ -16,6 +25,14 @@ class MitraController extends Controller
             },
             'pksDocuments as pksBerakhir' => function ($q) {
                 $q->where('status_pks', 'Berakhir');
+            },
+            'pksDocuments as pksSedangPersetujuan' => function ($q) use ($inReviewStatuses) {
+                $q->where(function ($sub) use ($inReviewStatuses) {
+                    $sub->whereIn('status_persetujuan', $inReviewStatuses)
+                        ->orWhereHas('adendums', function ($aq) use ($inReviewStatuses) {
+                            $aq->whereIn('status_persetujuan', $inReviewStatuses);
+                        });
+                });
             }
         ]);
 
@@ -28,6 +45,15 @@ class MitraController extends Controller
 
     public function show($id)
     {
+        $inReviewStatuses = [
+            'Menunggu Penyerahan',
+            'Pemeriksaan Pengelola',
+            'Disetujui Pengelola',
+            'Pemeriksaan Kabag',
+            'Disetujui Kabag',
+            'Pemeriksaan Pimpinan'
+        ];
+
         $mitra = Mitra::withCount([
             'pksDocuments as totalPks',
             'pksDocuments as pksAktif' => function ($query) {
@@ -35,6 +61,14 @@ class MitraController extends Controller
             },
             'pksDocuments as pksBerakhir' => function ($query) {
                 $query->where('status_pks', 'Berakhir');
+            },
+            'pksDocuments as pksSedangPersetujuan' => function ($q) use ($inReviewStatuses) {
+                $q->where(function ($sub) use ($inReviewStatuses) {
+                    $sub->whereIn('status_persetujuan', $inReviewStatuses)
+                        ->orWhereHas('adendums', function ($aq) use ($inReviewStatuses) {
+                            $aq->whereIn('status_persetujuan', $inReviewStatuses);
+                        });
+                });
             }
         ])->find($id);
 
@@ -67,6 +101,33 @@ class MitraController extends Controller
     {
         $mitra = Mitra::find($id);
         if (!$mitra) return response()->json(['message' => 'Mitra tidak ditemukan'], 404);
+
+        // Validasi: Jika sedang ada draf PKS/Adendum dalam proses persetujuan aktif, data perusahaan tidak boleh diubah
+        if ($request->hasAny(['nama_mitra', 'bidang', 'nama_pengelola', 'jabatan', 'no_hp_pengelola', 'email_pengelola', 'alamat_mitra'])) {
+            $inReviewStatuses = [
+                'Menunggu Penyerahan',
+                'Pemeriksaan Pengelola',
+                'Disetujui Pengelola',
+                'Pemeriksaan Kabag',
+                'Disetujui Kabag',
+                'Pemeriksaan Pimpinan'
+            ];
+
+            $hasInReview = $mitra->pksDocuments()
+                ->where(function ($q) use ($inReviewStatuses) {
+                    $q->whereIn('status_persetujuan', $inReviewStatuses)
+                      ->orWhereHas('adendums', function ($aq) use ($inReviewStatuses) {
+                          $aq->whereIn('status_persetujuan', $inReviewStatuses);
+                      });
+                })->exists();
+
+            if ($hasInReview) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data perusahaan tidak dapat diubah karena draf PKS sedang dalam proses persetujuan aktif.'
+                ], 422);
+            }
+        }
 
         $validated = $request->validate([
             'nama_mitra' => 'sometimes|string|max:255',

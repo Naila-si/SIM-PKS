@@ -58,7 +58,7 @@ export const CreateMitraModal = ({ isOpen, onClose, onSuccess }) => {
             <Building className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-slate-900">Tambah Perusahaan Mitra</h3>
+            <h3 className="text-base font-bold text-slate-900">Tambah Mitra</h3>
             <p className="text-xs text-slate-500">Tambah mitra baru secara cepat</p>
           </div>
         </div>
@@ -72,7 +72,7 @@ export const CreateMitraModal = ({ isOpen, onClose, onSuccess }) => {
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Nama Perusahaan / Instansi *
+              Nama Mitra / Instansi *
             </label>
             <input
               type="text"

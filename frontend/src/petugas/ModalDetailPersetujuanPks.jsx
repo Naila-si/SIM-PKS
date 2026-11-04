@@ -53,10 +53,20 @@ export const ModalDetailPersetujuanPks = ({ isOpen, pksData, onClose, onStatusUp
   else if (statusPersetujuan.includes('Pimpinan') && userRole === 'pimpinan') canApprove = true;
 
   const isPetugas = ['petugas_jr', 'petugas', 'admin_utama'].includes(userRole);
+  const isAdmin = userRole === 'admin_utama' || userRole === 'admin';
+  const currentUserId = user?.pengguna_id || user?.penggunaId || user?.id;
+  const docCreatorId = data?.pengguna_id || data?.penggunaId || data?.pengguna?.pengguna_id || data?.pengguna?.penggunaId || data?.pembuat?.pengguna_id || data?.pembuat_id;
+  const creatorName = data?.pengguna?.nama || data?.pengguna?.nama_pengguna || data?.pembuat?.nama || data?.petugas || '';
+
+  const isCreator = (currentUserId && docCreatorId && String(currentUserId) === String(docCreatorId)) ||
+    (user?.nama && creatorName && user.nama.trim().toLowerCase() === creatorName.trim().toLowerCase()) ||
+    (user?.nama_pengguna && creatorName && user.nama_pengguna.trim().toLowerCase() === creatorName.trim().toLowerCase()) ||
+    isAdmin;
+
   const isRevisi = statusPersetujuan.includes('Revisi');
   const isDraft = statusPersetujuan === 'Draft' || statusPersetujuan === 'Draf';
-  const canEdit = isPetugas && (isDraft || isRevisi);
-  const canTandaiSiap = isPetugas && (isDraft || isRevisi);
+  const canEdit = isPetugas && isCreator && (isDraft || isRevisi);
+  const canTandaiSiap = isPetugas && isCreator && (isDraft || isRevisi);
 
   const handleTandaiSiap = () => {
     showDialog(
@@ -186,7 +196,7 @@ export const ModalDetailPersetujuanPks = ({ isOpen, pksData, onClose, onStatusUp
 
                 <div className="space-y-3">
                   <div>
-                    <p className="text-[10px] font-medium text-slate-400">Nama Perusahaan / Instansi</p>
+                    <p className="text-[10px] font-medium text-slate-400">Nama Mitra / Instansi</p>
                     <p className="font-extrabold text-slate-900 text-xs mt-0.5">{data.mitra?.nama_mitra || data.perusahaan || '-'}</p>
                   </div>
 

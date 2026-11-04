@@ -54,7 +54,7 @@ export const ModalTolakPks = ({ isOpen, pksData, onClose, onSuccess }) => {
               </div>
             </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">PERUSAHAAN / INSTANSI</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">MITRA / INSTANSI</p>
               <p className="font-extrabold text-[#001D38] text-xs mt-0.5">{data.mitra?.nama_mitra || data.perusahaan || '-'}</p>
             </div>
           </div>

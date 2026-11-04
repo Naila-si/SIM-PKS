@@ -193,7 +193,7 @@ const UserFormModal = ({ isOpen, onClose, onSuccess, userToEdit = null }) => {
           <div className={`grid grid-cols-1 ${isPresetUser ? '' : 'sm:grid-cols-2'} gap-4`}>
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Email Login / Perusahaan <span className="text-red-500">*</span>
+                Email Login / Resmi <span className="text-red-500">*</span>
               </label>
               <input
                 type="email"

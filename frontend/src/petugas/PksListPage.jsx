@@ -166,7 +166,7 @@ export const PksListPage = () => {
               <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-semibold text-[11px]">
                 <tr>
                   <th className="px-4 py-3">Nomor PKS</th>
-                  <th className="px-4 py-3">Perusahaan Mitra</th>
+                  <th className="px-4 py-3">Mitra</th>
                   <th className="px-4 py-3">Bidang</th>
                   <th className="px-4 py-3">Ruang Lingkup</th>
                   <th className="px-4 py-3">Status Persetujuan</th>

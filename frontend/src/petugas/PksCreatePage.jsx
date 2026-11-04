@@ -157,7 +157,7 @@ export const PksCreatePage = () => {
         setMitraSearchQuery(saved.nama_mitra);
         setShowMitraModal(false);
         setNewMitra({ nama_mitra: '', nama_pengelola: '', jabatan: '', no_hp_pengelola: '', email_pengelola: '', alamat_mitra: '' });
-        showToast('success', `Perusahaan mitra "${saved.nama_mitra}" berhasil ditambahkan ke bidang ${formData.bidang} dan langsung terpilih.`);
+        showToast('success', `Mitra "${saved.nama_mitra}" berhasil ditambahkan ke bidang ${formData.bidang} dan langsung terpilih.`);
       } else {
         const errData = await res.json().catch(() => ({}));
         showDialog('error', 'Gagal Menyimpan Mitra', errData.message || 'Pastikan semua kolom wajib telah terisi dengan benar.');
@@ -175,7 +175,7 @@ export const PksCreatePage = () => {
     e.preventDefault();
 
     if (!formData.mitraId) {
-      showDialog('error', 'Perusahaan Mitra Wajib Dipilih', 'Silakan pilih perusahaan/instansi mitra yang sesuai dengan bidang kerja sama terlebih dahulu.');
+      showDialog('error', 'Mitra Wajib Dipilih', 'Silakan pilih mitra/instansi yang sesuai dengan bidang kerja sama terlebih dahulu.');
       return;
     }
 
@@ -314,11 +314,11 @@ export const PksCreatePage = () => {
             </div>
           </div>
 
-          {/* ================= LANGKAH 3: PEMILIHAN PERUSAHAAN MITRA ================= */}
+          {/* ================= LANGKAH 3: PEMILIHAN MITRA ================= */}
           <div className="space-y-2">
             <div className="flex justify-between items-center mb-1">
               <label className="block text-xs font-bold text-slate-800">
-                3. Perusahaan / Instansi Mitra ({formData.bidang}) <span className="text-rose-500">*</span>
+                3. Mitra / Instansi ({formData.bidang}) <span className="text-rose-500">*</span>
               </label>
               
               <button 
@@ -373,7 +373,7 @@ export const PksCreatePage = () => {
                   }}
                   className="px-3 py-1.5 text-[11px] font-bold text-slate-600 hover:text-rose-600 bg-white border border-slate-200 hover:border-rose-200 rounded-xl transition cursor-pointer shrink-0 shadow-2xs"
                 >
-                  Ganti Perusahaan
+                  Ganti Mitra
                 </button>
               </div>
             ) : (
@@ -388,7 +388,7 @@ export const PksCreatePage = () => {
                       setIsMitraDropdownOpen(true);
                     }}
                     onFocus={() => setIsMitraDropdownOpen(true)}
-                    placeholder={`Ketik untuk mencari nama perusahaan di bidang ${formData.bidang}...`}
+                    placeholder={`Ketik untuk mencari nama mitra di bidang ${formData.bidang}...`}
                     className="w-full pl-10 pr-10 py-3 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00529C] bg-white shadow-2xs"
                   />
                   <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 pointer-events-none" />
@@ -440,11 +440,11 @@ export const PksCreatePage = () => {
                           <AlertCircle className="w-5 h-5" />
                         </div>
                         <h4 className="text-xs font-bold text-slate-800">
-                          Tidak ada nama perusahaan yang Anda cari
+                          Tidak ada nama mitra yang Anda cari
                         </h4>
                         <p className="text-[11px] text-slate-500 max-w-sm mx-auto">
                           {mitraSearchQuery 
-                            ? `Perusahaan "${mitraSearchQuery}" belum terdaftar pada bidang ${formData.bidang}.` 
+                            ? `Mitra "${mitraSearchQuery}" belum terdaftar pada bidang ${formData.bidang}.` 
                             : `Belum ada mitra terdaftar pada bidang ${formData.bidang}.`}
                         </p>
                         <div className="pt-2">
@@ -607,7 +607,7 @@ export const PksCreatePage = () => {
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Nama Instansi / Perusahaan <span className="text-rose-500">*</span>
+                  Nama Mitra / Instansi <span className="text-rose-500">*</span>
                 </label>
                 <input 
                   required 
@@ -679,7 +679,7 @@ export const PksCreatePage = () => {
                   rows="2" 
                   value={newMitra.alamat_mitra} 
                   onChange={e => setNewMitra({ ...newMitra, alamat_mitra: e.target.value })} 
-                  placeholder="Alamat lengkap instansi/perusahaan..."
+                  placeholder="Alamat lengkap mitra/instansi..."
                   className="w-full px-3.5 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00529C]"
                 ></textarea>
               </div>

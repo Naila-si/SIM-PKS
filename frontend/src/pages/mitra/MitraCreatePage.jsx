@@ -45,8 +45,8 @@ export const MitraCreatePage = () => {
           <ArrowLeft className="w-4 h-4" />
         </Link>
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Tambah Perusahaan Mitra</h1>
-          <p className="text-xs text-slate-500">Daftarkan instansi / perusahaan mitra baru</p>
+          <h1 className="text-xl font-bold text-slate-900">Tambah Mitra</h1>
+          <p className="text-xs text-slate-500">Daftarkan instansi / mitra baru</p>
         </div>
       </div>
 
@@ -59,7 +59,7 @@ export const MitraCreatePage = () => {
 
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
         <div>
-          <label className="block text-xs font-semibold text-slate-700 mb-1">Nama Perusahaan / Instansi *</label>
+          <label className="block text-xs font-semibold text-slate-700 mb-1">Nama Mitra / Instansi *</label>
           <input
             type="text"
             value={namaPerusahaan}

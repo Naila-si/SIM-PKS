@@ -71,7 +71,7 @@ export const MitraEditPage = () => {
         </Link>
         <div>
           <h1 className="text-xl font-bold text-slate-900">Ubah Data Mitra</h1>
-          <p className="text-xs text-slate-500">Perbarui informasi perusahaan mitra</p>
+          <p className="text-xs text-slate-500">Perbarui informasi mitra</p>
         </div>
       </div>
 
@@ -84,7 +84,7 @@ export const MitraEditPage = () => {
 
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
         <div>
-          <label className="block text-xs font-semibold text-slate-700 mb-1">Nama Perusahaan / Instansi *</label>
+          <label className="block text-xs font-semibold text-slate-700 mb-1">Nama Mitra / Instansi *</label>
           <input
             type="text"
             value={namaPerusahaan}

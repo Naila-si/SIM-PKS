@@ -9,7 +9,7 @@ use App\Models\Pengguna;
 
 class AdendumApprovalController extends Controller
 {
-    public function store(Request $request)
+    public function store(Request $request) 
     {
         $adendumId = $request->input('adendum_id', $request->input('adendumId'));
         $penggunaId = $request->input('pengguna_id', $request->input('user_id', $request->input('penggunaId')));
@@ -44,7 +44,7 @@ class AdendumApprovalController extends Controller
         $adendum = Adendum::find($validated['adendum_id']);
         if ($adendum) {
             $statusAksi = $validated['status_aksi'];
-            
+
             if ($statusAksi === 'Sudah Diterima') {
                 $statusSaatIni = $adendum->status_persetujuan ?? $adendum->statusPersetujuan;
                 if ($statusSaatIni === 'Menunggu Penyerahan') {
@@ -60,8 +60,17 @@ class AdendumApprovalController extends Controller
                 $adendum->update([
                     'status_persetujuan' => $newStatus,
                 ]);
-                $approval->update(['status_aksi' => $newStatus]); 
+                $approval->update(['status_aksi' => $newStatus]);
             } elseif ($statusAksi === 'Tandai Siap Diserahkan') {
+                $isCreator = $adendum->pembuat_id == $validated['pengguna_id'];
+                $isAdmin = in_array($userRole, ['admin_utama', 'admin']);
+                if (!$isCreator && !$isAdmin) {
+                    $approval->delete();
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Hanya Petugas pembuat Adendum yang berhak menandai dokumen siap diserahkan.'
+                    ], 403);
+                }
                 $adendum->update([
                     'status_persetujuan' => 'Menunggu Penyerahan',
                     'catatan_revisi' => null
