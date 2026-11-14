@@ -4,6 +4,7 @@ import { authService } from '../../services/authService';
 import { pksService } from '../../services/pksService';
 import { adendumService } from '../../services/adendumService';
 import { mitraService } from '../../services/mitraService';
+import apiClient from '../../services/api';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Users, Building2, Layers, FileText, Shield, UserCheck,
@@ -35,7 +36,7 @@ export const DashboardAdmin = () => {
         pksService.getPksList({ per_page: 1000 }).catch(() => ({ success: false, data: [] })),
         adendumService.getAllAdendums().catch(() => ({ success: false, data: [] })),
         mitraService.getMitraList().catch(() => ({ success: false, data: [] })),
-        fetch('/api/pks-templates').then(r => r.json()).catch(() => [])
+        apiClient.get('/pks-templates').then(r => Array.isArray(r.data) ? r.data : []).catch(() => [])
       ]);
 
       setUsers(Array.isArray(userRes?.data) ? userRes.data : []);

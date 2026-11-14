@@ -110,6 +110,120 @@ class AutentikasiKontroller extends Controller
     }
 
     /**
+     * Ganti Kata Sandi Mandiri oleh Pengguna yang Sedang Login (PUT /api/autentikasi/ganti-kata-sandi)
+     */
+    public function gantiKataSandi(Request $permintaan)
+    {
+        $permintaan->validate([
+            'kata_sandi_lama' => 'required|string',
+            'kata_sandi_baru' => 'required|string|min:8',
+            'konfirmasi_kata_sandi' => 'required|string|same:kata_sandi_baru',
+        ], [
+            'kata_sandi_lama.required' => 'Kata sandi lama wajib diisi.',
+            'kata_sandi_baru.required' => 'Kata sandi baru wajib diisi.',
+            'kata_sandi_baru.min' => 'Kata sandi baru minimal 8 karakter.',
+            'konfirmasi_kata_sandi.required' => 'Konfirmasi kata sandi baru wajib diisi.',
+            'konfirmasi_kata_sandi.same' => 'Konfirmasi kata sandi tidak cocok dengan kata sandi baru.',
+        ]);
+
+        $authHeader = $permintaan->header('Authorization');
+        $userId = null;
+        if ($authHeader && preg_match('/sim-pks-token-(\d+)-/', $authHeader, $matches)) {
+            $userId = $matches[1];
+        }
+
+        if (!$userId) {
+            return response()->json([
+                'status' => 'gagal',
+                'pesan' => 'Sesi tidak sah. Silakan login kembali.',
+            ], 401);
+        }
+
+        $pengguna = Pengguna::find($userId);
+        if (!$pengguna) {
+            return response()->json([
+                'status' => 'gagal',
+                'pesan' => 'Pengguna tidak ditemukan.',
+            ], 404);
+        }
+
+        // Cek kecocokan password lama
+        if (!Hash::check($permintaan->kata_sandi_lama, $pengguna->password)) {
+            return response()->json([
+                'status' => 'gagal',
+                'pesan' => 'Kata sandi lama / saat ini yang Anda masukkan salah.',
+            ], 422);
+        }
+
+        // Simpan password baru terenkripsi
+        $pengguna->password = Hash::make($permintaan->kata_sandi_baru);
+        $pengguna->save();
+
+        return response()->json([
+            'status' => 'sukses',
+            'pesan' => 'Kata sandi berhasil diperbarui secara permanen.',
+        ], 200);
+    }
+
+    /**
+     * Perbarui Profil Mandiri (Nama & Nomor HP) (PUT /api/autentikasi/profil)
+     */
+    public function perbaruiProfil(Request $permintaan)
+    {
+        $permintaan->validate([
+            'nama' => 'required|string|max:255',
+            'nomor_hp' => 'nullable|string|max:50',
+        ]);
+
+        $authHeader = $permintaan->header('Authorization');
+        $userId = null;
+        if ($authHeader && preg_match('/sim-pks-token-(\d+)-/', $authHeader, $matches)) {
+            $userId = $matches[1];
+        }
+
+        if (!$userId) {
+            return response()->json([
+                'status' => 'gagal',
+                'pesan' => 'Sesi tidak sah. Silakan login kembali.',
+            ], 401);
+        }
+
+        $pengguna = Pengguna::find($userId);
+        if (!$pengguna) {
+            return response()->json([
+                'status' => 'gagal',
+                'pesan' => 'Pengguna tidak ditemukan.',
+            ], 404);
+        }
+
+        $pengguna->nama = trim($permintaan->nama);
+        if ($permintaan->has('nomor_hp')) {
+            $pengguna->nomor_hp = trim($permintaan->nomor_hp);
+        }
+        $pengguna->save();
+
+        $id = $pengguna->pengguna_id ?? $pengguna->penggunaId;
+        return response()->json([
+            'status' => 'sukses',
+            'pesan' => 'Profil berhasil diperbarui.',
+            'data' => [
+                'pengguna_id' => $id,
+                'penggunaId' => $id,
+                'nama' => $pengguna->nama,
+                'email' => $pengguna->email,
+                'nomor_hp' => $pengguna->nomor_hp,
+                'nomorHp' => $pengguna->nomor_hp,
+                'jabatan' => $pengguna->jabatan,
+                'role' => $pengguna->role,
+                'wilayah' => $pengguna->wilayah,
+                'samsat' => $pengguna->samsat,
+                'bidang' => $pengguna->bidang,
+                'status' => $pengguna->status,
+            ]
+        ], 200);
+    }
+
+    /**
      * Fungsi Ambil Sesi Saya / Verifikasi Token Ingat Saya (GET /api/autentikasi/sesi-saya)
      */
     public function sesiSaya(Request $permintaan)

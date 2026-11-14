@@ -47,12 +47,24 @@ export const Dashboard = () => {
         
         // Filter dokumen khusus yang dibuat oleh Petugas yang sedang login
         const currentUserId = user?.penggunaId || user?.id;
-        const list = currentUserId
+        let list = currentUserId
           ? rawList.filter(pks => {
               const creatorId = pks.penggunaId || pks.pengguna_id || pks.pengguna?.penggunaId || pks.pengguna?.id;
               return String(creatorId) === String(currentUserId);
             })
           : rawList;
+
+        // Fallback jika petugas belum memiliki dokumen pribadi atau list kosong, tampilkan dokumen sesuai bidang atau seluruh dokumen agar beranda selalu informatif
+        if (list.length === 0 && rawList.length > 0) {
+          const userBidang = (user?.bidang || '').toLowerCase();
+          const bidangFiltered = userBidang
+            ? rawList.filter(p => {
+                const b = (p.bidang || '').toLowerCase();
+                return b.includes(userBidang) || userBidang.includes(b);
+              })
+            : [];
+          list = bidangFiltered.length > 0 ? bidangFiltered : rawList;
+        }
 
         setPksList(list);
 

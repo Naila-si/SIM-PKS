@@ -261,6 +261,36 @@ class PenggunaKontroller extends Controller
     }
 
     /**
+     * Reset Password oleh Administrator Utama (Mekanisme A Bantuan Admin)
+     * PUT /api/pengguna/{id}/reset-password
+     */
+    public function resetPasswordOlehAdmin(Request $permintaan, $id)
+    {
+        $permintaan->validate([
+            'password_baru' => 'required|string|min:8',
+        ], [
+            'password_baru.required' => 'Password baru wajib diisi.',
+            'password_baru.min' => 'Password baru minimal 8 karakter.',
+        ]);
+
+        $pengguna = Pengguna::find($id);
+        if (!$pengguna) {
+            return response()->json([
+                'status' => 'gagal',
+                'pesan' => 'Pengguna tidak ditemukan.'
+            ], 404);
+        }
+
+        $pengguna->password = Hash::make($permintaan->password_baru);
+        $pengguna->save();
+
+        return response()->json([
+            'status' => 'sukses',
+            'pesan' => 'Kata sandi pengguna ' . $pengguna->nama . ' berhasil direset.',
+        ], 200);
+    }
+
+    /**
      * Perbarui Data Pengguna (PUT /api/pengguna/{id})
      */
     public function perbaruiPengguna(Request $permintaan, $id)

@@ -278,17 +278,17 @@ export const authService = {
     }
   },
 
-  // 11. Reset Password Pengguna
+  // 11. Reset Password Pengguna oleh Administrator (Mekanisme A)
   resetPassword: async (penggunaId, newPassword) => {
     try {
-      let token = localStorage.getItem('pks_token');
-      const response = await fetch(`${API_BASE_URL}/pengguna/${penggunaId}`, {
+      let token = localStorage.getItem('pks_auth_token') || localStorage.getItem('pks_token');
+      const response = await fetch(`${API_BASE_URL}/pengguna/${penggunaId}/reset-password`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ password: newPassword || 'password123' }),
+        body: JSON.stringify({ password_baru: newPassword || 'JasaRaharja2026!' }),
       });
 
       const resData = await response.json();
@@ -303,7 +303,68 @@ export const authService = {
     }
   },
 
-  // 12. Hapus Pengguna dari Database
+  // 12. Ganti Kata Sandi Mandiri (Pengguna Login)
+  changePassword: async (oldPassword, newPassword, confirmPassword) => {
+    try {
+      let token = localStorage.getItem('pks_auth_token') || localStorage.getItem('pks_token');
+      const response = await fetch(`${API_BASE_URL}/autentikasi/ganti-kata-sandi`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          kata_sandi_lama: oldPassword,
+          kata_sandi_baru: newPassword,
+          konfirmasi_kata_sandi: confirmPassword,
+        }),
+      });
+
+      const resData = await response.json();
+
+      if (response.ok && resData.status === 'sukses') {
+        return { success: true, pesan: resData.pesan };
+      } else {
+        throw new Error(resData.pesan || 'Gagal mengganti kata sandi.');
+      }
+    } catch (err) {
+      throw new Error(err.message || 'Gagal mengganti kata sandi.');
+    }
+  },
+
+  // 13. Perbarui Profil Mandiri
+  updateProfile: async (nama, nomorHp) => {
+    try {
+      let token = localStorage.getItem('pks_auth_token') || localStorage.getItem('pks_token');
+      const response = await fetch(`${API_BASE_URL}/autentikasi/profil`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          nama: nama,
+          nomor_hp: nomorHp,
+        }),
+      });
+
+      const resData = await response.json();
+
+      if (response.ok && resData.status === 'sukses') {
+        // Update user di localStorage
+        if (resData.data) {
+          localStorage.setItem('pks_user', JSON.stringify(resData.data));
+        }
+        return { success: true, data: resData.data, pesan: resData.pesan };
+      } else {
+        throw new Error(resData.pesan || 'Gagal memperbarui profil.');
+      }
+    } catch (err) {
+      throw new Error(err.message || 'Gagal memperbarui profil.');
+    }
+  },
+
+  // 14. Hapus Pengguna dari Database
   deleteUser: async (penggunaId) => {
     try {
       let token = localStorage.getItem('pks_token');

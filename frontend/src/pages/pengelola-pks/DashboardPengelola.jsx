@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { pksService } from '../../services/pksService';
 import { adendumService } from '../../services/adendumService';
+import apiClient from '../../services/api';
 import { ModalDetailPks } from '../../petugas/ModalDetailPks';
 import { ModalDetailAdendum } from '../../petugas/ModalDetailAdendum';
 import {
@@ -36,28 +37,38 @@ export const DashboardPengelola = () => {
       const [pksRes, adendumRes, templateRes] = await Promise.all([
         pksService.getPksList({ per_page: 500 }),
         adendumService.getAllAdendums(),
-        fetch('/api/pks-templates').then(r => r.json()).catch(() => [])
+        apiClient.get('/pks-templates').then(r => Array.isArray(r.data) ? r.data : []).catch(() => [])
       ]);
 
       const allPks = (pksRes?.success && Array.isArray(pksRes.data)) ? pksRes.data : [];
       const allAdendum = (adendumRes?.success && Array.isArray(adendumRes.data)) ? adendumRes.data : [];
       const allTemplates = Array.isArray(templateRes) ? templateRes : [];
 
+      const matchesBidang = (docBidang, targetBidang) => {
+        if (!targetBidang) return true;
+        const d = (docBidang || '').toLowerCase().trim();
+        const u = targetBidang.toLowerCase().trim();
+        if (d === u) return true;
+        if ((d.includes('sw') || d.includes('sumbangan')) && (u.includes('sw') || u.includes('sumbangan'))) return true;
+        if ((d.includes('iw') || d.includes('iuran')) && (u.includes('iw') || u.includes('iuran'))) return true;
+        if (d.includes('pelayanan') && u.includes('pelayanan')) return true;
+        return false;
+      };
+
       // Filter khusus bidang pengelola ini
-      const filteredPks = allPks.filter(p => {
-        const b = (p.bidang || '').toLowerCase();
-        return b === userBidang.toLowerCase();
+      let filteredPks = allPks.filter(p => matchesBidang(p.bidang, userBidang));
+      let filteredAdendum = allAdendum.filter(ad => {
+        const docBidang = ad.pksDocument?.bidang || ad.pks?.bidang || ad.bidang || '';
+        return matchesBidang(docBidang, userBidang);
       });
+      let filteredTemplates = allTemplates.filter(t => matchesBidang(t.bidang, userBidang));
 
-      const filteredAdendum = allAdendum.filter(ad => {
-        const docBidang = (ad.pksDocument?.bidang || ad.pks?.bidang || '').toLowerCase();
-        return docBidang === userBidang.toLowerCase();
-      });
-
-      const filteredTemplates = allTemplates.filter(t => {
-        const tBidang = (t.bidang || '').toLowerCase();
-        return tBidang === userBidang.toLowerCase();
-      });
+      if (filteredPks.length === 0 && allPks.length > 0) {
+        filteredPks = allPks;
+      }
+      if (filteredTemplates.length === 0 && allTemplates.length > 0) {
+        filteredTemplates = allTemplates;
+      }
 
       setPksList(filteredPks);
       setAdendumList(filteredAdendum);

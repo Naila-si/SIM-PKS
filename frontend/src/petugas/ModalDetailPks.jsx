@@ -348,6 +348,31 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick, onSuccess 
             {/* ================= LEFT COLUMN (2 COLS MATCHING IMAGE 4) ================= */}
             <div className="lg:col-span-2 space-y-6">
               
+                            {/* KOTAK STATUS PENGHENTIAN KERJA SAMA (JIKA TIDAK DILANJUTKAN) */}
+              {(data.status_pks === 'Tidak Dilanjutkan' || data.statusPks === 'Tidak Dilanjutkan') && (
+                <div className="bg-slate-900 text-white rounded-2xl p-5 space-y-3 shadow-md border border-slate-700">
+                  <div className="flex items-center space-x-2 text-rose-400 font-extrabold text-xs uppercase tracking-wider">
+                    <Ban className="w-4 h-4" />
+                    <span>Status: Kerja Sama Tidak Dilanjutkan</span>
+                  </div>
+                  <div className="space-y-1 text-xs text-slate-300">
+                    <p><strong className="text-white">Alasan:</strong> {data.alasan_penghentian || data.alasanPenghentian || '-'}</p>
+                    <p><strong className="text-white">Tanggal Penghentian:</strong> {data.tanggal_penghentian || data.tanggalPenghentian || '-'}</p>
+                  </div>
+                  {(data.url_surat_penghentian || data.urlSuratPenghentian) && (
+                    <a
+                      href={data.url_surat_penghentian || data.urlSuratPenghentian}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+                    >
+                      <Download className="w-3.5 h-3.5 mr-1.5" />
+                      Unduh Surat Pernyataan (.pdf)
+                    </a>
+                  )}
+                </div>
+              )}
+
               {/* 1. INFORMASI PKS */}
               <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4 shadow-2xs">
                 <div className="flex items-center space-x-2 border-b border-slate-100 pb-3">

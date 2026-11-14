@@ -11,13 +11,34 @@ export const TemplateListPage = () => {
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState(null);
+  const userRole = user?.role?.toLowerCase() || '';
+  const isPengelola = userRole === 'pengelola_pks' || userRole === 'pengelola';
+  const myBidang = user?.bidang || 'Pelayanan';
+
+  const defaultJenisPks = (bidangName) => {
+    if (bidangName === 'SW') return 'Sumbangan Wajib Dana Kecelakaan Lalu Lintas Jalan (SWDKLLJ)';
+    if (bidangName === 'IW') return 'IWKL Borongan';
+    return 'Pelayanan Kesehatan';
+  };
+
   const [formData, setFormData] = useState({
     nama_template: '',
     kategori_template: 'PKS',
-    bidang: 'Pelayanan',
-    jenis_pks: 'Pelayanan Kesehatan',
+    bidang: isPengelola ? myBidang : 'Pelayanan',
+    jenis_pks: defaultJenisPks(isPengelola ? myBidang : 'Pelayanan'),
     file: null
   });
+
+  // Sinkronkan bidang form jika user berubah/dimuat
+  useEffect(() => {
+    if (isPengelola && myBidang) {
+      setFormData(prev => ({
+        ...prev,
+        bidang: myBidang,
+        jenis_pks: defaultJenisPks(myBidang)
+      }));
+    }
+  }, [user]);
 
   const fetchTemplates = async () => {
     setLoading(true);
@@ -75,7 +96,13 @@ export const TemplateListPage = () => {
       });
       if (res.ok) {
         setShowModal(false);
-        setFormData({ nama_template: '', kategori_template: 'PKS', bidang: 'Pelayanan', jenis_pks: 'Pelayanan Kesehatan', file: null });
+        setFormData({
+          nama_template: '',
+          kategori_template: 'PKS',
+          bidang: isPengelola ? myBidang : 'Pelayanan',
+          jenis_pks: defaultJenisPks(isPengelola ? myBidang : 'Pelayanan'),
+          file: null
+        });
         showToast('success', 'Template dokumen baru berhasil diunggah.', 'Berhasil');
         fetchTemplates();
       } else {
@@ -128,8 +155,19 @@ export const TemplateListPage = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Master Template PKS</h1>
-          <p className="text-xs text-slate-500">Kelola format dokumen .docx standar untuk pembuatan draf PKS otomatis.</p>
+          <div className="flex items-center space-x-2.5">
+            <h1 className="text-xl font-bold text-slate-900">Master Template PKS</h1>
+            {isPengelola && (
+              <span className="px-2.5 py-0.5 text-xs font-bold bg-blue-50 text-[#00529C] border border-blue-200 rounded-full">
+                Bidang {myBidang}
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-slate-500 mt-0.5">
+            {isPengelola 
+              ? `Kelola format dokumen .docx standar khusus bidang ${myBidang} untuk pembuatan draf otomatis.` 
+              : 'Kelola format dokumen .docx standar untuk seluruh bidang dalam pembuatan draf otomatis.'}
+          </p>
         </div>
         <button
           onClick={() => setShowModal(true)}
@@ -294,12 +332,29 @@ export const TemplateListPage = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">Bidang PKS</label>
-                  <select value={formData.bidang} onChange={e => setFormData({...formData, bidang: e.target.value, jenis_pks: e.target.value === 'SW' ? 'Sumbangan Wajib Dana Kecelakaan Lalu Lintas Jalan (SWDKLLJ)' : e.target.value === 'IW' ? 'IWKL Borongan' : 'Pelayanan Kesehatan'})} className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="Pelayanan">Pelayanan</option>
-                    <option value="SW">Sumbangan Wajib (SW)</option>
-                    <option value="IW">Iuran Wajib (IW)</option>
-                  </select>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    Bidang PKS {isPengelola && <span className="text-[10px] text-blue-600 font-normal">(Sesuai Hak Akses)</span>}
+                  </label>
+                  {isPengelola ? (
+                    <div className="w-full px-3 py-2 text-xs bg-slate-100 border border-slate-200 rounded-xl text-slate-700 font-semibold cursor-not-allowed flex items-center justify-between">
+                      <span>{formData.bidang}</span>
+                      <span className="text-[10px] bg-blue-100 text-[#00529C] px-2 py-0.5 rounded-full font-bold">Terkunci</span>
+                    </div>
+                  ) : (
+                    <select 
+                      value={formData.bidang} 
+                      onChange={e => setFormData({
+                        ...formData, 
+                        bidang: e.target.value, 
+                        jenis_pks: defaultJenisPks(e.target.value)
+                      })} 
+                      className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="Pelayanan">Pelayanan</option>
+                      <option value="SW">Sumbangan Wajib (SW)</option>
+                      <option value="IW">Iuran Wajib (IW)</option>
+                    </select>
+                  )}
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1.5">Jenis PKS</label>

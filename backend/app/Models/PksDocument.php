@@ -28,13 +28,34 @@ class PksDocument extends Model
         'status_persetujuan',
         'status_pks',
         'catatan_revisi',
+        'url_surat_penghentian',
+        'alasan_penghentian',
+        'tanggal_penghentian',
     ];
 
     protected $appends = [
         'pksId',
         'mitraId',
         'penggunaId',
+        'urlSuratPenghentian',
+        'alasanPenghentian',
+        'tanggalPenghentian',
     ];
+
+    public function getUrlSuratPenghentianAttribute()
+    {
+        return $this->attributes['url_surat_penghentian'] ?? null;
+    }
+
+    public function getAlasanPenghentianAttribute()
+    {
+        return $this->attributes['alasan_penghentian'] ?? null;
+    }
+
+    public function getTanggalPenghentianAttribute()
+    {
+        return $this->attributes['tanggal_penghentian'] ?? null;
+    }
 
     public function getPksIdAttribute()
     {

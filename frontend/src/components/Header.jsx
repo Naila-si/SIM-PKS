@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
-import { Search, Bell, FileText, Building2, CheckCheck, ArrowRight, X, Clock, UserCheck, AlertTriangle } from 'lucide-react';
+import { Search, Bell, FileText, Building2, CheckCheck, ArrowRight, X, Clock, UserCheck, AlertTriangle, KeyRound, User } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { ModalProfile } from './ModalProfile';
 
 export const Header = () => {
   const { user } = useAuth();
@@ -13,6 +14,7 @@ export const Header = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   const searchRef = useRef(null);
   const notifRef = useRef(null);
@@ -305,21 +307,39 @@ export const Header = () => {
 
         <div className="h-6 w-px bg-slate-200" />
 
-        {/* User Profile Card */}
-        <div className="flex items-center space-x-3">
+        {/* User Profile Card (Clickable to open Edit Profile & Ganti Sandi) */}
+        <button
+          type="button"
+          onClick={() => setIsProfileModalOpen(true)}
+          title="Klik untuk Pengaturan Akun / Ganti Kata Sandi"
+          className="flex items-center space-x-3 p-1.5 -mr-1.5 rounded-2xl hover:bg-slate-50 transition-all cursor-pointer group text-left"
+        >
           <div className="text-right hidden sm:block">
-            <p className="text-xs font-bold text-slate-900 leading-tight">
+            <p className="text-xs font-bold text-slate-900 group-hover:text-[#00529C] transition-colors leading-tight">
               {user?.nama || 'Pengguna'}
             </p>
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">
               {roleLabels[user?.role] || user?.role?.replace('_', ' ') || 'PETUGAS JR'}
             </p>
           </div>
-          <div className="w-9 h-9 rounded-full bg-[#0F2238] text-white flex items-center justify-center font-bold text-xs ring-2 ring-slate-100 shrink-0 uppercase shadow-2xs">
-            {user?.nama ? user.nama.charAt(0).toUpperCase() : 'U'}
+          <div className="relative">
+            <div className="w-9 h-9 rounded-full bg-[#0F2238] group-hover:bg-[#00529C] text-white flex items-center justify-center font-bold text-xs ring-2 ring-slate-100 shrink-0 uppercase shadow-2xs transition-colors">
+              {user?.nama ? user.nama.charAt(0).toUpperCase() : 'U'}
+            </div>
+            <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-blue-600 border-2 border-white flex items-center justify-center shadow-xs">
+              <KeyRound className="w-2 h-2 text-white" />
+            </div>
           </div>
-        </div>
+        </button>
       </div>
+
+      {/* Modal Profile & Ganti Kata Sandi */}
+      {isProfileModalOpen && (
+        <ModalProfile
+          isOpen={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+        />
+      )}
 
     </header>
   );

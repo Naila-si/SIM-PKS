@@ -20,8 +20,20 @@ export const ProtectedRoute = ({ allowedRoles }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/dashboard" replace />;
+  if (allowedRoles && allowedRoles.length > 0) {
+    const userRole = (user?.role || '').toLowerCase();
+    const isAllowed = allowedRoles.some((role) => {
+      const targetRole = role.toLowerCase();
+      // Handle variasi nama role umum (misal admin / admin_utama, pengelola / pengelola_pks)
+      if (targetRole === 'admin_utama' && (userRole === 'admin_utama' || userRole === 'admin')) return true;
+      if (targetRole === 'pengelola_pks' && (userRole === 'pengelola_pks' || userRole === 'pengelola')) return true;
+      if (targetRole === 'petugas_jr' && (userRole === 'petugas_jr' || userRole === 'petugas')) return true;
+      return userRole === targetRole;
+    });
+
+    if (!isAllowed) {
+      return <Navigate to="/dashboard" replace />;
+    }
   }
 
   return <Outlet />;

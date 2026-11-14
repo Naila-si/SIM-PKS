@@ -18,7 +18,9 @@ import {
   Crown,
   Check,
   X,
-  Eye
+  Eye,
+  KeyRound,
+  Lock
 } from 'lucide-react';
 import { authService } from '../../services/authService';
 import { useToast } from '../../context/ToastContext';
@@ -69,6 +71,9 @@ export const UserListPage = () => {
   const [selectedDetailUser, setSelectedDetailUser] = useState(null);
   const [activeActionId, setActiveActionId] = useState(null);
   const [deleteConfirmUser, setDeleteConfirmUser] = useState(null);
+  const [resetPasswordUser, setResetPasswordUser] = useState(null);
+  const [customResetPass, setCustomResetPass] = useState('JasaRaharja2026!');
+  const [isResetting, setIsResetting] = useState(false);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -136,6 +141,25 @@ export const UserListPage = () => {
     } catch (err) {
       showToast('error', err.response?.data?.message || 'Gagal menghapus pengguna.');
       setDeleteConfirmUser(null);
+    }
+  };
+
+  const handleExecuteResetPassword = async () => {
+    if (!resetPasswordUser) return;
+    if (!customResetPass || customResetPass.length < 8) {
+      return showToast('warning', 'Kata sandi baru minimal harus 8 karakter.', 'Validasi Form');
+    }
+
+    setIsResetting(true);
+    try {
+      const res = await authService.resetPassword(resetPasswordUser.penggunaId, customResetPass);
+      showToast('success', res.pesan || `Kata sandi ${resetPasswordUser.nama} berhasil direset.`, 'Reset Berhasil');
+      setResetPasswordUser(null);
+      setCustomResetPass('JasaRaharja2026!');
+    } catch (err) {
+      showToast('error', err.message || 'Gagal mereset kata sandi.', 'Gagal');
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -545,6 +569,19 @@ export const UserListPage = () => {
                                   Ubah Pengguna
                                 </button>
 
+                                {/* Reset Password (Bantuan Admin) */}
+                                <button
+                                  onClick={() => {
+                                    setActiveActionId(null);
+                                    setResetPasswordUser(item);
+                                    setCustomResetPass('JasaRaharja2026!');
+                                  }}
+                                  className="flex items-center w-full px-3 py-2 text-xs text-amber-700 hover:bg-amber-50 font-medium cursor-pointer"
+                                >
+                                  <KeyRound className="w-3.5 h-3.5 mr-2 text-amber-600" />
+                                  Reset Password
+                                </button>
+
                                 {/* Options for Non-Preset Users Only */}
                                 {!['admin_utama', 'kabag', 'pimpinan'].includes(item.role) && (
                                   <>
@@ -671,6 +708,59 @@ export const UserListPage = () => {
                 className="px-3 py-1.5 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-lg cursor-pointer"
               >
                 Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Reset Password (Bantuan Administrator - Mekanisme A) */}
+      {resetPasswordUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 font-sans">
+          <div className="bg-white rounded-3xl p-6 max-w-md w-full space-y-5 shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                <KeyRound className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-extrabold text-slate-900">Reset Kata Sandi Pengguna</h3>
+                <p className="text-xs text-slate-500">{resetPasswordUser.nama} ({resetPasswordUser.email})</p>
+              </div>
+            </div>
+
+            <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-3 text-[11px] text-amber-800 leading-relaxed">
+              <strong>Bantuan Administrator:</strong> Masukkan kata sandi sementara baru. Pengguna akan menggunakan sandi ini untuk login kembali dan wajib memperbaruinya di menu Profil.
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-slate-700">Kata Sandi Sementara Baru</label>
+              <input
+                type="text"
+                required
+                minLength={8}
+                value={customResetPass}
+                onChange={(e) => setCustomResetPass(e.target.value)}
+                placeholder="Minimal 8 karakter"
+                className="w-full bg-[#F8FAFC] border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-800 outline-none focus:bg-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
+              />
+              <p className="text-[10px] text-slate-400">Default: <code>JasaRaharja2026!</code> (dapat disesuaikan)</p>
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setResetPasswordUser(null)}
+                className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                disabled={isResetting}
+                onClick={handleExecuteResetPassword}
+                className="px-4 py-2 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl shadow-md transition-all cursor-pointer disabled:opacity-50"
+              >
+                {isResetting ? 'Mereset...' : 'Simpan & Reset Sandi'}
               </button>
             </div>
           </div>

@@ -8,6 +8,7 @@ import { ModalTambahPks } from './ModalTambahPks';
 import { ModalUbahPks } from './ModalUbahPks';
 import { ModalDetailPks } from './ModalDetailPks';
 import { ModalHapusPks } from './ModalHapusPks';
+import { ModalHentikanPks } from './ModalHentikanPks';
 import { exportPksToExcel } from '../utils/excelReportHelper';
 import {
   Plus, Search, RotateCcw, MoreVertical, Eye, Edit3, Trash2,
@@ -41,6 +42,7 @@ export const ManajemenPksPage = () => {
   const [editingPksId, setEditingPksId] = useState(null);
   const [viewingPksId, setViewingPksId] = useState(null);
   const [deletingPksData, setDeletingPksData] = useState(null);
+  const [hentikanPksData, setHentikanPksData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeActionId, setActiveActionId] = useState(null);
 
@@ -284,6 +286,7 @@ export const ManajemenPksPage = () => {
               <option value="Aktif">Aktif</option>
               <option value="Segera Berakhir">Segera Berakhir</option>
               <option value="Berakhir">Berakhir</option>
+              <option value="Tidak Dilanjutkan">Tidak Dilanjutkan</option>
             </select>
           </div>
 
@@ -408,6 +411,8 @@ export const ManajemenPksPage = () => {
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold ${
                           (item.status_pks || item.statusPks || 'Draft') === 'Aktif'
                             ? 'bg-emerald-100 text-emerald-700'
+                            : (item.status_pks || item.statusPks || '') === 'Tidak Dilanjutkan'
+                            ? 'bg-slate-200 text-slate-800 border border-slate-300'
                             : (item.status_pks || item.statusPks || 'Draft') === 'Segera Berakhir'
                             ? 'bg-amber-100 text-amber-700'
                             : ((item.status_pks || item.statusPks || 'Draft') === 'Draft' || (item.status_pks || item.statusPks || 'Draft') === 'Draf')
@@ -499,6 +504,19 @@ export const ManajemenPksPage = () => {
                                 Detail
                               </button>
 
+                              {/* Opsi Hentikan PKS jika belum berstatus Tidak Dilanjutkan */}
+                              {(item.status_pks !== 'Tidak Dilanjutkan' && item.statusPks !== 'Tidak Dilanjutkan') && (
+                                <button
+                                  onClick={() => {
+                                    setActiveActionId(null);
+                                    setHentikanPksData(item);
+                                  }}
+                                  className="flex items-center w-full px-3 py-2 text-xs text-rose-600 hover:bg-rose-50 font-medium cursor-pointer"
+                                >
+                                  Hentikan PKS
+                                </button>
+                              )}
+
                               {/* LOGIKA RBAC EDIT */}
                               {(() => {
                                 const creatorId = item.pengguna?.penggunaId || item.penggunaId;
@@ -587,6 +605,17 @@ export const ManajemenPksPage = () => {
           isOpen={!!editingPksId}
           pksId={editingPksId}
           onClose={() => setEditingPksId(null)}
+          onSuccess={() => {
+            fetchData();
+          }}
+        />
+      )}
+
+            {hentikanPksData && (
+        <ModalHentikanPks
+          isOpen={!!hentikanPksData}
+          pks={hentikanPksData}
+          onClose={() => setHentikanPksData(null)}
           onSuccess={() => {
             fetchData();
           }}

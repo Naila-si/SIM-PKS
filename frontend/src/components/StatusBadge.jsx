@@ -20,6 +20,7 @@ const pksStyles = {
   'Aktif': 'bg-emerald-100 text-emerald-800 border-emerald-400 font-semibold',
   'Segera Berakhir': 'bg-amber-100 text-amber-800 border-amber-400 font-semibold animate-pulse',
   'Berakhir': 'bg-rose-100 text-rose-800 border-rose-400 font-semibold',
+  'Tidak Dilanjutkan': 'bg-slate-200 text-slate-800 border-slate-400 font-semibold',
 };
 
 export const StatusBadge = ({ status, type = 'persetujuan' }) => {

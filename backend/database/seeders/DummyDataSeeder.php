@@ -18,9 +18,14 @@ class DummyDataSeeder extends Seeder
     public function run(): void
     {
         // 1. Ambil data Pengguna Akun Resmi
-        $petugasSw = Pengguna::where('email', 'petugas.sw@jasaraharja.co.id')->first();
-        $petugasIw = Pengguna::where('email', 'petugas.iw@jasaraharja.co.id')->first();
-        $petugasPly = Pengguna::where('email', 'petugas.pelayanan@jasaraharja.co.id')->first();
+        $naila = Pengguna::where('email', 'naila@gmail.com')->first();
+        $petugasJr = Pengguna::where('email', 'petugas.jr@jasaraharja.co.id')->first();
+        $petugasPly = $naila ?? $petugasJr ?? Pengguna::where('role', 'petugas_jr')->first();
+        $petugasSw = $naila ?? $petugasJr ?? Pengguna::where('role', 'petugas_jr')->first();
+        $petugasIw = $petugasJr ?? $naila ?? Pengguna::where('role', 'petugas_jr')->first();
+
+        $nailaId = $naila?->pengguna_id ?? ($petugasJr?->pengguna_id ?? 1);
+        $petugasJrId = $petugasJr?->pengguna_id ?? ($naila?->pengguna_id ?? 1);
 
         $pengelolaSw = Pengguna::where('email', 'pengelola.sw@jasaraharja.co.id')->first();
         $pengelolaIw = Pengguna::where('email', 'pengelola.iw@jasaraharja.co.id')->first();
@@ -175,21 +180,22 @@ class DummyDataSeeder extends Seeder
             // PKS 1: Aktif Masa Berlaku Panjang (Pelayanan)
             [
                 'mitra_id' => $savedMitras['RSUD Arifin Achmad Provinsi Riau']->mitra_id,
-                'pengguna_id' => $petugasPly?->pengguna_id ?? 1,
+                'pengguna_id' => $nailaId,
                 'bidang' => 'Pelayanan',
                 'jenis_pks' => 'Pelayanan Kesehatan',
                 'nomor_pks' => 'PKS/001/JR-RIAU/PLY/2026',
                 'ringkasan_pks' => 'Kerja Sama Penanganan dan Perawatan Korban Kecelakaan Lalu Lintas Jalan Serta Penerbitan Surat Jaminan (Guarantee Letter) Pasien IGD',
-                'tanggal_mulai' => $today->copy()->subMonths(3)->toDateString(),
-                'tanggal_berakhir' => $today->copy()->addMonths(9)->toDateString(),
+                'tanggal_mulai' => $today->copy()->subMonths(8)->toDateString(),
+                'tanggal_berakhir' => $today->copy()->addMonths(4)->toDateString(),
                 'url_berkas' => '/storage/pks/pks_001_rsud_arifin_achmad.pdf',
                 'status_persetujuan' => 'Disetujui',
                 'status_pks' => 'Aktif',
+                'created_at' => $today->copy()->subMonths(8),
             ],
             // PKS 2: Segera Berakhir H-18 Hari (Masa Berlaku mendekati habis -> Memicu Notifikasi Kuning!)
             [
                 'mitra_id' => $savedMitras['RS Awal Bros Sudirman Pekanbaru']->mitra_id,
-                'pengguna_id' => $petugasPly?->pengguna_id ?? 1,
+                'pengguna_id' => $nailaId,
                 'bidang' => 'Pelayanan',
                 'jenis_pks' => 'Pelayanan Kesehatan',
                 'nomor_pks' => 'PKS/014/JR-RIAU/PLY/2025',
@@ -199,11 +205,12 @@ class DummyDataSeeder extends Seeder
                 'url_berkas' => '/storage/pks/pks_014_awal_bros.pdf',
                 'status_persetujuan' => 'Disetujui',
                 'status_pks' => 'Segera Berakhir',
+                'created_at' => $today->copy()->subMonths(7),
             ],
             // PKS 3: Telah Berakhir (Perlu Perpanjangan / Adendum Baru)
             [
                 'mitra_id' => $savedMitras['PO Sanura Transport Antar Lintas']->mitra_id,
-                'pengguna_id' => $petugasIw?->pengguna_id ?? 1,
+                'pengguna_id' => $petugasJrId,
                 'bidang' => 'IW',
                 'jenis_pks' => 'Kerja Sama Operasional',
                 'nomor_pks' => 'PKS/008/JR-RIAU/IW/2025',
@@ -213,11 +220,12 @@ class DummyDataSeeder extends Seeder
                 'url_berkas' => '/storage/pks/pks_008_sanura.pdf',
                 'status_persetujuan' => 'Disetujui',
                 'status_pks' => 'Berakhir',
+                'created_at' => $today->copy()->subMonths(9),
             ],
             // PKS 4: Menunggu Penyerahan Berkas Fisik (Pengajuan Baru Petugas SW -> Menunggu Pengelola Terima)
             [
                 'mitra_id' => $savedMitras['Badan Pendapatan Daerah (Bapenda) Provinsi Riau']->mitra_id,
-                'pengguna_id' => $petugasSw?->pengguna_id ?? 1,
+                'pengguna_id' => $nailaId,
                 'bidang' => 'SW',
                 'jenis_pks' => 'Kerja Sama Operasional',
                 'nomor_pks' => 'PKS/021/JR-RIAU/SW/2026',
@@ -227,11 +235,12 @@ class DummyDataSeeder extends Seeder
                 'url_berkas' => null,
                 'status_persetujuan' => 'Menunggu Penyerahan',
                 'status_pks' => 'Draf',
+                'created_at' => $today->copy()->subMonths(3),
             ],
             // PKS 5: Pemeriksaan Pengelola PKS (Sedang diperiksa berkasnya oleh Pengelola)
             [
                 'mitra_id' => $savedMitras['RS Santa Maria Pekanbaru']->mitra_id,
-                'pengguna_id' => $petugasPly?->pengguna_id ?? 1,
+                'pengguna_id' => $nailaId,
                 'bidang' => 'Pelayanan',
                 'jenis_pks' => 'Pelayanan Kesehatan',
                 'nomor_pks' => 'PKS/025/JR-RIAU/PLY/2026',
@@ -241,11 +250,12 @@ class DummyDataSeeder extends Seeder
                 'url_berkas' => null,
                 'status_persetujuan' => 'Pemeriksaan Pengelola',
                 'status_pks' => 'Draf',
+                'created_at' => $today->copy()->subMonths(2),
             ],
             // PKS 6: Pemeriksaan Kabag (Sudah Disetujui Pengelola, Antrean Persetujuan Kepala Bagian)
             [
                 'mitra_id' => $savedMitras['PO Makmur Jaya Mandiri']->mitra_id,
-                'pengguna_id' => $petugasIw?->pengguna_id ?? 1,
+                'pengguna_id' => $petugasJrId,
                 'bidang' => 'IW',
                 'jenis_pks' => 'Kerja Sama Operasional',
                 'nomor_pks' => 'PKS/027/JR-RIAU/IW/2026',
@@ -255,11 +265,12 @@ class DummyDataSeeder extends Seeder
                 'url_berkas' => null,
                 'status_persetujuan' => 'Pemeriksaan Kabag',
                 'status_pks' => 'Draf',
+                'created_at' => $today->copy()->subMonths(1),
             ],
             // PKS 7: Pemeriksaan Pimpinan (Sudah Disetujui Kabag, Antrean Pengesahan Akhir Kepala Cabang / Pimpinan)
             [
                 'mitra_id' => $savedMitras['PT Riau Andalan Pulp & Paper (RAPP)']->mitra_id,
-                'pengguna_id' => $petugasSw?->pengguna_id ?? 1,
+                'pengguna_id' => $nailaId,
                 'bidang' => 'SW',
                 'jenis_pks' => 'Kerja Sama Operasional',
                 'nomor_pks' => 'PKS/029/JR-RIAU/SW/2026',
@@ -269,11 +280,12 @@ class DummyDataSeeder extends Seeder
                 'url_berkas' => null,
                 'status_persetujuan' => 'Pemeriksaan Pimpinan',
                 'status_pks' => 'Draf',
+                'created_at' => $today->copy()->subDays(15),
             ],
             // PKS 8: Revisi Pengelola (Terdapat Catatan Perbaikan untuk Petugas)
             [
                 'mitra_id' => $savedMitras['RSUD Petala Bumi Pekanbaru']->mitra_id,
-                'pengguna_id' => $petugasPly?->pengguna_id ?? 1,
+                'pengguna_id' => $nailaId,
                 'bidang' => 'Pelayanan',
                 'jenis_pks' => 'Pelayanan Kesehatan',
                 'nomor_pks' => 'PKS/030/JR-RIAU/PLY/2026',
@@ -284,25 +296,27 @@ class DummyDataSeeder extends Seeder
                 'status_persetujuan' => 'Revisi Pengelola',
                 'status_pks' => 'Draf',
                 'catatan_revisi' => 'Mohon sesuaikan lampiran daftar tarif obat formularium dan lampirkan SK Direktur terkait PIC koordinasi klaim 24 jam.',
+                'created_at' => $today->copy()->subDays(4),
             ],
             // PKS 9: Aktif Normal (SW)
             [
                 'mitra_id' => $savedMitras['PT Pertamina Hulu Rokan (PHR)']->mitra_id,
-                'pengguna_id' => $petugasSw?->pengguna_id ?? 1,
+                'pengguna_id' => $nailaId,
                 'bidang' => 'SW',
                 'jenis_pks' => 'Kerja Sama Operasional',
                 'nomor_pks' => 'PKS/032/JR-RIAU/SW/2026',
                 'ringkasan_pks' => 'Pengelolaan dan Perlindungan Asuransi Kecelakaan Penumpang Kendaraan Operasional Lapangan Minyak Rumbai Camp',
-                'tanggal_mulai' => $today->copy()->subMonths(2)->toDateString(),
-                'tanggal_berakhir' => $today->copy()->addMonths(10)->toDateString(),
+                'tanggal_mulai' => $today->copy()->subMonths(6)->toDateString(),
+                'tanggal_berakhir' => $today->copy()->addMonths(6)->toDateString(),
                 'url_berkas' => '/storage/pks/pks_phr_2026.pdf',
                 'status_persetujuan' => 'Disetujui',
                 'status_pks' => 'Aktif',
+                'created_at' => $today->copy()->subMonths(6)->subDays(10),
             ],
             // PKS 10: Aktif Normal (IW)
             [
                 'mitra_id' => $savedMitras['PT Riau Tour Wisata Eksekutif']->mitra_id,
-                'pengguna_id' => $petugasIw?->pengguna_id ?? 1,
+                'pengguna_id' => $nailaId,
                 'bidang' => 'IW',
                 'jenis_pks' => 'Kerja Sama Operasional',
                 'nomor_pks' => 'PKS/033/JR-RIAU/IW/2026',
@@ -312,6 +326,37 @@ class DummyDataSeeder extends Seeder
                 'url_berkas' => '/storage/pks/pks_riautour_2026.pdf',
                 'status_persetujuan' => 'Disetujui',
                 'status_pks' => 'Aktif',
+                'created_at' => $today->copy()->subMonths(1)->subDays(5),
+            ],
+            // PKS 11: Aktif Normal (IW)
+            [
+                'mitra_id' => $savedMitras['PO Sinar Riau Express']->mitra_id,
+                'pengguna_id' => $petugasJrId,
+                'bidang' => 'IW',
+                'jenis_pks' => 'Kerja Sama Operasional',
+                'nomor_pks' => 'PKS/034/JR-RIAU/IW/2026',
+                'ringkasan_pks' => 'Penyetoran Iuran Wajib Dana Pertanggungan Kecelakaan Penumpang Armada Antar Kota Dalam Provinsi',
+                'tanggal_mulai' => $today->copy()->subMonths(7)->toDateString(),
+                'tanggal_berakhir' => $today->copy()->addMonths(5)->toDateString(),
+                'url_berkas' => '/storage/pks/pks_sinarriau_2026.pdf',
+                'status_persetujuan' => 'Disetujui',
+                'status_pks' => 'Aktif',
+                'created_at' => $today->copy()->subMonths(7)->subDays(15),
+            ],
+            // PKS 12: Aktif Normal (SW)
+            [
+                'mitra_id' => $savedMitras['Koperasi Angkutan Sawit Mandiri Riau']->mitra_id,
+                'pengguna_id' => $nailaId,
+                'bidang' => 'SW',
+                'jenis_pks' => 'Kerja Sama Operasional',
+                'nomor_pks' => 'PKS/035/JR-RIAU/SW/2026',
+                'ringkasan_pks' => 'Pengelolaan Pelunasan Sumbangan Wajib Kendaraan Angkutan Hasil Perkebunan Sawit Wilayah Kampar & Siak',
+                'tanggal_mulai' => $today->copy()->subMonths(5)->toDateString(),
+                'tanggal_berakhir' => $today->copy()->addMonths(7)->toDateString(),
+                'url_berkas' => '/storage/pks/pks_sawitmandiri_2026.pdf',
+                'status_persetujuan' => 'Disetujui',
+                'status_pks' => 'Aktif',
+                'created_at' => $today->copy()->subMonths(5)->subDays(20),
             ],
         ];
 
@@ -329,28 +374,28 @@ class DummyDataSeeder extends Seeder
             // Riwayat untuk PKS 1 (Disetujui Lengkap)
             [
                 'pks_id' => $savedPks['PKS/001/JR-RIAU/PLY/2026']->pks_id,
-                'pengguna_id' => $petugasPly?->pengguna_id ?? 1,
+                'pengguna_id' => $nailaId,
                 'status_aksi' => 'Draf Diajukan',
                 'catatan' => 'Draf PKS Rumah Sakit telah dibuat dan berkas fisik siap diverifikasi.',
                 'created_at' => $today->copy()->subMonths(3)->subDays(4),
             ],
             [
                 'pks_id' => $savedPks['PKS/001/JR-RIAU/PLY/2026']->pks_id,
-                'pengguna_id' => $pengelolaPly?->pengguna_id ?? 2,
+                'pengguna_id' => $pengelolaPly?->pengguna_id ?? 9,
                 'status_aksi' => 'Disetujui Pengelola',
                 'catatan' => 'Kelengkapan administrasi dan MoU induk telah sesuai ketentuan legal.',
                 'created_at' => $today->copy()->subMonths(3)->subDays(3),
             ],
             [
                 'pks_id' => $savedPks['PKS/001/JR-RIAU/PLY/2026']->pks_id,
-                'pengguna_id' => $kabag?->pengguna_id ?? 3,
+                'pengguna_id' => $kabag?->pengguna_id ?? 4,
                 'status_aksi' => 'Disetujui Kabag',
                 'catatan' => 'Disetujui untuk proses penerbitan final ke pimpinan.',
                 'created_at' => $today->copy()->subMonths(3)->subDays(2),
             ],
             [
                 'pks_id' => $savedPks['PKS/001/JR-RIAU/PLY/2026']->pks_id,
-                'pengguna_id' => $pimpinan?->pengguna_id ?? 4,
+                'pengguna_id' => $pimpinan?->pengguna_id ?? 5,
                 'status_aksi' => 'Disetujui Pimpinan',
                 'catatan' => 'PKS disahkan dan ditandatangani para pihak.',
                 'created_at' => $today->copy()->subMonths(3)->subDays(1),
@@ -359,14 +404,14 @@ class DummyDataSeeder extends Seeder
             // Riwayat untuk PKS 6 (Sudah Disetujui Pengelola, Menunggu Kabag)
             [
                 'pks_id' => $savedPks['PKS/027/JR-RIAU/IW/2026']->pks_id,
-                'pengguna_id' => $petugasIw?->pengguna_id ?? 1,
+                'pengguna_id' => $petugasJrId,
                 'status_aksi' => 'Tandai Siap Diserahkan',
                 'catatan' => 'Draf PKS telah dicetak dan diserahkan ke bagian pengelola.',
                 'created_at' => $today->copy()->subDays(2),
             ],
             [
                 'pks_id' => $savedPks['PKS/027/JR-RIAU/IW/2026']->pks_id,
-                'pengguna_id' => $pengelolaIw?->pengguna_id ?? 2,
+                'pengguna_id' => $pengelolaIw?->pengguna_id ?? 8,
                 'status_aksi' => 'Disetujui Pengelola',
                 'catatan' => 'Verifikasi dokumen rampung. Diteruskan ke Kepala Bagian.',
                 'created_at' => $today->copy()->subDays(1),
@@ -375,14 +420,14 @@ class DummyDataSeeder extends Seeder
             // Riwayat untuk PKS 8 (Revisi Pengelola)
             [
                 'pks_id' => $savedPks['PKS/030/JR-RIAU/PLY/2026']->pks_id,
-                'pengguna_id' => $petugasPly?->pengguna_id ?? 1,
+                'pengguna_id' => $nailaId,
                 'status_aksi' => 'Draf Diajukan',
                 'catatan' => 'Pengajuan berkas kerja sama instalasi farmasi.',
                 'created_at' => $today->copy()->subDays(3),
             ],
             [
                 'pks_id' => $savedPks['PKS/030/JR-RIAU/PLY/2026']->pks_id,
-                'pengguna_id' => $pengelolaPly?->pengguna_id ?? 2,
+                'pengguna_id' => $pengelolaPly?->pengguna_id ?? 9,
                 'status_aksi' => 'Revisi Pengelola',
                 'catatan' => 'Mohon sesuaikan lampiran daftar tarif obat formularium dan lampirkan SK Direktur terkait PIC koordinasi klaim 24 jam.',
                 'created_at' => $today->copy()->subDays(1),
@@ -397,7 +442,7 @@ class DummyDataSeeder extends Seeder
         $adendums = [
             [
                 'pks_id' => $savedPks['PKS/001/JR-RIAU/PLY/2026']->pks_id,
-                'pengguna_id' => $petugasPly?->pengguna_id ?? 1,
+                'pengguna_id' => $nailaId,
                 'nomor_adendum' => 'ADD/001/PKS-001/2026',
                 'ruang_lingkup_perubahan' => 'Penambahan Kuota Plafon Penjaminan Ruang Perawatan Intensif (ICU/HCU) Korban Laka Lantas dan Fasilitas Rawat Jalan Fisioterapi',
                 'tanggal_mulai' => $today->copy()->subDays(10)->toDateString(),
@@ -408,7 +453,7 @@ class DummyDataSeeder extends Seeder
             ],
             [
                 'pks_id' => $savedPks['PKS/014/JR-RIAU/PLY/2025']->pks_id,
-                'pengguna_id' => $petugasPly?->pengguna_id ?? 1,
+                'pengguna_id' => $nailaId,
                 'nomor_adendum' => 'ADD/002/PKS-014/2026',
                 'ruang_lingkup_perubahan' => 'Perpanjangan Masa Berlaku Dokumen Kerja Sama Pelayanan Kesehatan selama 1 (satu) Tahun Penuh terhitung sejak tanggal berakhir PKS awal.',
                 'tanggal_mulai' => $today->copy()->addDays(19)->toDateString(),
@@ -428,7 +473,7 @@ class DummyDataSeeder extends Seeder
             // Seed log persetujuan adendum
             AdendumApproval::create([
                 'adendum_id' => $savedAd->adendum_id,
-                'pengguna_id' => $petugasPly?->pengguna_id ?? 1,
+                'pengguna_id' => $nailaId,
                 'status_aksi' => 'Draf Diajukan',
                 'catatan' => 'Draf adendum dibuat untuk penyesuaian operasional.',
                 'created_at' => $today->copy()->subDays(5),
@@ -444,7 +489,7 @@ class DummyDataSeeder extends Seeder
                 'jenis_pks' => 'Pelayanan Kesehatan',
                 'versi_template' => 2,
                 'status_template' => 'Aktif',
-                'pengguna_id' => $pengelolaPly?->pengguna_id ?? 1,
+                'pengguna_id' => $pengelolaPly?->pengguna_id ?? 9,
                 'url_berkas' => '/storage/templates/template_pks_rs_v2.docx',
             ],
             [
@@ -454,7 +499,7 @@ class DummyDataSeeder extends Seeder
                 'jenis_pks' => 'Kerja Sama Operasional',
                 'versi_template' => 1,
                 'status_template' => 'Aktif',
-                'pengguna_id' => $pengelolaIw?->pengguna_id ?? 1,
+                'pengguna_id' => $pengelolaIw?->pengguna_id ?? 8,
                 'url_berkas' => '/storage/templates/template_pks_iw_v1.docx',
             ],
             [
@@ -464,7 +509,7 @@ class DummyDataSeeder extends Seeder
                 'jenis_pks' => 'Kerja Sama Operasional',
                 'versi_template' => 1,
                 'status_template' => 'Aktif',
-                'pengguna_id' => $pengelolaSw?->pengguna_id ?? 1,
+                'pengguna_id' => $pengelolaSw?->pengguna_id ?? 7,
                 'url_berkas' => '/storage/templates/template_pks_sw_v1.docx',
             ],
             [
@@ -474,7 +519,7 @@ class DummyDataSeeder extends Seeder
                 'jenis_pks' => 'Pelayanan Kesehatan',
                 'versi_template' => 1,
                 'status_template' => 'Aktif',
-                'pengguna_id' => $pengelolaPly?->pengguna_id ?? 1,
+                'pengguna_id' => $pengelolaPly?->pengguna_id ?? 9,
                 'url_berkas' => '/storage/templates/template_adendum_waktu_v1.docx',
             ],
         ];
@@ -498,7 +543,7 @@ class DummyDataSeeder extends Seeder
                 'created_at' => $today->copy()->subHours(8),
             ],
             [
-                'pengguna_id' => $petugasPly?->pengguna_id ?? 1,
+                'pengguna_id' => $nailaId,
                 'bidang' => 'Pelayanan',
                 'aksi' => 'Pendaftaran Mitra',
                 'loggable_type' => 'App\Models\Mitra',
@@ -507,7 +552,7 @@ class DummyDataSeeder extends Seeder
                 'created_at' => $today->copy()->subDays(10),
             ],
             [
-                'pengguna_id' => $petugasSw?->pengguna_id ?? 1,
+                'pengguna_id' => $nailaId,
                 'bidang' => 'SW',
                 'aksi' => 'Pembuatan Draf PKS',
                 'loggable_type' => 'App\Models\PksDocument',
@@ -516,7 +561,7 @@ class DummyDataSeeder extends Seeder
                 'created_at' => $today->copy()->subDays(2),
             ],
             [
-                'pengguna_id' => $pengelolaPly?->pengguna_id ?? 2,
+                'pengguna_id' => $pengelolaPly?->pengguna_id ?? 9,
                 'bidang' => 'Pelayanan',
                 'aksi' => 'Persetujuan Dokumen',
                 'loggable_type' => 'App\Models\PksDocument',
@@ -525,7 +570,7 @@ class DummyDataSeeder extends Seeder
                 'created_at' => $today->copy()->subDays(3),
             ],
             [
-                'pengguna_id' => $kabag?->pengguna_id ?? 3,
+                'pengguna_id' => $kabag?->pengguna_id ?? 4,
                 'bidang' => 'IW',
                 'aksi' => 'Pemeriksaan Kabag',
                 'loggable_type' => 'App\Models\PksDocument',
@@ -534,7 +579,7 @@ class DummyDataSeeder extends Seeder
                 'created_at' => $today->copy()->subHours(4),
             ],
             [
-                'pengguna_id' => $pimpinan?->pengguna_id ?? 4,
+                'pengguna_id' => $pimpinan?->pengguna_id ?? 5,
                 'bidang' => 'Pelayanan',
                 'aksi' => 'Pengesahan PKS',
                 'loggable_type' => 'App\Models\PksDocument',
@@ -543,7 +588,7 @@ class DummyDataSeeder extends Seeder
                 'created_at' => $today->copy()->subDays(1),
             ],
             [
-                'pengguna_id' => $pengelolaPly?->pengguna_id ?? 1,
+                'pengguna_id' => $pengelolaPly?->pengguna_id ?? 9,
                 'bidang' => 'Pelayanan',
                 'aksi' => 'Kelola Template',
                 'loggable_type' => 'App\Models\PksTemplate',

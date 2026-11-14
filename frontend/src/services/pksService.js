@@ -212,6 +212,28 @@ export const pksService = {
     return { success: true };
   },
 
+    hentikanPks: async (id, formData) => {
+    try {
+      const token = localStorage.getItem('pks_token');
+      const res = await fetch(`/api/pks/${id}/hentikan`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Gagal menghentikan PKS');
+      }
+      return data;
+    } catch (err) {
+      console.error('Error in hentikanPks:', err);
+      throw err;
+    }
+  },
+
   downloadDraft: async (id) => {
     try {
       let token = localStorage.getItem('pks_token');

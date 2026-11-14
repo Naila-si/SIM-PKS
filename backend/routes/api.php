@@ -21,6 +21,10 @@ Route::prefix('autentikasi')->group(function () {
     
     // Rute Keluar / Logout
     Route::post('keluar', [AutentikasiKontroller::class, 'keluar']);
+
+    // Rute Mandiri: Ganti Kata Sandi & Perbarui Profil
+    Route::put('ganti-kata-sandi', [AutentikasiKontroller::class, 'gantiKataSandi']);
+    Route::put('profil', [AutentikasiKontroller::class, 'perbaruiProfil']);
 });
 
 // ================= RUTE MANAJEMEN PENGGUNA (USERS) =================
@@ -42,6 +46,9 @@ Route::prefix('pengguna')->group(function () {
     Route::put('{id}/tolak', [PenggunaKontroller::class, 'tolakPengguna']);
     Route::put('{id}/ubah-status', [PenggunaKontroller::class, 'ubahStatus']);
     
+    // Reset Password Pengguna oleh Admin Utama (Mekanisme A Bantuan Admin)
+    Route::put('{id}/reset-password', [PenggunaKontroller::class, 'resetPasswordOlehAdmin']);
+
     // Perbarui & Hapus Pengguna
     Route::put('{id}', [PenggunaKontroller::class, 'perbaruiPengguna']);
     Route::delete('{id}', [PenggunaKontroller::class, 'hapusPengguna']);
@@ -54,6 +61,8 @@ Route::apiResource('mitra', \App\Http\Controllers\MitraController::class);
 Route::apiResource('pks-templates', \App\Http\Controllers\PksTemplateController::class);
 
 // ================= RUTE DOKUMEN PKS =================
+Route::post('pks/{id}/hentikan', [\App\Http\Controllers\PksDocumentController::class, 'hentikanPks']);
+Route::post('pks-documents/{id}/hentikan', [\App\Http\Controllers\PksDocumentController::class, 'hentikanPks']);
 Route::get('pks-documents/{id}/generate-docx', [\App\Http\Controllers\PksDocumentController::class, 'generateDocx']);
 Route::get('pks/{id}/generate-docx', [\App\Http\Controllers\PksDocumentController::class, 'generateDocx']);
 Route::apiResource('pks-documents', \App\Http\Controllers\PksDocumentController::class);

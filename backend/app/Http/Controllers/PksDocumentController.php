@@ -167,4 +167,68 @@ class PksDocumentController extends Controller
             return response()->json(['message' => 'Gagal generate document: ' . $e->getMessage()], 500);
         }
     }
+
+    public function hentikanPks(Request $request, $id)
+    {
+        $doc = PksDocument::find($id);
+        if (!$doc) {
+            return response()->json(['success' => false, 'message' => 'Dokumen PKS tidak ditemukan'], 404);
+        }
+
+        $request->validate([
+            'alasan_penghentian' => 'required|string|max:1000',
+            'surat_penghentian' => 'required|file|mimes:pdf|max:10240',
+        ], [
+            'alasan_penghentian.required' => 'Alasan penghentian/tidak melanjutkan PKS wajib diisi.',
+            'surat_penghentian.required' => 'Surat pernyataan tidak melanjutkan PKS wajib diunggah.',
+            'surat_penghentian.mimes' => 'Format surat pernyataan harus berupa file PDF.',
+            'surat_penghentian.max' => 'Ukuran berkas surat pernyataan maksimal 10MB.',
+        ]);
+
+        $filePath = null;
+        if ($request->hasFile('surat_penghentian')) {
+            $file = $request->file('surat_penghentian');
+            $fileName = 'Surat_Penghentian_' . ($doc->pks_id ?? $id) . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('surat_penghentian', $fileName, 'public');
+            $filePath = '/storage/' . $path;
+        }
+
+        $doc->update([
+            'status_pks' => 'Tidak Dilanjutkan',
+            'url_surat_penghentian' => $filePath,
+            'alasan_penghentian' => $request->alasan_penghentian,
+            'tanggal_penghentian' => now()->toDateString(),
+        ]);
+
+        // Cek apakah mitra masih memiliki PKS aktif lain
+        $mitraId = $doc->mitra_id;
+        if ($mitraId) {
+            $hasActivePks = PksDocument::where('mitra_id', $mitraId)
+                ->where('status_pks', 'Aktif')
+                ->exists();
+            if (!$hasActivePks) {
+                \App\Models\Mitra::where('mitra_id', $mitraId)->update(['status_mitra' => 'Tidak Aktif']);
+            }
+        }
+
+        // Catat ke system log jika ada
+        try {
+            \App\Models\SystemLog::create([
+                'pengguna_id' => auth()->id() ?? $request->input('pengguna_id', $doc->pengguna_id ?? 1),
+                'bidang' => $doc->bidang ?? 'Umum',
+                'aksi' => 'Penghentian PKS',
+                'loggable_type' => 'App\Models\PksDocument',
+                'loggable_id' => $doc->pks_id,
+                'keterangan' => 'PKS ' . ($doc->nomor_pks ?? 'No. ' . $doc->pks_id) . ' dinyatakan Tidak Dilanjutkan. Alasan: ' . $request->alasan_penghentian,
+            ]);
+        } catch (\Exception $e) {
+            // ignore log error
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'PKS berhasil dihentikan dan dinyatakan Tidak Dilanjutkan.',
+            'data' => $doc->load('mitra', 'pengguna'),
+        ]);
+    }
 }
