@@ -77,8 +77,8 @@ export const LoginPage = () => {
         {/* Middle Hero Main Headline */}
         <div className="z-10 space-y-6 my-auto max-w-xl">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#001D38] tracking-tight leading-[1.15]">
-            Sistem Integrasi<br />
-            Monitoring<br />
+            Sistem Informasi<br />
+            Manajemen<br />
             Perjanjian Kerja<br />
             Sama
           </h1>
