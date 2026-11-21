@@ -104,14 +104,19 @@ export const pksService = {
 
   getPksById: async (id) => {
     try {
-      const res = await fetch(`/api/pks-documents/${id}`);
+      const token = localStorage.getItem('pks_token') || localStorage.getItem('pks_auth_token');
+      const res = await fetch(`/api/pks-documents/${id}`, {
+        headers: {
+          'Accept': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
       const data = await res.json();
       return { success: true, data: data };
     } catch (err) {
       return { success: false, message: 'Gagal' };
     }
   },
-
   createPks: async (data) => {
     try {
       let token = localStorage.getItem('pks_token');
@@ -236,22 +241,109 @@ export const pksService = {
 
   downloadDraft: async (id) => {
     try {
-      let token = localStorage.getItem('pks_token');
-      const res = await fetch(`/api/pks-documents/${id}/generate-docx`, {
+      const token = localStorage.getItem('pks_token') || localStorage.getItem('pks_auth_token');
+      // Coba unduh berkas yang sudah digenerate sebelumnya
+      let res = await fetch(`/api/pks-documents/${id}/download-draft`, {
         method: 'GET',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
       });
+      // Fallback: jika belum ada draf fisik (404), generate baru
+      if (!res.ok && res.status === 404) {
+        res = await fetch(`/api/pks-documents/${id}/generate-docx`, {
+          method: 'GET',
+          headers: {
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          }
+        });
+      }
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.message || 'Gagal generate document');
+        throw new Error(errData.message || 'Gagal mengunduh berkas draf PKS');
       }
+      const contentType = res.headers.get('content-type') || 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
       const blob = await res.blob();
-      return { data: blob };
+      return { data: blob, contentType };
     } catch (err) {
       throw err;
     }
   },
 
+  downloadDraftFile: async (id, fallbackFileName = 'Draf_PKS.docx') => {
+    const { data } = await pksService.downloadDraft(id);
+    const blobUrl = window.URL.createObjectURL(data);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = fallbackFileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 10000);
+    return true;
+  },
+
+  previewDraftFile: async (id) => {
+    const { data, contentType } = await pksService.downloadDraft(id);
+    const fileBlob = contentType ? new Blob([data], { type: contentType }) : data;
+    const blobUrl = window.URL.createObjectURL(fileBlob);
+    window.open(blobUrl, '_blank');
+    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60000);
+    return true;
+  },
+
+  downloadSuratPenghentian: async (id, fallbackFileName = 'Surat_Penghentian_PKS.pdf') => {
+    try {
+      const token = localStorage.getItem('pks_token') || localStorage.getItem('pks_auth_token');
+      const res = await fetch(`/api/pks-documents/${id}/download-surat-penghentian`, {
+        method: 'GET',
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || 'Gagal mengunduh surat penghentian PKS');
+      }
+      const blob = await res.blob();
+      const fileBlob = new Blob([blob], { type: 'application/pdf' });
+      const blobUrl = window.URL.createObjectURL(fileBlob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = fallbackFileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => window.URL.revokeObjectURL(blobUrl), 10000);
+      return { success: true };
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  previewSuratPenghentian: async (id) => {
+    try {
+      const token = localStorage.getItem('pks_token') || localStorage.getItem('pks_auth_token');
+      const res = await fetch(`/api/pks-documents/${id}/download-surat-penghentian`, {
+        method: 'GET',
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || 'Gagal membuka pratinjau surat penghentian');
+      }
+      const blob = await res.blob();
+      const fileBlob = new Blob([blob], { type: 'application/pdf' });
+      const blobUrl = window.URL.createObjectURL(fileBlob);
+      window.open(blobUrl, '_blank');
+      setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60000);
+      return { success: true };
+    } catch (err) {
+      throw err;
+    }
+  },
   konfirmasiPenyerahan: async (id) => {
     return pksService.updatePks(id, { statusPersetujuan: 'Pemeriksaan Pengelola' });
   },

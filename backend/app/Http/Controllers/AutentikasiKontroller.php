@@ -80,9 +80,10 @@ class AutentikasiKontroller extends Controller
             $tokenIngatSaya = Str::random(60);
         }
 
-        // Buat Token Sesi Akses (Bearer Token)
+        // Buat Token Sesi Akses Kriptografis (SHA-256 Personal Access Token)
         $idPengguna = $pengguna->pengguna_id ?? $pengguna->penggunaId;
-        $tokenSesiAkses = 'sim-pks-token-' . $idPengguna . '-' . time();
+        $durasiHari = $permintaan->ingat_saya ? 90 : 30;
+        $tokenSesiAkses = \App\Models\TokenAksesPengguna::buatToken($pengguna, 'web-auth', $durasiHari);
 
         // 6. Kembalikan Respon Sukses Login
         return response()->json([
@@ -126,25 +127,17 @@ class AutentikasiKontroller extends Controller
             'konfirmasi_kata_sandi.same' => 'Konfirmasi kata sandi tidak cocok dengan kata sandi baru.',
         ]);
 
-        $authHeader = $permintaan->header('Authorization');
-        $userId = null;
-        if ($authHeader && preg_match('/sim-pks-token-(\d+)-/', $authHeader, $matches)) {
-            $userId = $matches[1];
+        $pengguna = $permintaan->user();
+        if (!$pengguna) {
+            $token = $permintaan->bearerToken() ?: $permintaan->query('token');
+            $pengguna = \App\Models\TokenAksesPengguna::verifikasiToken($token);
         }
 
-        if (!$userId) {
+        if (!$pengguna) {
             return response()->json([
                 'status' => 'gagal',
                 'pesan' => 'Sesi tidak sah. Silakan login kembali.',
             ], 401);
-        }
-
-        $pengguna = Pengguna::find($userId);
-        if (!$pengguna) {
-            return response()->json([
-                'status' => 'gagal',
-                'pesan' => 'Pengguna tidak ditemukan.',
-            ], 404);
         }
 
         // Cek kecocokan password lama
@@ -175,25 +168,17 @@ class AutentikasiKontroller extends Controller
             'nomor_hp' => 'nullable|string|max:50',
         ]);
 
-        $authHeader = $permintaan->header('Authorization');
-        $userId = null;
-        if ($authHeader && preg_match('/sim-pks-token-(\d+)-/', $authHeader, $matches)) {
-            $userId = $matches[1];
+        $pengguna = $permintaan->user();
+        if (!$pengguna) {
+            $token = $permintaan->bearerToken() ?: $permintaan->query('token');
+            $pengguna = \App\Models\TokenAksesPengguna::verifikasiToken($token);
         }
 
-        if (!$userId) {
+        if (!$pengguna) {
             return response()->json([
                 'status' => 'gagal',
                 'pesan' => 'Sesi tidak sah. Silakan login kembali.',
             ], 401);
-        }
-
-        $pengguna = Pengguna::find($userId);
-        if (!$pengguna) {
-            return response()->json([
-                'status' => 'gagal',
-                'pesan' => 'Pengguna tidak ditemukan.',
-            ], 404);
         }
 
         $pengguna->nama = trim($permintaan->nama);
@@ -228,29 +213,31 @@ class AutentikasiKontroller extends Controller
      */
     public function sesiSaya(Request $permintaan)
     {
-        $authHeader = $permintaan->header('Authorization');
-        if ($authHeader && preg_match('/sim-pks-token-(\d+)-/', $authHeader, $matches)) {
-            $p = Pengguna::find($matches[1]);
-            if ($p && $p->status === 'Aktif') {
-                $id = $p->pengguna_id ?? $p->penggunaId;
-                return response()->json([
-                    'status' => 'sukses',
-                    'data' => [
-                        'pengguna_id' => $id,
-                        'penggunaId' => $id,
-                        'nama' => $p->nama,
-                        'email' => $p->email,
-                        'nomor_hp' => $p->nomor_hp,
-                        'nomorHp' => $p->nomor_hp,
-                        'jabatan' => $p->jabatan,
-                        'role' => $p->role,
-                        'wilayah' => $p->wilayah,
-                        'samsat' => $p->samsat,
-                        'bidang' => $p->bidang,
-                        'status' => $p->status,
-                    ],
-                ]);
-            }
+        $pengguna = $permintaan->user();
+        if (!$pengguna) {
+            $token = $permintaan->bearerToken() ?: $permintaan->query('token');
+            $pengguna = \App\Models\TokenAksesPengguna::verifikasiToken($token);
+        }
+
+        if ($pengguna && $pengguna->status === 'Aktif') {
+            $id = $pengguna->pengguna_id ?? $pengguna->penggunaId;
+            return response()->json([
+                'status' => 'sukses',
+                'data' => [
+                    'pengguna_id' => $id,
+                    'penggunaId' => $id,
+                    'nama' => $pengguna->nama,
+                    'email' => $pengguna->email,
+                    'nomor_hp' => $pengguna->nomor_hp,
+                    'nomorHp' => $pengguna->nomor_hp,
+                    'jabatan' => $pengguna->jabatan,
+                    'role' => $pengguna->role,
+                    'wilayah' => $pengguna->wilayah,
+                    'samsat' => $pengguna->samsat,
+                    'bidang' => $pengguna->bidang,
+                    'status' => $pengguna->status,
+                ],
+            ]);
         }
 
         return response()->json([
@@ -264,6 +251,15 @@ class AutentikasiKontroller extends Controller
      */
     public function keluar(Request $permintaan)
     {
+        $token = $permintaan->bearerToken();
+        if (!$token && $permintaan->filled('token')) {
+            $token = $permintaan->query('token');
+        }
+
+        if ($token) {
+            \App\Models\TokenAksesPengguna::cabutToken($token);
+        }
+
         return response()->json([
             'status' => 'sukses',
             'pesan' => 'Berhasil keluar dari sistem.',

@@ -9,7 +9,7 @@ import { PartialDataCard } from '../components/PartialDataCard';
 import { ApprovalActionModal } from '../components/ApprovalActionModal';
 import { DocumentUploadModal } from '../components/DocumentUploadModal';
 import {
-  ArrowLeft, Download, CheckCircle, Edit3, Trash2, FilePlus, Building2, Calendar, User, History, FileText, Check, XCircle, Upload, AlertCircle
+  ArrowLeft, Download, Eye, CheckCircle, Edit3, Trash2, FilePlus, Building2, Calendar, User, History, FileText, Check, XCircle, Upload, AlertCircle
 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 
@@ -59,6 +59,30 @@ export const PksDetailPage = () => {
       fetchDetail();
     } catch (err) {
       showToast('error', err.response?.data?.message || 'Gagal mengunduh dokumen draf. Pastikan template telah dipilih.', 'Gagal');
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  const handleDownloadFinalScan = async () => {
+    setIsActionLoading(true);
+    try {
+      const fileName = `${pks?.nomorPKS ? pks.nomorPKS.replace(/\//g, '_') : 'Dokumen_Final_PKS'}.pdf`;
+      await pksService.downloadDraftFile(id, fileName);
+      showToast('success', 'Dokumen PDF Final berhasil diunduh.', 'Unduh Berhasil');
+    } catch (err) {
+      showToast('error', err.response?.data?.message || err.message || 'Gagal mengunduh dokumen PDF Final.', 'Gagal');
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  const handlePreviewFinalScan = async () => {
+    setIsActionLoading(true);
+    try {
+      await pksService.previewDraftFile(id);
+    } catch (err) {
+      showToast('error', err.response?.data?.message || err.message || 'Gagal membuka pratinjau dokumen PDF Final.', 'Gagal');
     } finally {
       setIsActionLoading(false);
     }
@@ -457,15 +481,26 @@ export const PksDetailPage = () => {
                         <p className="text-[11px] text-emerald-700">Telah resmi diunggah dan diverifikasi</p>
                       </div>
                     </div>
-                    <a
-                      href={`/storage/${pks.fileScan}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-3.5 py-2 bg-emerald-700 text-white text-xs font-bold rounded-lg hover:bg-emerald-800 flex items-center shadow-xs"
-                    >
-                      <Download className="w-3.5 h-3.5 mr-1" />
-                      Unduh PDF Final
-                    </a>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        type="button"
+                        onClick={handlePreviewFinalScan}
+                        disabled={isActionLoading}
+                        className="px-3 py-1.5 bg-white border border-emerald-300 text-emerald-800 text-xs font-bold rounded-lg hover:bg-emerald-100/60 flex items-center shadow-2xs cursor-pointer disabled:opacity-50"
+                      >
+                        <Eye className="w-3.5 h-3.5 mr-1 text-emerald-700" />
+                        Pratinjau
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleDownloadFinalScan}
+                        disabled={isActionLoading}
+                        className="px-3.5 py-2 bg-emerald-700 text-white text-xs font-bold rounded-lg hover:bg-emerald-800 flex items-center shadow-xs cursor-pointer disabled:opacity-50"
+                      >
+                        <Download className="w-3.5 h-3.5 mr-1" />
+                        Unduh PDF Final
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

@@ -7,7 +7,7 @@ import { ModalHapusAdendum } from './ModalHapusAdendum';
 import { ModalUbahAdendum } from './ModalUbahAdendum';
 import {
   X, FileText, Building2, Calendar, Clock, User, CheckCircle2,
-  AlertTriangle, Plus, ShieldCheck, Info, Download, Edit3
+  AlertTriangle, Plus, ShieldCheck, Info, Download, Edit3, Eye, Ban
 } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
@@ -106,16 +106,31 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick, onSuccess 
   const handleDownloadDraft = async () => {
     setLoading(true);
     try {
-      const res = await pksService.downloadDraft(pksId);
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `Draf_PKS_${pksId}.docx`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      await pksService.downloadDraftFile(pksId, `Draf_PKS_${pksId}.docx`);
     } catch (err) {
       showDialog('info', 'Gagal', 'Gagal mengunduh dokumen draf.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDownloadSuratPenghentian = async () => {
+    setLoading(true);
+    try {
+      await pksService.downloadSuratPenghentian(pksId, `Surat_Penghentian_PKS_${pksId}.pdf`);
+    } catch (err) {
+      showDialog('info', 'Gagal', err.message || 'Gagal mengunduh surat pernyataan penghentian.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePreviewSuratPenghentian = async () => {
+    setLoading(true);
+    try {
+      await pksService.previewSuratPenghentian(pksId);
+    } catch (err) {
+      showDialog('info', 'Gagal', err.message || 'Gagal membuka pratinjau surat pernyataan penghentian.');
     } finally {
       setLoading(false);
     }
@@ -360,15 +375,26 @@ export const ModalDetailPks = ({ isOpen, pksId, onClose, onEditClick, onSuccess 
                     <p><strong className="text-white">Tanggal Penghentian:</strong> {data.tanggal_penghentian || data.tanggalPenghentian || '-'}</p>
                   </div>
                   {(data.url_surat_penghentian || data.urlSuratPenghentian) && (
-                    <a
-                      href={data.url_surat_penghentian || data.urlSuratPenghentian}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
-                    >
-                      <Download className="w-3.5 h-3.5 mr-1.5" />
-                      Unduh Surat Pernyataan (.pdf)
-                    </a>
+                    <div className="flex items-center space-x-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={handlePreviewSuratPenghentian}
+                        disabled={loading}
+                        className="inline-flex items-center px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50"
+                      >
+                        <Eye className="w-3.5 h-3.5 mr-1.5" />
+                        Pratinjau Surat
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleDownloadSuratPenghentian}
+                        disabled={loading}
+                        className="inline-flex items-center px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50"
+                      >
+                        <Download className="w-3.5 h-3.5 mr-1.5" />
+                        Unduh Surat (.pdf)
+                      </button>
+                    </div>
                   )}
                 </div>
               )}

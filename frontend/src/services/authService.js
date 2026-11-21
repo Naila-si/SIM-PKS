@@ -25,6 +25,7 @@ export const authService = {
         // Save active session in localStorage
         localStorage.setItem('pks_user', JSON.stringify(pengguna));
         localStorage.setItem('pks_auth_token', token_akses);
+        localStorage.setItem('pks_token', token_akses);
 
         // If Remember Me is checked, save remember token & email
         if (rememberMe && token_ingat_saya) {
@@ -82,6 +83,7 @@ export const authService = {
     } finally {
       localStorage.removeItem('pks_user');
       localStorage.removeItem('pks_auth_token');
+      localStorage.removeItem('pks_token');
       localStorage.removeItem('pks_remember_token');
     }
     return { success: true };
@@ -90,7 +92,13 @@ export const authService = {
   // 4. Get All Users (Administrator Utama View)
   getAllUsers: async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/pengguna`);
+      const token = localStorage.getItem('pks_token') || localStorage.getItem('pks_auth_token');
+      const response = await fetch(`${API_BASE_URL}/pengguna`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const resData = await response.json();
 
       if (response.ok && resData.status === 'sukses') {

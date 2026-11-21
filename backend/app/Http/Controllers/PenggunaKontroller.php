@@ -38,6 +38,42 @@ class PenggunaKontroller extends Controller
             $query->where('status', $permintaan->status);
         }
 
+        // Dukungan Pagination jika diminta (PERF-01)
+        if ($permintaan->filled('per_page') || $permintaan->filled('page')) {
+            $perPage = max(1, min((int) $permintaan->input('per_page', 20), 100));
+            $paginated = $query->orderBy('created_at', 'desc')->paginate($perPage);
+            $items = collect($paginated->items())->map(function ($p) {
+                $id = $p->pengguna_id ?? $p->penggunaId;
+                return [
+                    'pengguna_id' => $id,
+                    'penggunaId' => $id,
+                    'nama' => $p->nama,
+                    'email' => $p->email,
+                    'nomor_hp' => $p->nomor_hp,
+                    'nomorHp' => $p->nomor_hp,
+                    'jabatan' => $p->jabatan,
+                    'role' => $p->role,
+                    'wilayah' => $p->wilayah,
+                    'samsat' => $p->samsat,
+                    'bidang' => $p->bidang,
+                    'status' => $p->status,
+                    'createdAt' => $p->created_at->toIso8601String(),
+                    'created_at' => $p->created_at->toIso8601String(),
+                ];
+            });
+
+            return response()->json([
+                'status' => 'sukses',
+                'data' => $items,
+                'meta' => [
+                    'current_page' => $paginated->currentPage(),
+                    'last_page' => $paginated->lastPage(),
+                    'per_page' => $paginated->perPage(),
+                    'total' => $paginated->total(),
+                ]
+            ], 200);
+        }
+
         $daftarPengguna = $query->orderBy('created_at', 'desc')->get()->map(function ($p) {
             $id = $p->pengguna_id ?? $p->penggunaId;
             return [
@@ -112,6 +148,7 @@ class PenggunaKontroller extends Controller
             'email' => 'required|email|unique:pengguna,email',
             'password' => 'required|string|min:8',
             'nomorHp' => 'nullable|string',
+            'role' => 'nullable|string|in:petugas_jr,pengelola_pks',
             'wilayah' => 'nullable|string',
             'samsat' => 'nullable|string',
             'bidang' => 'nullable|string',
@@ -121,11 +158,15 @@ class PenggunaKontroller extends Controller
             'email.unique' => 'Email tersebut sudah terdaftar di sistem. Gunakan email lain.',
             'password.required' => 'Password wajib diisi.',
             'password.min' => 'Password minimal harus 8 karakter.',
+            'role.in' => 'Role tidak valid untuk pendaftaran mandiri. Hanya Petugas JR dan Pengelola PKS yang diizinkan.',
         ]);
 
-        // 2. Menentukan Role Sesuai Pilihan Jabatan / Peran
-        $role = $permintaan->role ?? 'petugas_jr';
-        if ($permintaan->jabatan === 'Pengelola PKS' || $permintaan->role === 'pengelola_pks') {
+        // 2. Menentukan Role Sesuai Pilihan Jabatan / Peran (Strict: Hanya petugas_jr atau pengelola_pks)
+        $role = 'petugas_jr';
+        $requestedRole = strtolower(trim((string)($permintaan->role ?? '')));
+        $requestedJabatan = trim((string)($permintaan->jabatan ?? ''));
+
+        if ($requestedRole === 'pengelola_pks' || $requestedJabatan === 'Pengelola PKS') {
             $role = 'pengelola_pks';
         }
 
@@ -161,6 +202,14 @@ class PenggunaKontroller extends Controller
      */
     public function tambahOlehAdmin(Request $permintaan)
     {
+        $admin = $permintaan->user();
+        if (!$admin || !in_array($admin->role, ['admin_utama', 'admin'])) {
+            return response()->json([
+                'status' => 'gagal',
+                'pesan' => 'Akses ditolak. Fitur ini khusus untuk Administrator Utama.'
+            ], 403);
+        }
+
         $permintaan->validate([
             'nama' => 'required|string|max:100',
             'email' => 'required|email|unique:pengguna,email',
@@ -197,8 +246,16 @@ class PenggunaKontroller extends Controller
     /**
      * Setujui Pengguna (PUT /api/pengguna/{id}/setujui)
      */
-    public function setujuiPengguna($id)
+    public function setujuiPengguna(Request $permintaan, $id)
     {
+        $admin = $permintaan->user();
+        if (!$admin || !in_array($admin->role, ['admin_utama', 'admin'])) {
+            return response()->json([
+                'status' => 'gagal',
+                'pesan' => 'Akses ditolak. Fitur ini khusus untuk Administrator Utama.'
+            ], 403);
+        }
+
         $pengguna = Pengguna::find($id);
         if (!$pengguna) {
             return response()->json(['status' => 'gagal', 'pesan' => 'Pengguna tidak ditemukan.'], 404);
@@ -216,8 +273,16 @@ class PenggunaKontroller extends Controller
     /**
      * Tolak Pengguna (PUT /api/pengguna/{id}/tolak)
      */
-    public function tolakPengguna($id)
+    public function tolakPengguna(Request $permintaan, $id)
     {
+        $admin = $permintaan->user();
+        if (!$admin || !in_array($admin->role, ['admin_utama', 'admin'])) {
+            return response()->json([
+                'status' => 'gagal',
+                'pesan' => 'Akses ditolak. Fitur ini khusus untuk Administrator Utama.'
+            ], 403);
+        }
+
         $pengguna = Pengguna::find($id);
         if (!$pengguna) {
             return response()->json(['status' => 'gagal', 'pesan' => 'Pengguna tidak ditemukan.'], 404);
@@ -225,6 +290,9 @@ class PenggunaKontroller extends Controller
 
         $pengguna->status = 'Ditolak';
         $pengguna->save();
+
+        // Cabut seluruh sesi aktif jika ada
+        \App\Models\TokenAksesPengguna::cabutSemuaToken($pengguna->pengguna_id);
 
         return response()->json([
             'status' => 'sukses',
@@ -235,8 +303,16 @@ class PenggunaKontroller extends Controller
     /**
      * Ubah Status Aktif / Nonaktif (PUT /api/pengguna/{id}/ubah-status)
      */
-    public function ubahStatus($id)
+    public function ubahStatus(Request $permintaan, $id)
     {
+        $admin = $permintaan->user();
+        if (!$admin || !in_array($admin->role, ['admin_utama', 'admin'])) {
+            return response()->json([
+                'status' => 'gagal',
+                'pesan' => 'Akses ditolak. Fitur ini khusus untuk Administrator Utama.'
+            ], 403);
+        }
+
         $pengguna = Pengguna::find($id);
         if (!$pengguna) {
             return response()->json(['status' => 'gagal', 'pesan' => 'Pengguna tidak ditemukan.'], 404);
@@ -250,8 +326,14 @@ class PenggunaKontroller extends Controller
             ], 403);
         }
 
-        $pengguna->status = ($pengguna->status === 'Aktif') ? 'Nonaktif' : 'Aktif';
+        $statusBaru = ($pengguna->status === 'Aktif') ? 'Nonaktif' : 'Aktif';
+        $pengguna->status = $statusBaru;
         $pengguna->save();
+
+        if ($statusBaru === 'Nonaktif') {
+            // Cabut seluruh sesi aktif seketika
+            \App\Models\TokenAksesPengguna::cabutSemuaToken($pengguna->pengguna_id);
+        }
 
         return response()->json([
             'status' => 'sukses',
@@ -266,6 +348,14 @@ class PenggunaKontroller extends Controller
      */
     public function resetPasswordOlehAdmin(Request $permintaan, $id)
     {
+        $admin = $permintaan->user();
+        if (!$admin || !in_array($admin->role, ['admin_utama', 'admin'])) {
+            return response()->json([
+                'status' => 'gagal',
+                'pesan' => 'Akses ditolak. Hanya Administrator Utama yang dapat mereset kata sandi pengguna.'
+            ], 403);
+        }
+
         $permintaan->validate([
             'password_baru' => 'required|string|min:8',
         ], [
@@ -284,6 +374,9 @@ class PenggunaKontroller extends Controller
         $pengguna->password = Hash::make($permintaan->password_baru);
         $pengguna->save();
 
+        // Cabut seluruh token akses lama pengguna agar wajib login ulang dengan password baru
+        \App\Models\TokenAksesPengguna::cabutSemuaToken($pengguna->pengguna_id);
+
         return response()->json([
             'status' => 'sukses',
             'pesan' => 'Kata sandi pengguna ' . $pengguna->nama . ' berhasil direset.',
@@ -295,6 +388,17 @@ class PenggunaKontroller extends Controller
      */
     public function perbaruiPengguna(Request $permintaan, $id)
     {
+        $currentUser = $permintaan->user();
+        $isAdmin = $currentUser && in_array($currentUser->role, ['admin_utama', 'admin']);
+        $isSelf = $currentUser && ($currentUser->pengguna_id == $id || $currentUser->penggunaId == $id);
+
+        if (!$isAdmin && !$isSelf) {
+            return response()->json([
+                'status' => 'gagal',
+                'pesan' => 'Anda tidak memiliki hak untuk mengubah data pengguna ini.'
+            ], 403);
+        }
+
         $pengguna = Pengguna::find($id);
         if (!$pengguna) {
             return response()->json(['status' => 'gagal', 'pesan' => 'Pengguna tidak ditemukan.'], 404);
@@ -306,7 +410,8 @@ class PenggunaKontroller extends Controller
         if ($permintaan->filled('wilayah')) $pengguna->wilayah = $permintaan->wilayah;
         if ($permintaan->filled('samsat')) $pengguna->samsat = $permintaan->samsat;
         if ($permintaan->filled('bidang')) $pengguna->bidang = $permintaan->bidang;
-        if ($permintaan->filled('status')) $pengguna->status = $permintaan->status;
+        if ($isAdmin && $permintaan->filled('status')) $pengguna->status = $permintaan->status;
+        if ($isAdmin && $permintaan->filled('role')) $pengguna->role = $permintaan->role;
 
         // Jika mengisi password baru
         if ($permintaan->filled('password')) {
@@ -324,8 +429,16 @@ class PenggunaKontroller extends Controller
     /**
      * Hapus Pengguna (DELETE /api/pengguna/{id})
      */
-    public function hapusPengguna($id)
+    public function hapusPengguna(Request $permintaan, $id)
     {
+        $admin = $permintaan->user();
+        if (!$admin || !in_array($admin->role, ['admin_utama', 'admin'])) {
+            return response()->json([
+                'status' => 'gagal',
+                'pesan' => 'Akses ditolak. Fitur ini khusus untuk Administrator Utama.'
+            ], 403);
+        }
+
         $pengguna = Pengguna::find($id);
         if (!$pengguna) {
             return response()->json(['status' => 'gagal', 'pesan' => 'Pengguna tidak ditemukan.'], 404);
@@ -339,6 +452,7 @@ class PenggunaKontroller extends Controller
             ], 403);
         }
 
+        \App\Models\TokenAksesPengguna::cabutSemuaToken($pengguna->pengguna_id);
         $pengguna->delete();
 
         return response()->json([

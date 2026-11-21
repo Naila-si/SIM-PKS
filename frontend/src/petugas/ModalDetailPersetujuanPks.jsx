@@ -18,6 +18,41 @@ export const ModalDetailPersetujuanPks = ({ isOpen, pksData, onClose, onStatusUp
   const [isSetujuiOpen, setIsSetujuiOpen] = useState(false);
   const [riwayat, setRiwayat] = useState([]);
   const [loadingRiwayat, setLoadingRiwayat] = useState(true);
+  const [isDownloadingDraft, setIsDownloadingDraft] = useState(false);
+
+  const handlePreviewDraft = async () => {
+    const docId = data.pks_id || data.pksId;
+    if (!docId) {
+      showToast('info', 'Pratinjau draf dokumen sedang disiapkan oleh sistem.', 'Pratinjau Dokumen');
+      return;
+    }
+    setIsDownloadingDraft(true);
+    try {
+      await pksService.previewDraftFile(docId);
+    } catch (err) {
+      showToast('error', err.message || 'Gagal membuka pratinjau draf dokumen.', 'Pratinjau Dokumen');
+    } finally {
+      setIsDownloadingDraft(false);
+    }
+  };
+
+  const handleDownloadDraft = async () => {
+    const docId = data.pks_id || data.pksId;
+    if (!docId) {
+      showToast('info', 'Berkas draf dokumen belum tersedia untuk diunduh.', 'Unduh Berkas');
+      return;
+    }
+    setIsDownloadingDraft(true);
+    try {
+      const fileName = data.url_berkas ? data.url_berkas.split('/').pop() : 'Draft_PKS.docx';
+      await pksService.downloadDraftFile(docId, fileName);
+      showToast('success', 'Berkas draf dokumen berhasil diunduh.', 'Unduh Berkas');
+    } catch (err) {
+      showToast('error', err.message || 'Gagal mengunduh draf dokumen.', 'Unduh Berkas');
+    } finally {
+      setIsDownloadingDraft(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -266,33 +301,18 @@ export const ModalDetailPersetujuanPks = ({ isOpen, pksData, onClose, onStatusUp
                 <div className="grid grid-cols-2 gap-2.5 pt-1">
                   <button
                     type="button"
-                    onClick={() => {
-                      if (data.url_berkas) {
-                        window.open(`/storage/${data.url_berkas}`, '_blank');
-                      } else {
-                        showToast('info', 'Pratinjau draf dokumen sedang disiapkan oleh sistem.', 'Pratinjau Dokumen');
-                      }
-                    }}
-                    className="w-full py-2 bg-white border border-blue-300 hover:bg-blue-50 text-blue-700 text-xs font-bold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center justify-center"
+                    disabled={isDownloadingDraft}
+                    onClick={handlePreviewDraft}
+                    className="w-full py-2 bg-white border border-blue-300 hover:bg-blue-50 text-blue-700 text-xs font-bold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center justify-center disabled:opacity-50"
                   >
                     <Eye className="w-3.5 h-3.5 mr-1.5 text-blue-600" /> Lihat Draf
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => {
-                      if (data.url_berkas) {
-                        const link = document.createElement('a');
-                        link.href = `/storage/${data.url_berkas}`;
-                        link.setAttribute('download', data.url_berkas.split('/').pop());
-                        document.body.appendChild(link);
-                        link.click();
-                        link.remove();
-                      } else {
-                        showToast('info', 'Berkas draf dokumen belum tersedia untuk diunduh.', 'Unduh Berkas');
-                      }
-                    }}
-                    className="w-full py-2 bg-white border border-blue-300 hover:bg-blue-50 text-blue-700 text-xs font-bold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center justify-center"
+                    disabled={isDownloadingDraft}
+                    onClick={handleDownloadDraft}
+                    className="w-full py-2 bg-white border border-blue-300 hover:bg-blue-50 text-blue-700 text-xs font-bold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center justify-center disabled:opacity-50"
                   >
                     <Download className="w-3.5 h-3.5 mr-1.5 text-blue-600" /> Unduh Draf
                   </button>

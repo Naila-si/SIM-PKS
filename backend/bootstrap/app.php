@@ -12,8 +12,31 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'auth.simpks' => \App\Http\Middleware\AutentikasiSimPks::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Mencegah kebocoran struktur query, credentials, dan detail database internal pada respon API (SEC-CONF-01)
+        $exceptions->render(function (\Illuminate\Database\QueryException $e, \Illuminate\Http\Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'status' => 'gagal',
+                    'message' => 'Terjadi kesalahan pemrosesan basis data.',
+                    'pesan' => 'Terjadi kesalahan pemrosesan basis data.'
+                ], 500);
+            }
+        });
+
+        $exceptions->render(function (\Illuminate\Database\Eloquent\ModelNotFoundException $e, \Illuminate\Http\Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'status' => 'gagal',
+                    'message' => 'Data yang diminta tidak ditemukan.',
+                    'pesan' => 'Data yang diminta tidak ditemukan.'
+                ], 404);
+            }
+        });
     })->create();

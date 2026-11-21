@@ -37,10 +37,48 @@ class PksDocument extends Model
         'pksId',
         'mitraId',
         'penggunaId',
+        'statusPks',
         'urlSuratPenghentian',
         'alasanPenghentian',
         'tanggalPenghentian',
     ];
+
+    /**
+     * Accessor untuk Perhitungan Otomatis Status PKS (BUG-03)
+     * Menghitung status masa berlaku: Aktif, Segera Berakhir (H-30), Berakhir, atau Tidak Dilanjutkan
+     */
+    public function getStatusPksAttribute()
+    {
+        $rawStatus = $this->attributes['status_pks'] ?? null;
+
+        if ($rawStatus === 'Tidak Dilanjutkan') {
+            return 'Tidak Dilanjutkan';
+        }
+
+        $statusPers = $this->attributes['status_persetujuan'] ?? '';
+        if ($statusPers !== 'Disetujui' && $rawStatus !== 'Aktif') {
+            return $rawStatus ?: 'Draf';
+        }
+
+        $tanggalBerakhir = $this->attributes['tanggal_berakhir'] ?? null;
+        if (!$tanggalBerakhir) {
+            return $rawStatus ?: 'Aktif';
+        }
+
+        $now = now()->startOfDay();
+        $end = \Carbon\Carbon::parse($tanggalBerakhir)->startOfDay();
+
+        if ($now->gt($end)) {
+            return 'Berakhir';
+        }
+
+        $diffDays = $now->diffInDays($end, false);
+        if ($diffDays <= 30 && $diffDays >= 0) {
+            return 'Segera Berakhir';
+        }
+
+        return 'Aktif';
+    }
 
     public function getUrlSuratPenghentianAttribute()
     {

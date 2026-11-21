@@ -9,18 +9,10 @@ class SystemLogController extends Controller
 {
     public function index(Request $request)
     {
-        $token = $request->bearerToken();
-        
-        // Ekstrak ID Pengguna dari format token statis 'sim-pks-token-{id}-{time}'
-        $userId = null;
-        if ($token && preg_match('/sim-pks-token-(\d+)-/', $token, $matches)) {
-            $userId = $matches[1];
-        }
-        
-        $user = $userId ? \App\Models\Pengguna::find($userId) : null;
-        
-        // Strict RBAC: Hanya admin_utama yang boleh mengakses log sistem global ini
-        if (!$user || $user->role !== 'admin_utama') {
+        $user = $request->user();
+
+        // Strict RBAC: Hanya admin_utama / admin yang boleh mengakses log sistem global ini
+        if (!$user || !in_array($user->role, ['admin_utama', 'admin'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Akses ditolak. Fitur ini khusus untuk Administrator Utama.'
@@ -38,6 +30,22 @@ class SystemLogController extends Controller
             $query->where(function ($q) use ($action) {
                 $q->where('aksi', $action)->orWhere('aksi', 'like', "%{$action}%");
             });
+        }
+
+        // Dukungan Pagination jika diminta (PERF-01)
+        if ($request->filled('per_page') || $request->filled('page')) {
+            $perPage = max(1, min((int) $request->input('per_page', 25), 100));
+            $paginated = $query->orderBy('created_at', 'desc')->paginate($perPage);
+            return response()->json([
+                'success' => true,
+                'data' => $paginated->items(),
+                'meta' => [
+                    'current_page' => $paginated->currentPage(),
+                    'last_page' => $paginated->lastPage(),
+                    'per_page' => $paginated->perPage(),
+                    'total' => $paginated->total(),
+                ]
+            ]);
         }
 
         $logs = $query->orderBy('created_at', 'desc')->get();

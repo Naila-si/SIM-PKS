@@ -66,15 +66,24 @@ trait LogsSystemActivity
             $newValues = $changes;
         }
 
-        SystemLog::create([
-            'pengguna_id' => $userId,
-            'bidang' => $bidang,
-            'aksi' => $action,
-            'loggable_type' => get_class($model),
-            'loggable_id' => $model->getKey(),
-            'keterangan' => $desc,
-            'old_values' => $oldValues,
-            'new_values' => $newValues,
-        ]);
+        try {
+            // Verify userId exists in database if set
+            if ($userId && !\App\Models\Pengguna::where('pengguna_id', $userId)->exists()) {
+                $userId = null;
+            }
+
+            SystemLog::create([
+                'pengguna_id' => $userId,
+                'bidang' => $bidang,
+                'aksi' => $action,
+                'loggable_type' => get_class($model),
+                'loggable_id' => $model->getKey(),
+                'keterangan' => $desc,
+                'old_values' => $oldValues,
+                'new_values' => $newValues,
+            ]);
+        } catch (\Throwable $e) {
+            // System log error should not crash main transaction
+        }
     }
 }

@@ -40,6 +40,22 @@ class MitraController extends Controller
             $query->where('bidang', $request->bidang);
         }
 
+        // Dukungan Pagination jika diminta (PERF-01)
+        if ($request->filled('per_page') || $request->filled('page')) {
+            $perPage = max(1, min((int) $request->input('per_page', 20), 100));
+            $paginated = $query->paginate($perPage);
+            return response()->json([
+                'success' => true,
+                'data' => $paginated->items(),
+                'meta' => [
+                    'current_page' => $paginated->currentPage(),
+                    'last_page' => $paginated->lastPage(),
+                    'per_page' => $paginated->perPage(),
+                    'total' => $paginated->total(),
+                ]
+            ]);
+        }
+
         return response()->json($query->get());
     }
 
@@ -144,12 +160,29 @@ class MitraController extends Controller
         return response()->json($mitra);
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
+        $authUser = $request->user();
+        if ($authUser && !in_array(strtolower($authUser->role), ['admin_utama', 'admin', 'pengelola_pks', 'pengelola'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki wewenang untuk menghapus data mitra/perusahaan.'
+            ], 403);
+        }
+
         $mitra = Mitra::find($id);
         if (!$mitra) return response()->json(['message' => 'Mitra tidak ditemukan'], 404);
-        
+
+        // BUG-02: Cegah penghapusan mitra jika masih memiliki dokumen PKS terkait
+        if ($mitra->pksDocuments()->exists()) {
+            $count = $mitra->pksDocuments()->count();
+            return response()->json([
+                'success' => false,
+                'message' => "Mitra {$mitra->nama_mitra} tidak dapat dihapus karena masih memiliki {$count} dokumen PKS terkait. Hapus atau alihkan dokumen PKS terlebih dahulu."
+            ], 422);
+        }
+
         $mitra->delete();
-        return response()->json(['message' => 'Mitra berhasil dihapus']);
+        return response()->json(['success' => true, 'message' => 'Mitra berhasil dihapus']);
     }
 }

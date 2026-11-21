@@ -3,109 +3,129 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AutentikasiKontroller;
 use App\Http\Controllers\PenggunaKontroller;
+use App\Http\Controllers\MitraController;
+use App\Http\Controllers\PksTemplateController;
+use App\Http\Controllers\PksDocumentController;
+use App\Http\Controllers\PksApprovalController;
+use App\Http\Controllers\AdendumController;
+use App\Http\Controllers\AdendumApprovalController;
+use App\Http\Controllers\SystemLogController;
 
 /*
 |--------------------------------------------------------------------------
-| Rute API Sistem SIM-PKS (Bahasa Indonesia)
+| Rute API Sistem SIM-PKS (Sistem Integrasi Monitoring Perjanjian Kerja Sama)
 |--------------------------------------------------------------------------
-| Mendefinisikan seluruh Endpoint API untuk Autentikasi & Manajemen Pengguna
+| Seluruh endpoint terproteksi autentikasi backend menggunakan token kriptografis (SHA-256)
+| dan otorisasi berbasis peran (Role-Based Access Control).
 */
 
-// ================= RUTE AUTENTIKASI (AUTH) =================
-Route::prefix('autentikasi')->group(function () {
-    // Rute Masuk / Login Pengguna
-    Route::post('masuk', [AutentikasiKontroller::class, 'masuk']);
-    
-    // Rute Verifikasi Sesi Aktif & Ingat Saya
-    Route::get('sesi-saya', [AutentikasiKontroller::class, 'sesiSaya']);
-    
-    // Rute Keluar / Logout
-    Route::post('keluar', [AutentikasiKontroller::class, 'keluar']);
+// =========================================================================
+// 1. RUTE PUBLIK (TIDAK MEMERLUKAN AUTENTIKASI)
+// =========================================================================
+Route::post('autentikasi/masuk', [AutentikasiKontroller::class, 'masuk']);
+Route::post('pengguna/daftar', [PenggunaKontroller::class, 'registrasiMandiri']);
 
-    // Rute Mandiri: Ganti Kata Sandi & Perbarui Profil
-    Route::put('ganti-kata-sandi', [AutentikasiKontroller::class, 'gantiKataSandi']);
-    Route::put('profil', [AutentikasiKontroller::class, 'perbaruiProfil']);
+// =========================================================================
+// 2. RUTE TERPROTEKSI AUTENTIKASI (MEMERLUKAN TOKEN VALID)
+// =========================================================================
+Route::middleware('auth.simpks')->group(function () {
+
+    // --- AUTENTIKASI & PROFIL MANDIRI ---
+    Route::prefix('autentikasi')->group(function () {
+        Route::get('sesi-saya', [AutentikasiKontroller::class, 'sesiSaya']);
+        Route::post('keluar', [AutentikasiKontroller::class, 'keluar']);
+        Route::put('ganti-kata-sandi', [AutentikasiKontroller::class, 'gantiKataSandi']);
+        Route::put('profil', [AutentikasiKontroller::class, 'perbaruiProfil']);
+    });
+
+    // --- MANAJEMEN PENGGUNA (ADMINISTRATOR UTAMA) ---
+    Route::prefix('pengguna')->group(function () {
+        // Tampilkan Seluruh Pengguna & Detail Pengguna
+        Route::get('/', [PenggunaKontroller::class, 'tampilkanSemua']);
+        Route::get('{id}', [PenggunaKontroller::class, 'tampilkanDetail']);
+
+        // Operasi Khusus Admin Utama
+        Route::middleware('auth.simpks:admin_utama,admin')->group(function () {
+            Route::post('tambah', [PenggunaKontroller::class, 'tambahOlehAdmin']);
+            Route::put('{id}/setujui', [PenggunaKontroller::class, 'setujuiPengguna']);
+            Route::put('{id}/tolak', [PenggunaKontroller::class, 'tolakPengguna']);
+            Route::put('{id}/ubah-status', [PenggunaKontroller::class, 'ubahStatus']);
+            Route::put('{id}/reset-password', [PenggunaKontroller::class, 'resetPasswordOlehAdmin']);
+            Route::delete('{id}', [PenggunaKontroller::class, 'hapusPengguna']);
+        });
+
+        // Perbarui Data Pengguna (Admin atau Pengguna Sendiri)
+        Route::put('{id}', [PenggunaKontroller::class, 'perbaruiPengguna']);
+    });
+
+    // --- MITRA (PARTNERS) ---
+    Route::apiResource('mitra', MitraController::class);
+
+    // --- TEMPLATE PKS (RBAC: Pengelolaan Khusus Admin Utama & Pengelola PKS - SEC-RBAC-02) ---
+    Route::get('pks-templates', [PksTemplateController::class, 'index']);
+    Route::get('pks-templates/{id}', [PksTemplateController::class, 'show']);
+    Route::get('pks-templates/{id}/download', [PksTemplateController::class, 'downloadTemplate']);
+    Route::middleware('auth.simpks:admin_utama,admin,pengelola_pks,pengelola')->group(function () {
+        Route::post('pks-templates', [PksTemplateController::class, 'store']);
+        Route::put('pks-templates/{id}', [PksTemplateController::class, 'update']);
+        Route::delete('pks-templates/{id}', [PksTemplateController::class, 'destroy']);
+    });
+
+    // --- DOKUMEN PKS ---
+    Route::post('pks/{id}/hentikan', [PksDocumentController::class, 'hentikanPks']);
+    Route::post('pks-documents/{id}/hentikan', [PksDocumentController::class, 'hentikanPks']);
+    Route::get('pks-documents/{id}/generate-docx', [PksDocumentController::class, 'generateDocx']);
+    Route::get('pks/{id}/generate-docx', [PksDocumentController::class, 'generateDocx']);
+    Route::get('pks/{id}/download-draft', [PksDocumentController::class, 'downloadDraft']);
+    Route::get('pks-documents/{id}/download-draft', [PksDocumentController::class, 'downloadDraft']);
+    Route::get('pks/{id}/download-surat-penghentian', [PksDocumentController::class, 'downloadSuratPenghentian']);
+    Route::get('pks-documents/{id}/download-surat-penghentian', [PksDocumentController::class, 'downloadSuratPenghentian']);
+    Route::apiResource('pks-documents', PksDocumentController::class);
+    Route::apiResource('pks', PksDocumentController::class);
+
+    // --- RIWAYAT PERSETUJUAN PKS ---
+    Route::post('pks-approvals', [PksApprovalController::class, 'store']);
+    Route::post('pks-persetujuan', [PksApprovalController::class, 'store']);
+    Route::get('approvals/count', [PksApprovalController::class, 'getPendingCount']);
+    Route::get('persetujuan/jumlah-menunggu', [PksApprovalController::class, 'getPendingCount']);
+
+    // --- ADENDUM PKS ---
+    Route::prefix('pks')->group(function () {
+        Route::get('{pksId}/adendums', [AdendumController::class, 'index']);
+        Route::post('{pksId}/adendums', [AdendumController::class, 'store']);
+        Route::get('{pksId}/adendum', [AdendumController::class, 'index']);
+        Route::post('{pksId}/adendum', [AdendumController::class, 'store']);
+    });
+
+    Route::get('adendums', [AdendumController::class, 'getAll']);
+    Route::get('adendum', [AdendumController::class, 'getAll']);
+
+    Route::prefix('adendums')->group(function () {
+        Route::get('{id}/generate-docx', [AdendumController::class, 'generateDocx']);
+        Route::get('{id}/download-draft', [AdendumController::class, 'downloadDraft']);
+        Route::get('{id}/download-final', [AdendumController::class, 'downloadFinal']);
+        Route::post('{id}/upload-final', [AdendumController::class, 'uploadFinal']);
+        Route::get('{id}', [AdendumController::class, 'show']);
+        Route::put('{id}', [AdendumController::class, 'update']);
+        Route::delete('{id}', [AdendumController::class, 'destroy']);
+    });
+
+    Route::prefix('adendum')->group(function () {
+        Route::get('{id}/generate-docx', [AdendumController::class, 'generateDocx']);
+        Route::get('{id}/download-draft', [AdendumController::class, 'downloadDraft']);
+        Route::get('{id}/download-final', [AdendumController::class, 'downloadFinal']);
+        Route::post('{id}/upload-final', [AdendumController::class, 'uploadFinal']);
+        Route::get('{id}', [AdendumController::class, 'show']);
+        Route::put('{id}', [AdendumController::class, 'update']);
+        Route::delete('{id}', [AdendumController::class, 'destroy']);
+    });
+
+    Route::post('adendum-approvals', [AdendumApprovalController::class, 'store']);
+    Route::post('adendum-persetujuan', [AdendumApprovalController::class, 'store']);
+
+    // --- LOG SISTEM (CCTV / AUDIT TRAIL) - KHUSUS ADMIN UTAMA ---
+    Route::middleware('auth.simpks:admin_utama,admin')->group(function () {
+        Route::get('system-logs', [SystemLogController::class, 'index']);
+        Route::get('log-sistem', [SystemLogController::class, 'index']);
+    });
 });
-
-// ================= RUTE MANAJEMEN PENGGUNA (USERS) =================
-Route::prefix('pengguna')->group(function () {
-    // Registrasi Mandiri Pengguna Baru dari Halaman Register
-    Route::post('daftar', [PenggunaKontroller::class, 'registrasiMandiri']);
-
-    // Tampilkan Seluruh Daftar Pengguna (Untuk Administrator Utama)
-    Route::get('/', [PenggunaKontroller::class, 'tampilkanSemua']);
-    
-    // Tampilkan Detail Pengguna Berdasarkan ID
-    Route::get('{id}', [PenggunaKontroller::class, 'tampilkanDetail']);
-    
-    // Tambah Pengguna Baru Langsung oleh Admin Utama
-    Route::post('tambah', [PenggunaKontroller::class, 'tambahOlehAdmin']);
-    
-    // Persetujuan Pengguna oleh Admin Utama
-    Route::put('{id}/setujui', [PenggunaKontroller::class, 'setujuiPengguna']);
-    Route::put('{id}/tolak', [PenggunaKontroller::class, 'tolakPengguna']);
-    Route::put('{id}/ubah-status', [PenggunaKontroller::class, 'ubahStatus']);
-    
-    // Reset Password Pengguna oleh Admin Utama (Mekanisme A Bantuan Admin)
-    Route::put('{id}/reset-password', [PenggunaKontroller::class, 'resetPasswordOlehAdmin']);
-
-    // Perbarui & Hapus Pengguna
-    Route::put('{id}', [PenggunaKontroller::class, 'perbaruiPengguna']);
-    Route::delete('{id}', [PenggunaKontroller::class, 'hapusPengguna']);
-});
-
-// ================= RUTE MITRA (PARTNERS) =================
-Route::apiResource('mitra', \App\Http\Controllers\MitraController::class);
-
-// ================= RUTE TEMPLATE PKS =================
-Route::apiResource('pks-templates', \App\Http\Controllers\PksTemplateController::class);
-
-// ================= RUTE DOKUMEN PKS =================
-Route::post('pks/{id}/hentikan', [\App\Http\Controllers\PksDocumentController::class, 'hentikanPks']);
-Route::post('pks-documents/{id}/hentikan', [\App\Http\Controllers\PksDocumentController::class, 'hentikanPks']);
-Route::get('pks-documents/{id}/generate-docx', [\App\Http\Controllers\PksDocumentController::class, 'generateDocx']);
-Route::get('pks/{id}/generate-docx', [\App\Http\Controllers\PksDocumentController::class, 'generateDocx']);
-Route::apiResource('pks-documents', \App\Http\Controllers\PksDocumentController::class);
-Route::apiResource('pks', \App\Http\Controllers\PksDocumentController::class);
-
-// ================= RUTE RIWAYAT PERSETUJUAN =================
-Route::post('pks-approvals', [\App\Http\Controllers\PksApprovalController::class, 'store']);
-Route::post('pks-persetujuan', [\App\Http\Controllers\PksApprovalController::class, 'store']);
-
-// ================= RUTE LOG SISTEM (CCTV) =================
-Route::get('system-logs', [\App\Http\Controllers\SystemLogController::class, 'index']);
-Route::get('log-sistem', [\App\Http\Controllers\SystemLogController::class, 'index']);
-
-// ================= RUTE ADENDUM PKS =================
-Route::prefix('pks')->group(function () {
-    Route::get('{pksId}/adendums', [\App\Http\Controllers\AdendumController::class, 'index']);
-    Route::post('{pksId}/adendums', [\App\Http\Controllers\AdendumController::class, 'store']);
-    Route::get('{pksId}/adendum', [\App\Http\Controllers\AdendumController::class, 'index']);
-    Route::post('{pksId}/adendum', [\App\Http\Controllers\AdendumController::class, 'store']);
-});
-
-Route::get('approvals/count', [\App\Http\Controllers\PksApprovalController::class, 'getPendingCount']);
-Route::get('persetujuan/jumlah-menunggu', [\App\Http\Controllers\PksApprovalController::class, 'getPendingCount']);
-Route::get('adendums', [\App\Http\Controllers\AdendumController::class, 'getAll']);
-Route::get('adendum', [\App\Http\Controllers\AdendumController::class, 'getAll']);
-
-Route::prefix('adendums')->group(function () {
-    Route::get('{id}/generate-docx', [\App\Http\Controllers\AdendumController::class, 'generateDocx']);
-    Route::get('{id}/download-final', [\App\Http\Controllers\AdendumController::class, 'downloadFinal']);
-    Route::post('{id}/upload-final', [\App\Http\Controllers\AdendumController::class, 'uploadFinal']);
-    Route::get('{id}', [\App\Http\Controllers\AdendumController::class, 'show']);
-    Route::put('{id}', [\App\Http\Controllers\AdendumController::class, 'update']);
-    Route::delete('{id}', [\App\Http\Controllers\AdendumController::class, 'destroy']);
-});
-
-Route::prefix('adendum')->group(function () {
-    Route::get('{id}/generate-docx', [\App\Http\Controllers\AdendumController::class, 'generateDocx']);
-    Route::get('{id}/download-final', [\App\Http\Controllers\AdendumController::class, 'downloadFinal']);
-    Route::post('{id}/upload-final', [\App\Http\Controllers\AdendumController::class, 'uploadFinal']);
-    Route::get('{id}', [\App\Http\Controllers\AdendumController::class, 'show']);
-    Route::put('{id}', [\App\Http\Controllers\AdendumController::class, 'update']);
-    Route::delete('{id}', [\App\Http\Controllers\AdendumController::class, 'destroy']);
-});
-
-Route::post('adendum-approvals', [\App\Http\Controllers\AdendumApprovalController::class, 'store']);
-Route::post('adendum-persetujuan', [\App\Http\Controllers\AdendumApprovalController::class, 'store']);

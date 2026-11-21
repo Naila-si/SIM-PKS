@@ -77,6 +77,14 @@ class Pengguna extends Authenticatable
     }
 
     /**
+     * Relasi ke Tabel Token Akses Pengguna
+     */
+    public function tokenAkses()
+    {
+        return $this->hasMany(TokenAksesPengguna::class, 'pengguna_id', 'pengguna_id');
+    }
+
+    /**
      * Relasi ke Tabel PKS
      */
     public function pks()

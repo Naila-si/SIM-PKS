@@ -20,6 +20,7 @@ build/
 # Logs & Cache
 *.log
 logs/
+.phpunit.result.cache
 .DS_Store
 Thumbs.db
 .vscode/
